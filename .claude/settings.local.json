@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(open /Users/timblack/Development/Muse/CROAuditSPA_V1/index.html)",
+      "Bash(grep -o \"#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|rgba\\\\?\\([^\\)]*\\)\" /Users/timblack/Development/Muse/CROAuditSPA_V1/index.html)",
+      "Bash(awk -F: '$2 > 950 && $2 < 980')",
+      "Bash(awk -F: '$2 > 800 && $2 < 820')"
+    ]
+  }
+}

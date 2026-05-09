@@ -1,0 +1,2429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRO Audit System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:   #e2e8f0;
+  --ink-2: #c8d0e0;
+  --ink-3: #94a3b8;
+  --ink-4: #8496af;
+  --ink-5: #64748b;
+  --paper:   #0e1018;
+  --paper-2: #161925;
+  --paper-3: #1e2235;
+  --rule:   #252840;
+  --rule-2: #363a55;
+  --accent:    #6366f1;
+  --accent-dk: #4338ca;
+  --accent-positive:    #818cf8;
+  --accent-positive-bg: rgba(129,140,248,0.12);
+  --impact-high:        #f87171;
+  --impact-high-bg:     rgba(248,113,113,0.12);
+  --impact-medium:      #a78bfa;
+  --impact-medium-bg:   rgba(167,139,250,0.12);
+  --state-pass:    #86efac;
+  --state-pass-bg: rgba(34,197,94,0.08);
+  --state-fail:    #fca5a5;
+  --state-fail-bg: rgba(248,113,113,0.08);
+  --amber: #c8834a;
+  --row-checked-bg: rgba(99,102,241,0.10);
+  --shadow:    0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+[data-theme="light"] {
+  --paper:   #ffffff;
+  --paper-2: #ffffff;
+  --paper-3: #f4f4f6;
+  --row-checked-bg: rgba(99,102,241,0.05);
+  --ink:   #0f0c2e;
+  --ink-2: #1e1b4b;
+  --ink-3: #312e81;
+  --ink-4: #4c4a8e;
+  --ink-5: #706ea0;
+  --rule:   #e0e0e8;
+  --rule-2: #c8c8d4;
+  --accent-positive:    #4f46e5;
+  --accent-positive-bg: rgba(99,102,241,0.10);
+  --impact-high:        #dc2626;
+  --impact-high-bg:     rgba(220,38,38,0.09);
+  --impact-medium:      #6d28d9;
+  --impact-medium-bg:   rgba(109,40,217,0.09);
+  --state-pass:    #16a34a;
+  --state-pass-bg: rgba(22,163,74,0.09);
+  --state-fail:    #dc2626;
+  --state-fail-bg: rgba(220,38,38,0.09);
+  --shadow:    0 0 0 1px rgba(0,0,0,0.08);
+  --shadow-lg: 0 0 0 1px rgba(0,0,0,0.08), 0 4px 14px rgba(0,0,0,0.07);
+}
+
+[data-theme="light"] body {
+  font-weight: 500;
+}
+[data-theme="light"] .site-header__name,
+[data-theme="light"] body *[style*="DM Serif"] {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-weight: 800 !important;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SITE HEADER ── */
+.site-header {
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--rule);
+  padding: 0 32px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.site-header__name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: -0.2px;
+}
+.site-header__tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.site-header__back {
+  background: none;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-5);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.15s;
+}
+.site-header__back:hover { color: var(--ink-3); }
+.site-header__theme-toggle {
+  background: none;
+  border: none;
+  color: var(--ink-4);
+  cursor: pointer;
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+  margin-left: auto;
+}
+.site-header__theme-toggle:hover { color: var(--ink-2); }
+
+/* ── DEMO BANNER ── */
+.demo-banner {
+  background: rgba(200,131,74,0.1);
+  border-bottom: 1px solid rgba(200,131,74,0.3);
+  padding: 8px 32px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--amber);
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn:not(:disabled):hover { opacity: 0.82; }
+.btn-primary   { background: var(--accent); color: #fff; }
+.btn-secondary { background: var(--paper-3); color: var(--ink-2); border: 1px solid var(--rule); }
+.btn-ghost     { background: none; color: var(--ink-3); border: 1px solid var(--rule); }
+.btn-danger    { background: var(--state-fail-bg); color: var(--state-fail); border: 1px solid rgba(252,165,165,0.2); }
+.btn-lg  { padding: 13px 26px; font-size: 14px; }
+.btn-sm  { padding: 6px 12px; font-size: 12px; }
+.btn-full { width: 100%; justify-content: center; }
+
+/* ── FIELDS ── */
+.field { margin-bottom: 18px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-bottom: 5px;
+}
+.field input, .field textarea, .field select {
+  width: 100%;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  padding: 9px 13px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+.field .hint { font-size: 11px; color: var(--ink-4); margin-top: 4px; font-family: 'DM Mono', monospace; }
+.field-private label::after { content: ' — private'; font-weight: 400; color: var(--ink-5); text-transform: none; letter-spacing: 0; }
+
+.fg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.fg3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+.fg4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; }
+
+/* ── CHECKLIST SIDEBAR ── */
+.checklist-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--paper-2);
+  border-right: 1px solid var(--rule);
+  overflow-y: auto;
+}
+.sidebar-acc-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  padding: 9px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  transition: background 0.12s;
+}
+.sidebar-acc-btn:hover { background: var(--paper-3); }
+.sidebar-acc-btn.open  { background: var(--paper-3); border-left: 2px solid var(--accent); padding-left: 10px; }
+.sidebar-item-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  padding: 8px 12px 8px 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.12s;
+  text-align: left;
+}
+.sidebar-item-btn:hover { background: var(--paper-3); }
+.sidebar-item-btn.active { background: var(--paper-3); border-left: 2px solid var(--accent); padding-left: 22px; }
+
+/* ── MODAL OVERLAY ── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 400;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
+}
+.modal-panel {
+  background: var(--paper-2);
+  border: 1px solid var(--rule-2);
+  width: 100%;
+  max-width: 640px;
+  box-shadow: var(--shadow-lg);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--rule);
+}
+.modal-body { padding: 24px; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+@keyframes modalSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@media (max-width: 700px) {
+  .modal-backdrop {
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+  }
+  .modal-panel {
+    position: fixed;
+    inset: 0;
+    max-width: 100%;
+    border: none;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    animation: modalSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .modal-panel > form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .modal-header { flex-shrink: 0; }
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-footer {
+    flex-shrink: 0;
+    justify-content: stretch;
+  }
+  .modal-footer .btn { flex: 1; justify-content: center; padding: 14px; font-size: 11px; }
+}
+
+/* ── STAGE NAV BAR (bottom, all breakpoints) ── */
+.mobile-bottom-bar {
+  background: var(--paper-2);
+  border-top: 1px solid var(--rule);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ── PRINT ── */
+@media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff !important; color: #111 !important; }
+  .no-print, .site-header, .demo-banner, .mobile-bottom-bar { display: none !important; }
+  .checklist-sidebar { display: none !important; }
+  .print-section { page-break-inside: avoid; }
+}
+
+/* ── MOBILE ── */
+@media (max-width: 700px) {
+  .site-header { padding: 0 16px; height: 48px; }
+  .site-header__tag { display: none; }
+  .demo-banner { padding: 8px 16px; }
+  .fg2, .fg3, .fg4 { grid-template-columns: 1fr; }
+  .checklist-sidebar { display: none; }
+  .desktop-only { display: none !important; }
+}
+@media (min-width: 701px) {
+  .mobile-only { display: none !important; }
+}
+
+/* ── NAV SHEET (mobile sections slide-up) ── */
+.nav-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 500;
+  cursor: pointer;
+}
+.nav-sheet-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--paper-2);
+  border-top: 2px solid var(--rule-2);
+  z-index: 501;
+  max-height: 76vh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-sheet-panel.open { transform: translateY(0); }
+.nav-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+.nav-sheet-section-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+.nav-sheet-sec-btn {
+  background: none;
+  border: none;
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 10px 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: background 0.12s;
+}
+.nav-sheet-sec-btn:nth-child(3n) { border-right: none; }
+.nav-sheet-sec-btn:hover { background: var(--paper-3); }
+.nav-sheet-sec-btn.active { background: var(--accent-bg); border-bottom: 2px solid var(--accent); }
+.nav-sheet-items {
+  overflow-y: auto;
+  flex: 1;
+}
+.nav-sheet-item-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.12s;
+  text-align: left;
+}
+.nav-sheet-item-btn:hover { background: var(--paper-3); }
+.nav-sheet-item-btn.active { background: var(--paper-3); border-left: 2px solid var(--accent); padding-left: 14px; }
+
+/* Checklist card — reduce bottom padding on mobile since nav is outside the scroll area */
+@media (max-width: 700px) {
+  .checklist-card-scroll { padding-bottom: 20px !important; }
+}
+
+/* Calculator metric grid — 1 col on mobile */
+@media (max-width: 700px) {
+  .calc-metrics { grid-template-columns: 1fr !important; }
+}
+/* Proposal summary rows — stack on mobile */
+@media (max-width: 700px) {
+  .proposal-row { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
+  .proposal-val { text-align: left !important; }
+}
+
+/* Findings table / card responsive */
+.findings-header { display: grid; grid-template-columns: 32px 1fr 80px 80px 100px; background: var(--paper-3); border-bottom: 1px solid var(--rule); padding: 8px 16px; }
+.findings-row { display: grid; grid-template-columns: 32px 1fr 80px 80px 100px; border-bottom: 1px solid var(--rule); padding: 10px 16px; align-items: start; cursor: pointer; transition: background 0.12s; }
+@media (min-width: 701px) {
+  .findings-row-top, .findings-row-btm { display: contents; }
+  .findings-lbl { display: none !important; }
+}
+@media (max-width: 700px) {
+  .findings-header { display: none !important; }
+  .findings-row { display: block !important; padding: 14px 16px; }
+  .findings-row-top { display: flex !important; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+  .findings-row-btm { display: flex !important; align-items: center; gap: 14px; padding-left: 32px; flex-wrap: wrap; }
+  .findings-cb { width: 22px !important; height: 22px !important; min-width: 22px !important; }
+  .findings-cb-check { font-size: 13px !important; }
+  .findings-col-lift, .findings-col-rev { text-align: left !important; }
+  .findings-lbl { display: inline !important; }
+}
+@keyframes cardGlow {
+  0%   { border-color: var(--rule);   box-shadow: none; }
+  25%  { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.18); }
+  100% { border-color: var(--rule);   box-shadow: none; }
+}
+.card-glow { animation: cardGlow 900ms ease-out forwards; }
+</style>
+<script>(function(){var t=localStorage.getItem('cro-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ── THEME CONFIG ──
+const THEME = {
+  product: { name: 'CRO Audit System', tagline: 'Shopify Conversion Audit', version: 'v1' },
+  storage: { key: 'liftkit-audits-v1' },
+  limits: { maxActiveAudits: 5, maxPreChecked: 10, liftCapMin: 3.0, liftCapMax: 6.0 },
+  copy: {
+    status:       { pass: 'Pass', fail: 'Fail', tbd: 'TBD', na: 'N/A' },
+    statusReport: { pass: 'Passed', fail: 'Issue Found', tbd: 'Not Assessed', na: 'Not Applicable' },
+    demoNotice:   'Demo mode — nothing is saved. Refresh to start over.',
+    workspaceFull: 'Workspace full. Archive a completed audit to free a slot.',
+  },
+};
+
+const demoMode = /\/demo(\/|$)/.test(window.location.pathname);
+
+// ── DATA ──
+const SECTION_ORDER = ['General','Collection Page','Product Page','Cart','Checkout','Mobile/Performance'];
+const SECTION_SHORT = {'General':'General','Collection Page':'Collection','Product Page':'Product','Cart':'Cart','Checkout':'Checkout','Mobile/Performance':'Mobile'};
+
+const AUDIT_ITEMS = [
+  { id:"sticky-header",        name:"Sticky Header: Does the header remain visible on scroll-up?",                                    section:"General",            impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Theme Setting",  default_finding:"Header does not remain visible on scroll-up, making navigation difficult.",                                                  default_recommendation:"Enable \"Sticky Header\" in theme settings",                                                               lift_min:0.05, lift_max:0.12 },
+  { id:"search-visibility",    name:"Search Visibility: Is the search bar clearly visible on mobile?",                                section:"General",            impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Conversion Rate",   shopify_fix_complexity:"Theme Setting",  default_finding:"Search bar is not clearly visible on mobile, increasing friction for product discovery.",                             default_recommendation:"Adjust header layout to show a search bar (not just an icon) on mobile",                                    lift_min:0.08, lift_max:0.18 },
+  { id:"predictive-search",    name:"Predictive Search: Does the search suggest products and collections?",                           section:"General",            impact:"High",   effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Conversion Rate",   shopify_fix_complexity:"Shopify Admin",  default_finding:"Search does not suggest products or collections, slowing product discovery.",                                         default_recommendation:"Enable Shopify Predictive Search in theme settings",                                                        lift_min:0.10, lift_max:0.22 },
+  { id:"logo-link",            name:"Logo Link: Does clicking the logo return the user to the homepage?",                             section:"General",            impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Theme Setting",  default_finding:"Clicking the logo does not return the user to the homepage.",                                                        default_recommendation:"Verify link destination in header.liquid",                                                                 lift_min:0.02, lift_max:0.05 },
+  { id:"typography-hierarchy", name:"Typography Hierarchy: Is there a clear visual difference between heading levels?",               section:"General",            impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Theme Setting",  default_finding:"There is no clear visual difference between heading levels, reducing scannability.",                                  default_recommendation:"Adjust CSS font-weights and sizes for H1 vs H2 vs body",                                                   lift_min:0.03, lift_max:0.08 },
+  { id:"readability",          name:"Readability: Is the body text at least 16px?",                                                  section:"General",            impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Theme Setting",  default_finding:"Body text is smaller than 16px, reducing readability.",                                                              default_recommendation:"Update global typography settings in the theme editor",                                                     lift_min:0.02, lift_max:0.06 },
+  { id:"tap-targets",          name:"Tap Targets: Are all buttons and links at least 44x44px on mobile?",                            section:"General",            impact:"Medium", effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Conversion Rate",   shopify_fix_complexity:"Custom Code",    default_finding:"Buttons or links are smaller than 44x44px, causing tap errors on mobile.",                                           default_recommendation:"Add padding to mobile navigation and buttons via CSS",                                                      lift_min:0.06, lift_max:0.15 },
+  { id:"footer-policies",      name:"Footer Policies: Are legal and policy pages easy to find in the footer?",                       section:"General",            impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Trust",             shopify_fix_complexity:"Shopify Admin",  default_finding:"Legal and policy pages are difficult to find, reducing buyer trust.",                                                default_recommendation:"Add a Policies menu to the footer section",                                                                lift_min:0.03, lift_max:0.08 },
+  { id:"social-links",         name:"Social Links: Do social icons open in a new tab?",                                              section:"General",            impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Custom Code",    default_finding:"Social icons do not open in a new tab, navigating users away from the store.",                                       default_recommendation:"Add target=_blank to social media icon links",                                                             lift_min:0.01, lift_max:0.03 },
+  { id:"404-page",             name:"404 Page: Does the 404 error page provide clear navigation options?",                           section:"General",            impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Theme Setting",  default_finding:"The 404 page does not provide navigation options, causing dead ends.",                                               default_recommendation:"Edit 404.json template to include a Continue Shopping button",                                             lift_min:0.02, lift_max:0.06 },
+  { id:"clear-titles",         name:"Clear Titles: Does the collection H1 clearly describe what is being sold?",                     section:"Collection Page",    impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"SEO",               shopify_fix_complexity:"Shopify Admin",  default_finding:"The collection H1 does not clearly describe what is being sold.",                                                    default_recommendation:"Ensure collection titles are descriptive and SEO-friendly",                                                lift_min:0.03, lift_max:0.07 },
+  { id:"breadcrumbs",          name:"Breadcrumbs: Can users navigate back to the previous category?",                                section:"Collection Page",    impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Theme Setting",  default_finding:"Users cannot easily navigate back to the previous category.",                                                        default_recommendation:"Install a breadcrumb snippet or enable breadcrumbs in theme settings",                                     lift_min:0.04, lift_max:0.10 },
+  { id:"filter-logic",         name:"Filter Logic: Are filters (Size, Color, etc.) collapsible on mobile?",                          section:"Collection Page",    impact:"Medium", effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Conversion Rate",   shopify_fix_complexity:"App Install",    default_finding:"Filters are not collapsible on mobile, crowding the screen.",                                                        default_recommendation:"Use Shopify Search and Discovery app to optimize and collapse filters on mobile",                          lift_min:0.08, lift_max:0.18 },
+  { id:"active-filters",       name:"Active Filters: Is it immediately clear which filters are currently applied?",                  section:"Collection Page",    impact:"Low",    effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Conversion Rate",   shopify_fix_complexity:"Custom Code",    default_finding:"It is not clear which filters are currently applied.",                                                               default_recommendation:"Add Active Filter tags with an X to remove individual filters",                                            lift_min:0.04, lift_max:0.10 },
+  { id:"sorting-options",      name:"Sorting Options: Are sorting controls (Price, Newest, Best Selling) available?",                section:"Collection Page",    impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Conversion Rate",   shopify_fix_complexity:"Theme Setting",  default_finding:"Sorting controls are missing, making it hard for users to find the right product.",                                  default_recommendation:"Enable the sorting dropdown in collection template settings",                                               lift_min:0.05, lift_max:0.12 },
+  { id:"product-count",        name:"Product Count: Does the page show the number of items in the collection?",                      section:"Collection Page",    impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Custom Code",    default_finding:"Page does not show how many items are in the collection.",                                                           default_recommendation:"Add a Showing X products Liquid tag to the collection header",                                             lift_min:0.02, lift_max:0.05 },
+  { id:"secondary-hover-image",name:"Secondary Hover Image: Does hovering over a product card reveal a second image?",               section:"Collection Page",    impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Conversion Rate",   shopify_fix_complexity:"Theme Setting",  default_finding:"Hovering over product cards does not reveal a second image.",                                                        default_recommendation:"Enable Show second image on hover in product card settings",                                               lift_min:0.07, lift_max:0.16 },
+  { id:"price-visibility",     name:"Price Visibility: Are sale prices clearly distinguished from regular prices?",                  section:"Collection Page",    impact:"Low",    effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Conversion Rate",   shopify_fix_complexity:"Custom Code",    default_finding:"Sale prices are not clearly distinguished from regular prices.",                                                     default_recommendation:"Style compare-at prices with a strikethrough and contrasting color",                                       lift_min:0.05, lift_max:0.12 },
+  { id:"quick-add",            name:"Quick Add / View: Can users add to cart without leaving the collection page?",                  section:"Collection Page",    impact:"High",   effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Conversion Rate",   shopify_fix_complexity:"Theme Setting",  default_finding:"There is no way to add to cart without leaving the collection page.",                                                default_recommendation:"Enable Quick Add or Quick View buttons on product cards",                                                   lift_min:0.12, lift_max:0.28 },
+  { id:"grid-consistency",     name:"Grid Consistency: Do all product images share the same aspect ratio?",                          section:"Collection Page",    impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Theme Setting",  default_finding:"Product images have inconsistent aspect ratios, creating a broken grid.",                                            default_recommendation:"Enable image cropping and aspect ratio enforcement in theme settings",                                      lift_min:0.04, lift_max:0.10 },
+  { id:"high-res-images",      name:"High-Res Images: Can users zoom in or see high-quality product details?",                       section:"Product Page",       impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Conversion Rate",   shopify_fix_complexity:"Theme Setting",  default_finding:"Users cannot zoom in or view high-quality product details.",                                                         default_recommendation:"Upload images at 2048x2048px and enable zoom in theme settings",                                           lift_min:0.10, lift_max:0.22 },
+  { id:"above-fold-cta",       name:"Above-the-Fold CTA: Is the Add to Cart button visible without scrolling?",                     section:"Product Page",       impact:"High",   effort:"Medium", estimated_fix_time:"1-2 hrs",   impact_area:"Conversion Rate",   shopify_fix_complexity:"Custom Code",    default_finding:"The Add to Cart button is not visible without scrolling, reducing impulse purchases.",                               default_recommendation:"Adjust page layout or reduce white space to pull the CTA above the fold",                                  lift_min:0.30, lift_max:0.60 },
+  { id:"variant-clarity",      name:"Variant Clarity: Is it obvious which size or color is currently selected?",                    section:"Product Page",       impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Conversion Rate",   shopify_fix_complexity:"Theme Setting",  default_finding:"It is not obvious which size or color is currently selected.",                                                       default_recommendation:"Use swatches or button-style selectors instead of dropdown menus",                                         lift_min:0.08, lift_max:0.18 },
+  { id:"stock-status",         name:"Stock Status: Are out-of-stock variants clearly grayed out or disabled?",                      section:"Product Page",       impact:"Low",    effort:"Medium", estimated_fix_time:"1-2 hrs",   impact_area:"Conversion Rate",   shopify_fix_complexity:"Custom Code",    default_finding:"Out-of-stock variants are not clearly grayed out, causing confusion.",                                               default_recommendation:"Update theme code to disable unavailable variant combinations",                                             lift_min:0.05, lift_max:0.12 },
+  { id:"price-placement",      name:"Price Placement: Is the price positioned immediately above the Add to Cart button?",            section:"Product Page",       impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Conversion Rate",   shopify_fix_complexity:"Theme Setting",  default_finding:"The price is not positioned near the CTA, breaking the decision-making flow.",                                       default_recommendation:"Rearrange product blocks so price appears directly above Add to Cart",                                     lift_min:0.06, lift_max:0.14 },
+  { id:"value-props",          name:"Value Props: Are shipping and returns info displayed near the CTA?",                           section:"Product Page",       impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Trust",             shopify_fix_complexity:"Theme Setting",  default_finding:"Shipping and returns info is not displayed near the CTA, reducing buyer confidence.",                               default_recommendation:"Add a Shipping and Returns accordion or icon block near the CTA",                                          lift_min:0.10, lift_max:0.22 },
+  { id:"description-tabs",     name:"Description Tabs: Is long product information organized into collapsible accordions?",          section:"Product Page",       impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Theme Setting",  default_finding:"Long product info is not organized into accordions, creating an overwhelming wall of text.",                         default_recommendation:"Use theme blocks to create collapsible info sections for Details, Shipping, and Care",                     lift_min:0.05, lift_max:0.12 },
+  { id:"social-proof",         name:"Social Proof: Are star ratings and review counts visible near the product title?",              section:"Product Page",       impact:"High",   effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Trust",             shopify_fix_complexity:"App Install",    default_finding:"Star ratings are not visible near the product title, reducing social proof.",                                         default_recommendation:"Install a review app and add the star rating snippet near the product title",                              lift_min:0.18, lift_max:0.40 },
+  { id:"user-reviews",         name:"User Reviews: Is there a photo review section below the product details?",                     section:"Product Page",       impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Trust",             shopify_fix_complexity:"App Install",    default_finding:"There is no photo review section, reducing buyer confidence.",                                                       default_recommendation:"Enable photo uploads in the review app settings",                                                          lift_min:0.12, lift_max:0.26 },
+  { id:"inventory-urgency",    name:"Inventory Urgency: Is low-stock messaging (Only X left) surfaced to the user?",                section:"Product Page",       impact:"Medium", effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Conversion Rate",   shopify_fix_complexity:"Custom Code",    default_finding:"Low-stock messaging is not surfaced, missing an opportunity to create purchase urgency.",                            default_recommendation:"Add a low-stock Liquid snippet near the CTA when inventory is low",                                        lift_min:0.10, lift_max:0.22 },
+  { id:"cart-trigger",         name:"Cart Trigger: Does the cart open automatically as a drawer when an item is added?",            section:"Cart",               impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"Theme Setting",  default_finding:"Cart does not open automatically upon adding an item, reducing conversion momentum.",                                default_recommendation:"Enable Drawer or Slide-out Cart in theme cart settings",                                                   lift_min:0.08, lift_max:0.18 },
+  { id:"order-summary-cart",   name:"Order Summary: Are product names, variants, and quantities clearly shown in the cart?",        section:"Cart",               impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"Custom Code",    default_finding:"Product names and variants are not clearly displayed in the cart, causing confusion.",                               default_recommendation:"Ensure line item properties (name, variant, qty) are visible in the cart template",                        lift_min:0.04, lift_max:0.10 },
+  { id:"quantity-adjustment",  name:"Quantity Adjustment: Can users change item quantities directly in the cart?",                  section:"Cart",               impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"Theme Setting",  default_finding:"Users cannot change quantities directly in the cart.",                                                               default_recommendation:"Add plus and minus quantity buttons to cart line items",                                                    lift_min:0.03, lift_max:0.08 },
+  { id:"empty-state-cart",     name:"Empty State: Does an empty cart suggest products to browse?",                                  section:"Cart",               impact:"Low",    effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Conversion Rate",   shopify_fix_complexity:"Custom Code",    default_finding:"An empty cart does not suggest products, creating a dead end.",                                                      default_recommendation:"Add a Recommended Products or Continue Shopping section to the cart-empty template",                       lift_min:0.04, lift_max:0.10 },
+  { id:"discount-field",       name:"Discount Field: Is it obvious where to enter a discount code?",                               section:"Cart",               impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"Theme Setting",  default_finding:"It is not clear where to enter a discount code, causing customer frustration.",                                      default_recommendation:"Add a note that discount codes can be applied at checkout",                                                lift_min:0.05, lift_max:0.12 },
+  { id:"trust-badges",         name:"Trust Badges: Are payment provider icons and secure checkout badges visible in the cart?",    section:"Cart",               impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Trust",             shopify_fix_complexity:"Theme Setting",  default_finding:"Payment icons and secure badges are not visible in the cart, reducing trust at a critical moment.",                  default_recommendation:"Add payment provider icons (Visa, Mastercard, Shop Pay, etc.) to the cart footer",                        lift_min:0.06, lift_max:0.14 },
+  { id:"shipping-calculator",  name:"Shipping Calculator: Does the cart estimate shipping costs before checkout?",                 section:"Cart",               impact:"Medium", effort:"Medium", estimated_fix_time:"1-2 hrs",   impact_area:"Cart Abandonment",  shopify_fix_complexity:"App Install",    default_finding:"The cart does not estimate shipping costs, leading to abandoned checkouts from unexpected fees.",                    default_recommendation:"Add a shipping rate calculator block to the cart page or drawer",                                          lift_min:0.12, lift_max:0.26 },
+  { id:"free-shipping-bar",    name:"Free Shipping Bar: Is there a progress bar showing how close the user is to free shipping?",  section:"Cart",               impact:"High",   effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"AOV",               shopify_fix_complexity:"App Install",    default_finding:"There is no free shipping progress bar, missing a high-impact AOV lever.",                                           default_recommendation:"Install a free shipping progress bar app or add custom Liquid logic",                                       lift_min:0.20, lift_max:0.45 },
+  { id:"upsells",              name:"Upsells / Cross-sells: Are there relevant add-on product suggestions in the cart?",           section:"Cart",               impact:"Medium", effort:"Medium", estimated_fix_time:"1-2 hrs",   impact_area:"AOV",               shopify_fix_complexity:"App Install",    default_finding:"There are no product suggestions in the cart, missing upsell revenue.",                                              default_recommendation:"Install a cart upsell app (e.g., Candy Rack, ReConvert) or enable product recommendations",               lift_min:0.15, lift_max:0.30 },
+  { id:"sticky-cta-cart",      name:"Sticky CTA (Mobile): Does the checkout button remain visible as users scroll the cart?",     section:"Cart",               impact:"Medium", effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Cart Abandonment",  shopify_fix_complexity:"Custom Code",    default_finding:"The checkout button is not sticky on mobile, requiring users to scroll back to proceed.",                            default_recommendation:"Add a sticky checkout button to the cart drawer or page on mobile",                                        lift_min:0.08, lift_max:0.18 },
+  { id:"guest-checkout",       name:"Guest Checkout: Can users check out without creating an account?",                           section:"Checkout",           impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"Shopify Admin",  default_finding:"Users are required to create an account to check out, significantly increasing drop-off.",                           default_recommendation:"Set Customer Accounts to Optional in Shopify Admin under Settings then Checkout",                          lift_min:0.20, lift_max:0.40 },
+  { id:"breadcrumb-progress",  name:"Breadcrumb Progress: Does the user know which checkout step they are on?",                   section:"Checkout",           impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"Shopify Admin",  default_finding:"Users cannot see their current stage in checkout, increasing anxiety and drop-off.",                                 default_recommendation:"Enable the standard Shopify checkout progress indicator",                                                  lift_min:0.04, lift_max:0.10 },
+  { id:"express-checkout",     name:"Express Checkout: Are Shop Pay and Apple Pay buttons prominent above the fold?",             section:"Checkout",           impact:"High",   effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"Shopify Admin",  default_finding:"Shop Pay and Apple Pay buttons are not prominent, missing a significant one-tap checkout opportunity.",              default_recommendation:"Enable Accelerated Checkouts under Settings then Payments",                                                lift_min:0.25, lift_max:0.55 },
+  { id:"auto-fill-support",    name:"Auto-fill Support: Are checkout form fields optimized for browser auto-fill?",               section:"Checkout",           impact:"Medium", effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Cart Abandonment",  shopify_fix_complexity:"Custom Code",    default_finding:"Checkout is not optimized for auto-fill, slowing down the purchase process.",                                        default_recommendation:"Standardize form field names and labels to ensure browser auto-fill functions correctly",                  lift_min:0.08, lift_max:0.18 },
+  { id:"order-summary-toggle", name:"Order Summary Toggle (Mobile): Is the total price easy to view on mobile?",                 section:"Checkout",           impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"Shopify Admin",  default_finding:"The order total is difficult to view on mobile without expanding the order summary.",                                default_recommendation:"Ensure the order summary is expanded or clearly tappable on mobile",                                       lift_min:0.03, lift_max:0.08 },
+  { id:"error-handling",       name:"Error Handling: Are validation error messages clearly highlighted and actionable?",          section:"Checkout",           impact:"Medium", effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Cart Abandonment",  shopify_fix_complexity:"Custom Code",    default_finding:"Error messages are not clearly highlighted, causing confusion during checkout.",                                      default_recommendation:"Adjust theme styling to ensure error states are high-contrast and descriptive",                            lift_min:0.06, lift_max:0.14 },
+  { id:"checkout-branding",    name:"Checkout Branding: Does the checkout page reflect the brand (logo, colors, banner)?",       section:"Checkout",           impact:"Low",    effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Trust",             shopify_fix_complexity:"Shopify Admin",  default_finding:"The checkout page lacks brand identity, reducing trust and brand cohesion.",                                         default_recommendation:"Customize the checkout page via Settings then Checkout then Customize checkout",                           lift_min:0.04, lift_max:0.10 },
+  { id:"abandoned-checkout",   name:"Abandoned Checkout Recovery: Is automated abandoned checkout email or SMS enabled?",        section:"Checkout",           impact:"High",   effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"Shopify Admin",  default_finding:"Abandoned checkout recovery is not enabled, leaving recoverable revenue on the table.",                              default_recommendation:"Enable abandoned checkout emails under Settings then Notifications",                                        lift_min:0.30, lift_max:0.60 },
+  { id:"post-purchase-page",   name:"Post-Purchase Page: Is the Thank You page clear about what happens next?",                  section:"Checkout",           impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Trust",             shopify_fix_complexity:"Shopify Admin",  default_finding:"The Thank You page does not explain next steps, leaving customers uncertain.",                                        default_recommendation:"Customize the Order Confirmation page with a thank you note, delivery timeline, and contact info",         lift_min:0.04, lift_max:0.10 },
+  { id:"order-confirmation-email", name:"Order Confirmation Email: Does the automated email arrive promptly with all key info?", section:"Checkout",           impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Trust",             shopify_fix_complexity:"Shopify Admin",  default_finding:"The order confirmation email is missing key info including tracking, returns, and support contact.",                 default_recommendation:"Customize the Order Confirmation email to include tracking link, return policy, and contact info",         lift_min:0.05, lift_max:0.12 },
+  { id:"page-speed",           name:"Page Speed: Does the site load in under 3 seconds on mobile?",                              section:"Mobile/Performance", impact:"High",   effort:"Medium", estimated_fix_time:"Half Day",  impact_area:"Bounce Rate",       shopify_fix_complexity:"App Install",    default_finding:"The site takes longer than 3 seconds to load on mobile, significantly increasing bounce rate.",                      default_recommendation:"Compress all images, defer non-critical scripts, and uninstall unused apps",                              lift_min:0.20, lift_max:0.50 },
+  { id:"no-content-shifting",  name:"No Content Shifting: Does the layout remain stable while the page loads?",                  section:"Mobile/Performance", impact:"High",   effort:"Medium", estimated_fix_time:"1-2 hrs",   impact_area:"Bounce Rate",       shopify_fix_complexity:"Custom Code",    default_finding:"Layout shifts significantly while loading, creating a jarring experience.",                                          default_recommendation:"Set explicit width and height attributes on all images and embeds",                                        lift_min:0.08, lift_max:0.18 },
+  { id:"lcp",                  name:"LCP: Does the hero image or main headline load within 2.5 seconds?",                        section:"Mobile/Performance", impact:"High",   effort:"Medium", estimated_fix_time:"1-2 hrs",   impact_area:"Bounce Rate",       shopify_fix_complexity:"Custom Code",    default_finding:"The Largest Contentful Paint exceeds 2.5 seconds, failing Core Web Vitals.",                                         default_recommendation:"Preload the hero image and ensure it is properly sized and compressed",                                    lift_min:0.10, lift_max:0.22 },
+  { id:"image-format",         name:"Image Format: Are hero and product images served in WebP format?",                          section:"Mobile/Performance", impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"App Install",    default_finding:"Images are not served in WebP format, resulting in unnecessarily large file sizes.",                                 default_recommendation:"Convert images to WebP format or use a Shopify app to auto-serve WebP",                                   lift_min:0.05, lift_max:0.12 },
+  { id:"app-bloat",            name:"App Bloat: Are there unused or redundant Shopify apps still installed?",                    section:"Mobile/Performance", impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Bounce Rate",       shopify_fix_complexity:"Shopify Admin",  default_finding:"Unused apps are still installed, injecting unnecessary scripts and slowing the store.",                              default_recommendation:"Audit installed apps and uninstall any that are unused or duplicated",                                     lift_min:0.06, lift_max:0.14 },
+  { id:"third-party-scripts",  name:"Third-Party Scripts: Are chat widgets, pixels, and tracking scripts deferred?",             section:"Mobile/Performance", impact:"Medium", effort:"Medium", estimated_fix_time:"1-2 hrs",   impact_area:"Bounce Rate",       shopify_fix_complexity:"Custom Code",    default_finding:"Third-party scripts are not deferred, blocking page render and slowing load time.",                                  default_recommendation:"Audit third-party scripts and defer or async-load non-critical ones",                                     lift_min:0.05, lift_max:0.12 },
+  { id:"mobile-navigation",    name:"Mobile Navigation: Does the hamburger menu and any mega-menu collapse cleanly on mobile?",  section:"Mobile/Performance", impact:"Medium", effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Bounce Rate",       shopify_fix_complexity:"Custom Code",    default_finding:"The mobile menu does not collapse cleanly, making navigation difficult on small screens.",                           default_recommendation:"Test all navigation states on mobile and fix any overflow or collapse issues",                            lift_min:0.06, lift_max:0.14 },
+  { id:"input-font-size",      name:"Input Font Size: Are search and form inputs at least 16px to prevent iOS auto-zoom?",       section:"Mobile/Performance", impact:"Medium", effort:"Low",    estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"Custom Code",    default_finding:"Input fields are smaller than 16px, triggering iOS auto-zoom and disrupting the mobile experience.",                 default_recommendation:"Set all input font sizes to 16px minimum via CSS",                                                        lift_min:0.05, lift_max:0.12 },
+  { id:"thumb-zone",           name:"Thumb-Zone: Are primary CTAs (Add to Cart, Checkout) reachable within the thumb zone?",    section:"Mobile/Performance", impact:"Medium", effort:"Low",    estimated_fix_time:"1-2 hrs",   impact_area:"Conversion Rate",   shopify_fix_complexity:"Custom Code",    default_finding:"Primary CTAs are outside the natural thumb reach zone on mobile, reducing tap rates.",                               default_recommendation:"Place primary CTAs in the lower 50% of the screen on mobile within natural thumb reach",                  lift_min:0.07, lift_max:0.16 },
+  { id:"exit-intent",          name:"Exit Intent: Is there a final engagement offer or incentive before the user leaves?",       section:"Mobile/Performance", impact:"Medium", effort:"Medium", estimated_fix_time:"< 30 min",  impact_area:"Cart Abandonment",  shopify_fix_complexity:"App Install",    default_finding:"There is no exit intent mechanism, missing a last opportunity to capture the user before they leave.",               default_recommendation:"Install an exit-intent popup app (e.g., Privy, OptiMonk) with a discount or email capture offer",        lift_min:0.10, lift_max:0.22 },
+];
+
+const SECTIONS = SECTION_ORDER.map(s => ({
+  id: s.toLowerCase().replace(/[^a-z]/g, '-').replace(/-+/g, '-'),
+  label: s,
+  short: SECTION_SHORT[s],
+  items: AUDIT_ITEMS.filter(i => i.section === s),
+}));
+
+// ── STORAGE ──
+const defaultStore = () => ({ audits: {}, last_auditor_name: null });
+function initStore() {
+  if (demoMode) return defaultStore();
+  try {
+    const raw = localStorage.getItem(THEME.storage.key);
+    if (raw) return { ...defaultStore(), ...JSON.parse(raw) };
+  } catch {}
+  return defaultStore();
+}
+
+// ── HELPERS ──
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function today() { return new Date().toISOString().slice(0,10); }
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+}
+function fmt(n) { return Math.round(n).toLocaleString(); }
+function fmtPct(n) { return n.toFixed(2) + '%'; }
+
+function newAudit(lastAuditorName) {
+  const id = genId();
+  const now = new Date().toISOString();
+  return {
+    id,
+    client_info: {
+      client_name: 'New Client', auditor_name: lastAuditorName || '',
+      store_url: '', shopify_theme: '', audit_date: today(),
+      monthly_revenue: 0, aov: 0, cvr: 0,
+    },
+    items: {},
+    pricing: { audit_fee: 0, impl_fee: 0, hourly_rate: 0, est_hours: 0 },
+    calculator_selections: null,
+    created_at: now, updated_at: now,
+  };
+}
+
+function getItemState(audit, itemId) {
+  const item = AUDIT_ITEMS.find(i => i.id === itemId);
+  const saved = audit?.items?.[itemId] || {};
+  return {
+    status:         saved.status         ?? 'tbd',
+    finding:        saved.finding        !== undefined ? saved.finding        : (item?.default_finding || ''),
+    recommendation: saved.recommendation !== undefined ? saved.recommendation : (item?.default_recommendation || ''),
+    notes:          saved.notes          ?? '',
+    screenshot_url: saved.screenshot_url ?? '',
+  };
+}
+
+function auditProgress(audit) {
+  const c = { pass:0, fail:0, tbd:0, na:0 };
+  for (const item of AUDIT_ITEMS) c[getItemState(audit, item.id).status]++;
+  return c;
+}
+
+function downloadJSON(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function preCheckItems(audit) {
+  const IMPACT_RANK = { High: 0, Medium: 1, Low: 2 };
+  const EFFORT_RANK = { Low: 0, Medium: 1, High: 2 };
+  const failItems = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail');
+  const sorted = [...failItems].sort((a, b) => {
+    if (IMPACT_RANK[a.impact] !== IMPACT_RANK[b.impact]) return IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact];
+    if (EFFORT_RANK[a.effort] !== EFFORT_RANK[b.effort]) return EFFORT_RANK[a.effort] - EFFORT_RANK[b.effort];
+    return AUDIT_ITEMS.indexOf(a) - AUDIT_ITEMS.indexOf(b);
+  });
+  return new Set(sorted.slice(0, THEME.limits.maxPreChecked).map(i => i.id));
+}
+
+function calcROI(audit, checkedIds) {
+  const ci = audit.client_info || {};
+  const revenue = parseFloat(ci.monthly_revenue) || 0;
+  const aov     = parseFloat(ci.aov) || 85;
+  const cvrRaw  = parseFloat(ci.cvr) || 1.8;
+  const cvr     = cvrRaw / 100;
+  const sessions = revenue > 0 ? revenue / (aov * cvr) : 0;
+
+  const ids = checkedIds instanceof Set ? Array.from(checkedIds) : (checkedIds || []);
+  let totalMin = 0, totalMax = 0;
+  for (const id of ids) {
+    const item = AUDIT_ITEMS.find(i => i.id === id);
+    if (!item) continue;
+    totalMin += item.lift_min;
+    totalMax += item.lift_max;
+  }
+  const totalMid = (totalMin + totalMax) / 2;
+  const { liftCapMin: CAP_MIN, liftCapMax: CAP_MAX } = THEME.limits;
+  const cappedMin = Math.min(totalMin, CAP_MIN);
+  const cappedMax = Math.min(totalMax, CAP_MAX);
+  const cappedMid = Math.min(totalMid, (CAP_MIN + CAP_MAX) / 2);
+
+  const newCVR          = cvr + cappedMid / 100;
+  const newRevenue      = sessions * aov * newCVR;
+  const monthlyRecovery = newRevenue - revenue;
+  const annualRecovery  = monthlyRecovery * 12;
+
+  const pr = audit.pricing || {};
+  const auditFee       = parseFloat(pr.audit_fee)  || 0;
+  const implFee        = parseFloat(pr.impl_fee)   || 0;
+  const hourlyRate     = parseFloat(pr.hourly_rate) || 0;
+  const estHours       = parseFloat(pr.est_hours)  || 0;
+  const totalInvestment = auditFee + implFee;
+  const roiMultiple    = totalInvestment > 0 ? annualRecovery / totalInvestment : 0;
+  const paybackMonths  = totalInvestment > 0 && monthlyRecovery > 0 ? totalInvestment / monthlyRecovery : 0;
+
+  let highCount = 0;
+  for (const id of ids) {
+    if (AUDIT_ITEMS.find(i => i.id === id)?.impact === 'High') highCount++;
+  }
+  const highRatio      = ids.length ? highCount / ids.length : 0;
+  const suggestedPct   = highRatio >= 0.5 ? 20 : highRatio >= 0.25 ? 15 : 10;
+  const suggestedFee   = annualRecovery > 0 ? Math.round(annualRecovery * suggestedPct / 100) : 0;
+  const sanityCheck    = hourlyRate > 0 && estHours > 0
+    ? (implFee >= hourlyRate * estHours * 0.9 ? 'pass' : implFee >= hourlyRate * estHours * 0.6 ? 'warn' : 'fail')
+    : 'neutral';
+
+  return {
+    revenue, aov, cvrRaw, cvr, sessions,
+    cappedMin, cappedMax, cappedMid,
+    newCVR, newRevenue, monthlyRecovery, annualRecovery,
+    auditFee, implFee, hourlyRate, estHours, totalInvestment,
+    roiMultiple, paybackMonths,
+    highCount, suggestedPct, suggestedFee, sanityCheck,
+    hasData: revenue > 0 && sessions > 0,
+  };
+}
+
+// ─── COMPONENTS A: inputs, SiteHeader, AuditList, ClientInfoOverlay ───
+
+// Defined outside screen components to prevent React remounting on every render (focus-loss fix)
+function AuditTextarea({ value, placeholder, onChange, rows = 3 }) {
+  return (
+    <textarea value={value || ''} onChange={e => onChange(e.target.value)}
+      placeholder={placeholder} rows={rows}
+      style={{ width:'100%', background:'var(--paper)', border:'1px solid var(--rule)', padding:'10px 12px',
+        fontFamily:"'DM Sans', sans-serif", fontSize:13, color:'var(--ink-2)', lineHeight:1.6,
+        resize:'vertical', outline:'none', transition:'border-color 0.15s', borderRadius:0 }}
+      onFocus={e => e.target.style.borderColor='var(--accent)'}
+      onBlur={e => e.target.style.borderColor='var(--rule)'} />
+  );
+}
+
+function AuditUrlInput({ value, onChange }) {
+  return (
+    <input type="url" value={value || ''} onChange={e => onChange(e.target.value)}
+      placeholder="https://…"
+      style={{ width:'100%', background:'var(--paper)', border:'1px solid var(--rule)', padding:'9px 12px',
+        fontFamily:"'DM Mono', monospace", fontSize:12, color:'var(--ink-2)', outline:'none', borderRadius:0 }}
+      onFocus={e => e.target.style.borderColor='var(--accent)'}
+      onBlur={e => e.target.style.borderColor='var(--rule)'} />
+  );
+}
+
+function CIInput({ type = 'text', value, onChange, placeholder, step, min }) {
+  return (
+    <input type={type} value={value} onChange={e => onChange(e.target.value)}
+      placeholder={placeholder} step={step} min={min}
+      style={{ width:'100%', border:'1px solid var(--rule)', background:'var(--paper)', padding:'9px 13px',
+        fontFamily:"'DM Mono', monospace", fontSize:13, color:'var(--ink)', outline:'none',
+        transition:'border-color 0.15s', borderRadius:0 }}
+      onFocus={e => e.target.style.borderColor='var(--accent)'}
+      onBlur={e => e.target.style.borderColor='var(--rule)'} />
+  );
+}
+
+function ThemeToggle({ theme, onToggle }) {
+  return (
+    <button className="site-header__theme-toggle" onClick={onToggle}
+      title={theme === 'dark' ? 'Switch to dev mode' : 'Switch to dark mode'}>
+      {theme === 'dark'
+        ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        : <svg width="17" height="14" viewBox="0 0 17 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="5,1 1,7 5,13"/>
+            <line x1="10.5" y1="1" x2="8" y2="13"/>
+            <polyline points="12,1 16,7 12,13"/>
+          </svg>
+      }
+    </button>
+  );
+}
+
+function SiteHeader({ onBack, auditName, theme, onToggleTheme }) {
+  return (
+    <header className="site-header">
+      {onBack
+        ? <button className="site-header__back" onClick={onBack}>← Audits</button>
+        : <span className="site-header__name">{THEME.product.name}</span>
+      }
+      {onBack && <span className="site-header__name" style={{fontSize:15,color:'var(--ink-3)'}}>{auditName || 'Audit'}</span>}
+      {!onBack && <span className="site-header__tag desktop-only">{THEME.product.tagline}</span>}
+      <span style={{marginLeft:'auto',fontFamily:"'DM Mono',monospace",fontSize:10,letterSpacing:'0.08em',
+        textTransform:'uppercase',border:'1px solid var(--rule)',padding:'4px 10px',color:'var(--ink-5)'}}
+        className="desktop-only">{THEME.product.version}</span>
+      <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+    </header>
+  );
+}
+
+function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onImport, onSaveClientInfo }) {
+  const [listClientInfoId, setListClientInfoId] = useState(null);
+  const importRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(null);
+  const audits = Object.values(store.audits).sort((a,b) => b.updated_at.localeCompare(a.updated_at));
+  const atCap = audits.length >= THEME.limits.maxActiveAudits;
+
+  const progressPct = (audit) => {
+    const items = audit.items || {};
+    const done = Object.values(items).filter(v => v.status && v.status !== 'tbd').length;
+    return { done, total: 60, pct: Math.round((done / 60) * 100) };
+  };
+
+  const isSetupIncomplete = (audit) => {
+    const ci = audit.client_info || {};
+    return !ci.client_name || ci.client_name === 'New Client' || !ci.monthly_revenue || !ci.aov || !ci.cvr;
+  };
+
+  const formatDate = (iso) => {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  };
+
+  function handleImportFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.client_info) throw new Error();
+        onImport(data);
+      } catch { alert('Could not import. Make sure this is a valid CRO Audit JSON export.'); }
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  return (
+    <React.Fragment>
+    <main style={{ maxWidth:840, margin:'0 auto', padding:'48px 24px 100px' }}>
+      {/* Header row */}
+      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:40, gap:16, flexWrap:'wrap' }}>
+        <div>
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
+            color:'var(--ink-5)', marginBottom:10 }}>
+            {demoMode ? 'Demo Mode' : `Active audits: ${audits.length} of ${THEME.limits.maxActiveAudits}`}
+          </div>
+          <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:32, fontWeight:400, color:'var(--ink)',
+            letterSpacing:'-0.5px', lineHeight:1.05 }}>Your audits</h1>
+        </div>
+        <button onClick={onNew} disabled={!demoMode && atCap}
+          style={{ background:(!demoMode && atCap) ? 'var(--paper-3)' : 'var(--accent)',
+            color:(!demoMode && atCap) ? 'var(--ink-5)' : '#fff', border:'none', padding:'12px 24px',
+            fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
+            textTransform:'uppercase', cursor:(!demoMode && atCap) ? 'not-allowed' : 'pointer',
+            display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+          + Start New Audit
+        </button>
+      </div>
+
+      {/* Workspace cap bar */}
+      {!demoMode && audits.length > 0 && (
+        <div style={{ marginBottom:24, display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{ flex:1, height:2, background:'var(--rule)', position:'relative' }}>
+            <div style={{ position:'absolute', left:0, top:0, height:'100%', background:'var(--accent)',
+              width:`${(audits.length / THEME.limits.maxActiveAudits) * 100}%`, transition:'width 0.3s' }} />
+          </div>
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em', textTransform:'uppercase',
+            color: audits.length >= THEME.limits.maxActiveAudits ? 'var(--impact-high)' : 'var(--ink-4)', whiteSpace:'nowrap' }}>
+            {audits.length}/{THEME.limits.maxActiveAudits} workspaces
+          </span>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {audits.length === 0 && (
+        <div style={{ border:'1px solid var(--rule)', padding:'64px 32px', textAlign:'center', background:'var(--paper-2)' }}>
+          <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:'var(--ink-3)', marginBottom:12, letterSpacing:'-0.3px' }}>
+            No audits yet
+          </div>
+          <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:'var(--ink-4)', lineHeight:1.6,
+            margin:'0 auto 28px', maxWidth:380 }}>
+            Start your first audit to work through the 60-point checklist and generate a client ROI report.
+          </p>
+          <button onClick={onNew} style={{ background:'var(--accent)', color:'#fff', border:'none', padding:'12px 28px',
+            fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
+            textTransform:'uppercase', cursor:'pointer' }}>
+            Start your first audit →
+          </button>
+        </div>
+      )}
+
+      {/* Audit list */}
+      {audits.length > 0 && (
+        <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+          {audits.map((audit, idx) => {
+            const { done, total, pct } = progressPct(audit);
+            const isMenuOpen = menuOpen === audit.id;
+            return (
+              <div key={audit.id}
+                style={{ background:'var(--paper-2)', border:'1px solid var(--rule)', position:'relative', transition:'border-color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor='var(--rule-2)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor='var(--rule)'}>
+                {/* Progress bar */}
+                <div style={{ height:2, background:'var(--rule)', position:'relative' }}>
+                  <div style={{ position:'absolute', left:0, top:0, height:'100%',
+                    background: pct === 100 ? 'var(--state-pass)' : 'var(--accent)',
+                    width:`${pct}%`, transition:'width 0.3s' }} />
+                </div>
+                <div style={{ padding:'14px 20px', display:'flex', flexDirection:'column', gap:10 }}>
+                  {/* Row 1: client name + setup badge + URL — ··· menu pinned right */}
+                  <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                        <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:17, color:'var(--ink)',
+                          letterSpacing:'-0.3px', lineHeight:1.2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                          {audit.client_info?.client_name || 'New Client'}
+                        </div>
+                        {isSetupIncomplete(audit) && (
+                          <button onClick={e => { e.stopPropagation(); setListClientInfoId(audit.id); }}
+                            style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+                              textTransform:'uppercase', color:'var(--amber)', background:'rgba(200,131,74,0.1)',
+                              border:'1px solid rgba(200,131,74,0.25)', padding:'2px 7px', whiteSpace:'nowrap',
+                              flexShrink:0, cursor:'pointer' }}>
+                            Setup incomplete
+                          </button>
+                        )}
+                      </div>
+                      {audit.client_info?.store_url && (
+                        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', marginTop:3,
+                          overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                          {audit.client_info.store_url}
+                        </div>
+                      )}
+                    </div>
+                    {!demoMode && (
+                      <div style={{ position:'relative', flexShrink:0 }}>
+                        <button onClick={e => { e.stopPropagation(); setMenuOpen(isMenuOpen ? null : audit.id); }}
+                          style={{ background:'var(--paper-3)', border:'1px solid var(--rule)', color:'var(--ink-3)',
+                            padding:'6px 10px', cursor:'pointer', fontFamily:"'DM Mono',monospace", fontSize:12, lineHeight:1 }}>
+                          ···
+                        </button>
+                        {isMenuOpen && (
+                          <div style={{ position:'absolute', right:0, top:'100%', marginTop:2, background:'var(--paper-3)',
+                            border:'1px solid var(--rule-2)', zIndex:200, minWidth:160, boxShadow:'0 8px 24px rgba(0,0,0,0.4)' }}
+                            onMouseLeave={() => setMenuOpen(null)}>
+                            {[
+                              { label:'Duplicate', action:() => { onDuplicate(audit.id); setMenuOpen(null); } },
+                              { label:'Archive & Export', action:() => { onArchive(audit.id); setMenuOpen(null); } },
+                              { label:'Delete', action:() => { if (confirm(`Delete "${audit.client_info?.client_name || 'this audit'}"?`)) { onDelete(audit.id); setMenuOpen(null); } }, danger:true },
+                            ].map(item => (
+                              <button key={item.label} onClick={item.action}
+                                style={{ display:'block', width:'100%', textAlign:'left', padding:'10px 14px',
+                                  background:'none', border:'none', borderBottom:'1px solid var(--rule)',
+                                  fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.04em',
+                                  textTransform:'uppercase', color: item.danger ? 'var(--impact-high)' : 'var(--ink-3)',
+                                  cursor:'pointer' }}
+                                onMouseEnter={e => e.currentTarget.style.background='var(--paper-2)'}
+                                onMouseLeave={e => e.currentTarget.style.background='none'}>
+                                {item.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {/* Row 2: index + progress · status + [date desktop] + Open button */}
+                  <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-5)',
+                      letterSpacing:'0.06em', flexShrink:0 }}>
+                      {String(idx + 1).padStart(2,'0')}
+                    </span>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.04em' }}>
+                      <span style={{ color: pct === 100 ? 'var(--state-pass)' : 'var(--ink-3)' }}>{done}/{total}</span>
+                      <span style={{ color:'var(--ink-5)' }}>{' · '}</span>
+                      <span style={{ color:'var(--ink-5)' }}>{pct === 0 ? 'not started' : pct === 100 ? 'complete' : `${pct}% done`}</span>
+                    </span>
+                    <div style={{ flex:1 }} />
+                    <div className="desktop-only" style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)',
+                      letterSpacing:'0.04em', textAlign:'right' }}>
+                      <div style={{ textTransform:'uppercase' }}>Updated</div>
+                      <div style={{ color:'var(--ink-4)', marginTop:1 }}>{formatDate(audit.updated_at)}</div>
+                    </div>
+                    <button onClick={() => onOpen(audit.id)}
+                      style={{ background:'var(--accent)', color:'#fff', border:'none', padding:'8px 18px',
+                        fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:'0.05em',
+                        textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
+                      Open
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Cap message */}
+      {!demoMode && atCap && (
+        <div style={{ marginTop:20, padding:'14px 18px', background:'var(--paper-3)', border:'1px solid var(--rule)',
+          fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-4)', letterSpacing:'0.04em', lineHeight:1.6 }}>
+          {THEME.copy.workspaceFull}
+        </div>
+      )}
+
+      {/* Import */}
+      {!demoMode && (
+        <>
+          <input ref={importRef} type="file" accept=".json" style={{display:'none'}} onChange={handleImportFile} />
+          <div style={{ marginTop:24, display:'flex', gap:10 }}>
+            <button onClick={() => importRef.current?.click()}
+              style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-5)', padding:'8px 16px',
+                fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.06em', textTransform:'uppercase',
+                cursor:'pointer' }}>
+              Import JSON
+            </button>
+          </div>
+        </>
+      )}
+    </main>
+    {listClientInfoId && store.audits[listClientInfoId] && (
+      <ClientInfoOverlay
+        audit={store.audits[listClientInfoId]}
+        lastAuditorName={store.last_auditor_name}
+        onSave={(data) => { onSaveClientInfo(listClientInfoId, data); setListClientInfoId(null); }}
+        onClose={() => setListClientInfoId(null)} />
+    )}
+    </React.Fragment>
+  );
+}
+
+function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose }) {
+  const ci = audit?.client_info || {};
+  const pr = audit?.pricing || {};
+  const [form, setForm] = useState({
+    client_name:     ci.client_name     || '',
+    auditor_name:    ci.auditor_name    || lastAuditorName || '',
+    store_url:       ci.store_url       || '',
+    shopify_theme:   ci.shopify_theme   || '',
+    audit_date:      ci.audit_date      || today(),
+    monthly_revenue: ci.monthly_revenue || '',
+    aov:             ci.aov             || '',
+    cvr:             ci.cvr             || '',
+    audit_fee:       pr.audit_fee       || '',
+  });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const canSave = form.client_name.trim() && form.auditor_name.trim();
+
+  function handleSave(e) {
+    e.preventDefault();
+    onSave({
+      client_info: {
+        client_name:     form.client_name.trim(),
+        auditor_name:    form.auditor_name.trim(),
+        store_url:       form.store_url.trim(),
+        shopify_theme:   form.shopify_theme.trim(),
+        audit_date:      form.audit_date,
+        monthly_revenue: parseFloat(form.monthly_revenue) || 0,
+        aov:             parseFloat(form.aov) || 0,
+        cvr:             parseFloat(form.cvr) || 0,
+      },
+      pricing: { ...(audit?.pricing || {}), audit_fee: parseFloat(form.audit_fee) || 0 },
+    });
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-panel" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
+            Client Info
+          </span>
+          <button onClick={onClose} style={{ background:'none', border:'none', color:'var(--ink-4)',
+            fontFamily:"'DM Mono',monospace", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
+            ×
+          </button>
+        </div>
+        <form onSubmit={handleSave}>
+          <div className="modal-body">
+            <div style={{ marginBottom:18 }}>
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
+                color:'var(--ink-5)', marginBottom:12 }}>Client &amp; Auditor</div>
+              <div className="fg2">
+                <div className="field">
+                  <label>Client Name *</label>
+                  <CIInput value={form.client_name} onChange={v => set('client_name', v)} placeholder="Acme Boards Co." />
+                </div>
+                <div className="field">
+                  <label>Auditor Name *</label>
+                  <CIInput value={form.auditor_name} onChange={v => set('auditor_name', v)} placeholder="Your name" />
+                </div>
+              </div>
+              <div className="fg3">
+                <div className="field">
+                  <label>Store URL</label>
+                  <CIInput value={form.store_url} onChange={v => set('store_url', v)} placeholder="example.myshopify.com" />
+                </div>
+                <div className="field">
+                  <label>Shopify Theme</label>
+                  <CIInput value={form.shopify_theme} onChange={v => set('shopify_theme', v)} placeholder="Dawn" />
+                </div>
+                <div className="field">
+                  <label>Audit Date</label>
+                  <CIInput type="date" value={form.audit_date} onChange={v => set('audit_date', v)} />
+                </div>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
+                color:'var(--ink-5)', marginBottom:12 }}>Store Metrics</div>
+              <div className="fg4">
+                <div className="field">
+                  <label>Monthly Revenue ($)</label>
+                  <CIInput type="number" value={form.monthly_revenue} onChange={v => set('monthly_revenue', v)} placeholder="50000" min="0" />
+                </div>
+                <div className="field">
+                  <label>Avg. Order Value ($)</label>
+                  <CIInput type="number" value={form.aov} onChange={v => set('aov', v)} placeholder="85" min="0" />
+                </div>
+                <div className="field">
+                  <label>Conversion Rate (%)</label>
+                  <CIInput type="number" value={form.cvr} onChange={v => set('cvr', v)} placeholder="1.8" step="0.1" min="0" />
+                </div>
+                <div className="field field-private">
+                  <label>Audit Fee ($)</label>
+                  <CIInput type="number" value={form.audit_fee} onChange={v => set('audit_fee', v)} placeholder="2500" min="0" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={!canSave}>Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+// ─── END COMPONENTS A ───
+
+// ─── COMPONENTS B: ChecklistStage, FindingsStage ───
+
+function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, navSheetOpen, setNavSheetOpen, onContextChange, cardGlowTrigger }) {
+  const [activeItemId, setActiveItemId] = useState(SECTIONS[0].items[0].id);
+  const [expandedSection, setExpandedSection] = useState(SECTIONS[0].id);
+  const [showDetails, setShowDetails] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [sheetSection, setSheetSection] = useState(SECTIONS[0].id);
+  const [cardGlowing, setCardGlowing] = useState(false);
+
+  useEffect(() => {
+    if (!cardGlowTrigger) return;
+    setCardGlowing(true);
+    const t = setTimeout(() => setCardGlowing(false), 950);
+    return () => clearTimeout(t);
+  }, [cardGlowTrigger]);
+  const cardRef = useRef(null);
+
+  const activeItem = AUDIT_ITEMS.find(i => i.id === activeItemId) || AUDIT_ITEMS[0];
+  const activeSection = SECTIONS.find(s => s.items.some(i => i.id === activeItemId));
+  const sectionItems = activeSection ? activeSection.items : [];
+  const sectionItemIdx = sectionItems.findIndex(i => i.id === activeItemId);
+
+  useEffect(() => {
+    onContextChange?.({ short: activeSection?.short || '', idx: sectionItemIdx + 1, len: sectionItems.length });
+  }, [activeItemId]);
+
+  useEffect(() => {
+    if (navSheetOpen) setSheetSection(activeSection?.id || SECTIONS[0].id);
+  }, [navSheetOpen]);
+  const itemState = getItemState(audit, activeItemId);
+  const isFail = itemState.status === 'fail';
+
+  const prog = auditProgress(audit);
+  const totalDone = prog.pass + prog.fail + prog.na;
+  const totalPct = Math.round((totalDone / 60) * 100);
+  const anyMarked = totalDone > 0;
+
+  const updateItem = useCallback((field, value) => {
+    onUpdateItem(audit.id, activeItemId, { [field]: value });
+  }, [audit.id, activeItemId, onUpdateItem]);
+
+  const allItemsFlat = SECTIONS.flatMap(s => s.items);
+  const activeIdx = allItemsFlat.findIndex(i => i.id === activeItemId);
+  const prevItem = activeIdx > 0 ? allItemsFlat[activeIdx - 1] : null;
+  const nextItem = activeIdx < allItemsFlat.length - 1 ? allItemsFlat[activeIdx + 1] : null;
+
+  function goTo(item) {
+    setActiveItemId(item.id);
+    const sec = SECTIONS.find(s => s.items.some(i => i.id === item.id));
+    if (sec) { setExpandedSection(sec.id); setSheetSection(sec.id); }
+    setShowDetails(false);
+    setShowNotes(false);
+    setNavSheetOpen(false);
+    if (cardRef.current) cardRef.current.scrollTop = 0;
+  }
+
+  useEffect(() => {
+    function handleKey(e) {
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === 'ArrowLeft'  && prevItem) goTo(prevItem);
+      if (e.key === 'ArrowRight' && nextItem) goTo(nextItem);
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [activeItemId]);
+
+  const statusDot = (itemId) => {
+    const s = (audit.items || {})[itemId]?.status;
+    if (!s || s === 'tbd') return { color:'var(--rule-2)', border:true };
+    if (s === 'pass') return { color:'var(--state-pass)', border:false };
+    if (s === 'fail') return { color:'var(--state-fail)', border:false };
+    return { color:'var(--ink-5)', border:false };
+  };
+
+  const sectionDone = (sec) => sec.items.filter(i => {
+    const s = (audit.items || {})[i.id]?.status;
+    return s && s !== 'tbd';
+  }).length;
+
+  const IMPACT_COLOR = { High:'var(--impact-high)', Medium:'var(--impact-medium)', Low:'var(--ink-3)' };
+  const IMPACT_BG    = { High:'var(--impact-high-bg)', Medium:'var(--impact-medium-bg)', Low:'var(--paper-3)' };
+
+  const STATUS_OPTS = [
+    { id:'pass', label:'Pass', color:'var(--state-pass)',  bg:'var(--state-pass-bg)',  border:'#86efac' },
+    { id:'fail', label:'Fail', color:'var(--state-fail)',  bg:'var(--state-fail-bg)',  border:'#fca5a5' },
+    { id:'tbd',  label:'TBD',  color:'var(--ink-3)',       bg:'var(--paper-3)',         border:'var(--rule-2)' },
+    { id:'na',   label:'N/A',  color:'var(--ink-5)',       bg:'var(--paper)',            border:'var(--rule)' },
+  ];
+
+  const truncate = (str, n=24) => str && str.length > n ? str.slice(0,n) + '…' : str;
+
+  return (
+    <div data-stage="checklist" style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, overflow:'hidden' }}>
+      {/* Stage header bar */}
+      <div style={{ background:'var(--paper-2)', borderBottom:'1px solid var(--rule)', padding:'10px 20px',
+        display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
+        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+          color:'#fff', background:'var(--accent)', padding:'2px 8px' }}>01 — Checklist</span>
+        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-4)', letterSpacing:'0.04em' }}>
+          {totalDone}/60 assessed
+        </span>
+        <div style={{ width:80, height:2, background:'var(--rule)', position:'relative', marginLeft:4 }} className="desktop-only">
+          <div style={{ position:'absolute', left:0, top:0, height:'100%', background:'var(--accent)',
+            width:`${totalPct}%`, transition:'width 0.4s' }} />
+        </div>
+      </div>
+
+      {/* Sidebar + card */}
+      <div style={{ display:'flex', flex:1, overflow:'hidden', minHeight:0 }}>
+        {/* Sidebar */}
+        <div className="checklist-sidebar">
+          {SECTIONS.map(sec => {
+            const isOpen = expandedSection === sec.id;
+            const done = sectionDone(sec);
+            return (
+              <div key={sec.id}>
+                <button className={`sidebar-acc-btn${isOpen ? ' open' : ''}`}
+                  onClick={() => setExpandedSection(isOpen ? null : sec.id)}>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em',
+                    textTransform:'uppercase', color: isOpen ? 'var(--ink-2)' : 'var(--ink-5)' }}>
+                    {sec.short}
+                  </span>
+                  <span style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10,
+                      color: done === sec.items.length ? 'var(--state-pass)' : 'var(--ink-5)' }}>
+                      {done}/{sec.items.length}
+                    </span>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:'var(--ink-5)',
+                      transform: isOpen ? 'rotate(180deg)' : 'none', transition:'transform 0.15s', display:'inline-block' }}>▼</span>
+                  </span>
+                </button>
+                {isOpen && sec.items.map((item, idx) => {
+                  const isActive = item.id === activeItemId;
+                  const dot = statusDot(item.id);
+                  return (
+                    <button key={item.id} className={`sidebar-item-btn${isActive ? ' active' : ''}`}
+                      onClick={() => goTo(item)}>
+                      <span style={{ width:7, height:7, borderRadius:'50%', background:dot.color, flexShrink:0,
+                        border: dot.border ? '1px solid var(--rule-2)' : 'none' }} />
+                      <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+                        color: isActive ? 'var(--ink)' : 'var(--ink-4)', lineHeight:1.3, flex:1,
+                        overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
+                        {item.name}
+                      </span>
+                      <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'var(--ink-5)', flexShrink:0 }}>
+                        {idx + 1}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Item card */}
+        <div ref={cardRef} className="checklist-card-scroll" style={{ flex:1, padding:'16px 20px 80px', overflowY:'auto', minWidth:0, minHeight:0 }}>
+          <div style={{ maxWidth:600, margin:'0 auto', display:'flex', flexDirection:'column', gap:2 }}>
+
+            {/* Item header */}
+            <div className={cardGlowing ? 'card-glow' : undefined} style={{ background:'var(--paper-2)', border:'1px solid var(--rule)', padding:'14px 18px' }}>
+              <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:19, fontWeight:400, color:'var(--ink)',
+                letterSpacing:'-0.3px', lineHeight:1.25, marginBottom:10 }}>
+                {activeItem.name}
+              </h2>
+              <div style={{ display:'flex', gap:5, flexWrap:'wrap', alignItems:'center', marginBottom:10 }}>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
+                  background:IMPACT_BG[activeItem.impact], color:IMPACT_COLOR[activeItem.impact],
+                  letterSpacing:'0.04em', textTransform:'uppercase' }}>{activeItem.impact}</span>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
+                  background:'var(--paper-3)', color:'var(--ink-4)', letterSpacing:'0.04em', textTransform:'uppercase' }}>
+                  Effort: {activeItem.effort}
+                </span>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
+                  background:'var(--paper-3)', color:'var(--ink-4)', letterSpacing:'0.04em', textTransform:'uppercase' }}>
+                  {activeItem.estimated_fix_time}
+                </span>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
+                  background:'var(--paper-3)', color:'var(--accent-positive)', letterSpacing:'0.04em' }}>
+                  +{activeItem.lift_min}–{activeItem.lift_max}% CVR
+                </span>
+              </div>
+              <button onClick={() => setShowDetails(v => !v)}
+                style={{ background:'none', border:'none', color:'var(--ink-5)', fontFamily:"'DM Mono',monospace",
+                  fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase', cursor:'pointer', padding:0,
+                  display:'flex', alignItems:'center', gap:5 }}>
+                <span style={{ transform:showDetails ? 'rotate(180deg)' : 'none', display:'inline-block',
+                  transition:'transform 0.15s', fontSize:8 }}>▼</span>
+                {showDetails ? 'Hide details' : 'Details'}
+              </button>
+              {showDetails && (
+                <div style={{ marginTop:10, display:'grid', gridTemplateColumns:'1fr 1fr', gap:6 }}>
+                  {[['Impact Area', activeItem.impact_area], ['Shopify Complexity', activeItem.shopify_fix_complexity]].map(([lbl, val]) => (
+                    <div key={lbl} style={{ background:'var(--paper-3)', padding:'8px 10px' }}>
+                      <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.1em',
+                        textTransform:'uppercase', color:'var(--ink-5)', marginBottom:3 }}>{lbl}</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:'var(--ink-3)' }}>{val}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Status */}
+            <div style={{ background:'var(--paper-2)', border:'1px solid var(--rule)', padding:'12px 18px' }}>
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, fontWeight:600, letterSpacing:'0.1em',
+                textTransform:'uppercase', color:'var(--ink-4)', marginBottom:8 }}>Status</div>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:5 }}>
+                {STATUS_OPTS.map(opt => {
+                  const active = itemState.status === opt.id;
+                  return (
+                    <button key={opt.id} onClick={() => updateItem('status', opt.id)}
+                      style={{ padding:'12px 6px', background: active ? opt.bg : 'var(--paper-3)',
+                        border:`1px solid ${active ? opt.border : 'var(--rule)'}`,
+                        color: active ? opt.color : 'var(--ink-5)',
+                        fontFamily:"'DM Mono',monospace", fontSize:12, fontWeight: active ? 600 : 400,
+                        letterSpacing:'0.06em', textTransform:'uppercase', cursor:'pointer', transition:'all 0.12s' }}>
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Finding */}
+            <div style={{ background:'var(--paper-2)', border:'1px solid rgba(252,165,165,0.2)',
+              opacity: isFail ? 1 : 0.35, pointerEvents: isFail ? 'auto' : 'none',
+              transition:'opacity 0.15s' }}>
+              <div style={{ padding:'10px 18px', borderBottom:'1px solid var(--rule)',
+                display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, fontWeight:600,
+                  letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--state-fail)' }}>Finding</span>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'var(--ink-5)',
+                  letterSpacing:'0.04em' }}>in client report</span>
+              </div>
+              <div style={{ padding:'10px 18px' }}>
+                <AuditTextarea value={itemState.finding} placeholder={activeItem.default_finding}
+                  onChange={v => updateItem('finding', v)} rows={3} />
+              </div>
+            </div>
+
+            {/* Recommendation */}
+            <div style={{ background:'var(--paper-2)', border:'1px solid var(--rule)',
+              opacity: isFail ? 1 : 0.35, pointerEvents: isFail ? 'auto' : 'none',
+              transition:'opacity 0.15s' }}>
+              <div style={{ padding:'10px 18px', borderBottom:'1px solid var(--rule)',
+                display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, fontWeight:600,
+                  letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--ink-3)' }}>Recommendation</span>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'var(--ink-5)',
+                  letterSpacing:'0.04em' }}>in client report</span>
+              </div>
+              <div style={{ padding:'10px 18px' }}>
+                <AuditTextarea value={itemState.recommendation} placeholder={activeItem.default_recommendation}
+                  onChange={v => updateItem('recommendation', v)} rows={3} />
+              </div>
+            </div>
+
+            {/* Notes + screenshot — collapsible */}
+            <div style={{ background:'var(--paper-2)', border:'1px solid var(--rule)' }}>
+              <button onClick={() => setShowNotes(v => !v)}
+                style={{ width:'100%', background:'none', border:'none', padding:'10px 18px',
+                  display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer' }}>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, fontWeight:600,
+                  letterSpacing:'0.1em', textTransform:'uppercase',
+                  color:(itemState.notes || itemState.screenshot_url) ? 'var(--ink-3)' : 'var(--ink-5)' }}>
+                  Notes {itemState.screenshot_url ? '· screenshot' : ''}
+                </span>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:'var(--ink-5)',
+                  transform:showNotes ? 'rotate(180deg)' : 'none', display:'inline-block', transition:'transform 0.15s' }}>▼</span>
+              </button>
+              {showNotes && (
+                <div style={{ padding:'0 18px 12px', display:'flex', flexDirection:'column', gap:10 }}>
+                  <AuditTextarea value={itemState.notes} placeholder="Private notes (not in report)…"
+                    onChange={v => updateItem('notes', v)} rows={2} />
+                  <div>
+                    <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)',
+                      letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:5 }}>Screenshot URL</div>
+                    <AuditUrlInput value={itemState.screenshot_url} onChange={v => updateItem('screenshot_url', v)} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Prev / Next — desktop only; mobile version lives outside the scroll container below */}
+            <div className="checklist-item-nav desktop-only" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:5, paddingTop:6 }}>
+              <button onClick={() => prevItem && goTo(prevItem)} disabled={!prevItem}
+                style={{ background:'var(--paper-2)', border:'1px solid var(--rule)',
+                  color: prevItem ? 'var(--ink-3)' : 'var(--ink-5)', padding:'11px 14px',
+                  cursor: prevItem ? 'pointer' : 'default', opacity: prevItem ? 1 : 0.3,
+                  textAlign:'left', display:'flex', flexDirection:'column', gap:2 }}>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+                  textTransform:'uppercase', color:'var(--ink-5)' }}>← Prev</span>
+                {prevItem && <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+                  color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(prevItem.name)}</span>}
+              </button>
+              {!nextItem ? (
+                <button onClick={onScrollToFindings}
+                  style={{ background:'var(--accent)', border:'none', color:'#fff', padding:'11px 14px',
+                    cursor:'pointer', fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600,
+                    letterSpacing:'0.06em', textTransform:'uppercase', textAlign:'right' }}>
+                  Review Findings →
+                </button>
+              ) : (
+                <button onClick={() => goTo(nextItem)}
+                  style={{ background:'var(--paper-2)', border:'1px solid var(--rule)',
+                    color:'var(--ink-3)', padding:'11px 14px', cursor:'pointer',
+                    textAlign:'right', display:'flex', flexDirection:'column', gap:2, alignItems:'flex-end' }}>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+                    textTransform:'uppercase', color:'var(--ink-5)' }}>Next →</span>
+                  <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+                    color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(nextItem.name)}</span>
+                </button>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* Prev / Next — mobile only, outside scroll container so it's always visible */}
+      <div className="mobile-only" style={{ display:'grid', gridTemplateColumns:'1fr 1fr',
+        borderTop:'1px solid var(--rule)', flexShrink:0 }}>
+        <button onClick={() => prevItem && goTo(prevItem)} disabled={!prevItem}
+          style={{ background:'var(--paper-2)', border:'none', borderRight:'1px solid var(--rule)',
+            color: prevItem ? 'var(--ink-3)' : 'var(--ink-5)', padding:'12px 14px',
+            cursor: prevItem ? 'pointer' : 'default', opacity: prevItem ? 1 : 0.35,
+            textAlign:'left', display:'flex', flexDirection:'column', gap:2 }}>
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+            textTransform:'uppercase', color:'var(--ink-5)' }}>← Prev</span>
+          {prevItem && <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+            color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(prevItem.name)}</span>}
+        </button>
+        {!nextItem ? (
+          <button onClick={onScrollToFindings}
+            style={{ background:'var(--accent)', border:'none', color:'#fff', padding:'12px 14px',
+              cursor:'pointer', fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600,
+              letterSpacing:'0.06em', textTransform:'uppercase', textAlign:'right' }}>
+            Review Findings →
+          </button>
+        ) : (
+          <button onClick={() => goTo(nextItem)}
+            style={{ background:'var(--paper-2)', border:'none',
+              color:'var(--ink-3)', padding:'12px 14px', cursor:'pointer',
+              textAlign:'right', display:'flex', flexDirection:'column', gap:2, alignItems:'flex-end' }}>
+            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+              textTransform:'uppercase', color:'var(--ink-5)' }}>Next →</span>
+            <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+              color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(nextItem.name)}</span>
+          </button>
+        )}
+      </div>
+
+      {/* Mobile nav sheet — sections slide-up */}
+      {navSheetOpen && (
+        <div className="mobile-only">
+          <div className="nav-sheet-backdrop" onClick={() => setNavSheetOpen(false)} />
+          <div className={`nav-sheet-panel open`}>
+            {/* Header */}
+            <div className="nav-sheet-header">
+              <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:18, fontWeight:400,
+                color:'var(--ink)', letterSpacing:'-0.3px' }}>Sections</span>
+              <button onClick={() => setNavSheetOpen(false)}
+                style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-3)',
+                  width:30, height:30, cursor:'pointer', fontSize:14, display:'flex',
+                  alignItems:'center', justifyContent:'center' }}>×</button>
+            </div>
+            {/* Section grid */}
+            <div className="nav-sheet-section-grid">
+              {SECTIONS.map(sec => {
+                const done = sec.items.filter(i => {
+                  const s = (audit.items || {})[i.id]?.status;
+                  return s && s !== 'tbd';
+                }).length;
+                const isActive = sheetSection === sec.id;
+                return (
+                  <button key={sec.id} className={`nav-sheet-sec-btn${isActive ? ' active' : ''}`}
+                    onClick={() => setSheetSection(sec.id)}>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em',
+                      textTransform:'uppercase', color: isActive ? 'var(--accent)' : 'var(--ink-4)' }}>
+                      {sec.short}
+                    </span>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9,
+                      color: done === sec.items.length ? 'var(--state-pass)' : 'var(--ink-5)' }}>
+                      {done}/{sec.items.length}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {/* Items in selected section */}
+            <div className="nav-sheet-items">
+              {(SECTIONS.find(s => s.id === sheetSection) || SECTIONS[0]).items.map((item, idx) => {
+                const isActive = item.id === activeItemId;
+                const dot = statusDot(item.id);
+                return (
+                  <button key={item.id} className={`nav-sheet-item-btn${isActive ? ' active' : ''}`}
+                    onClick={() => goTo(item)}>
+                    <span style={{ width:8, height:8, borderRadius:'50%', background:dot.color, flexShrink:0,
+                      border: dot.border ? '1px solid var(--rule-2)' : 'none' }} />
+                    <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13,
+                      color: isActive ? 'var(--ink)' : 'var(--ink-3)', lineHeight:1.3, flex:1 }}>
+                      {item.name}
+                    </span>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', flexShrink:0 }}>
+                      {idx + 1}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+function FindingsStage({ audit, checkedIds, setCheckedIds }) {
+  const failItems = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail');
+
+  useEffect(() => {
+    if (checkedIds === null && failItems.length > 0) {
+      setCheckedIds(preCheckItems(audit));
+    }
+  }, []);
+
+  const ids = checkedIds || new Set();
+  const toggle = (id) => setCheckedIds(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const IMPACT_COLOR = { High:'var(--impact-high)', Medium:'var(--impact-medium)', Low:'var(--ink-3)' };
+  const IMPACT_BG    = { High:'var(--impact-high-bg)', Medium:'var(--impact-medium-bg)', Low:'var(--paper-3)' };
+
+  const roi = calcROI(audit, ids);
+
+  return (
+    <div data-stage="findings">
+      {/* Sticky stage header bar */}
+      <div style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
+        borderBottom:'1px solid var(--rule)', padding:'10px 20px',
+        display:'flex', alignItems:'center', gap:12 }}>
+        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+          color:'#fff', background:'var(--accent)', padding:'2px 8px' }}>02 — Findings</span>
+        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', letterSpacing:'0.04em' }}>
+          {failItems.length} issue{failItems.length !== 1 ? 's' : ''} found · {ids.size} selected for ROI
+        </span>
+      </div>
+
+      <div style={{ maxWidth:840, margin:'0 auto', padding:'32px 24px 60px' }}>
+      <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:26, fontWeight:400, color:'var(--ink)',
+        letterSpacing:'-0.4px', marginBottom:6 }}>Issues found</h2>
+      <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-4)', lineHeight:1.6,
+        marginBottom:28 }}>
+        Select which issues to include in the ROI calculation. Top 10 are pre-selected by impact and effort.
+      </p>
+
+      {failItems.length === 0 ? (
+        <div style={{ border:'1px solid var(--rule)', padding:'40px 24px', textAlign:'center', background:'var(--paper-2)',
+          fontFamily:"'DM Sans',sans-serif", fontSize:14, color:'var(--ink-4)' }}>
+          No failures marked yet — go back to the checklist and mark items as Fail.
+        </div>
+      ) : (
+        <div style={{ border:'1px solid var(--rule)' }}>
+          {/* Table header — hidden on mobile via .findings-header CSS */}
+          <div className="findings-header">
+            {['', 'Issue', 'Impact', 'CVR Lift', 'Monthly +'].map((h, i) => (
+              <div key={i} style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.1em',
+                textTransform:'uppercase', color:'var(--ink-5)', textAlign: i >= 3 ? 'right' : 'left' }}>{h}</div>
+            ))}
+          </div>
+          {failItems.map(item => {
+            const checked = ids.has(item.id);
+            const itemState = getItemState(audit, item.id);
+            const ci = audit.client_info || {};
+            const revenue = parseFloat(ci.monthly_revenue) || 0;
+            const aov = parseFloat(ci.aov) || 85;
+            const cvrRaw = parseFloat(ci.cvr) || 1.8;
+            const sessions = revenue > 0 ? revenue / (aov * (cvrRaw / 100)) : 0;
+            const midLift = (item.lift_min + item.lift_max) / 2 / 100;
+            const monthlyImpact = sessions * aov * midLift;
+            return (
+              <div key={item.id}
+                className="findings-row"
+                style={{ background: checked ? 'var(--row-checked-bg)' : 'var(--paper-2)' }}
+                onClick={() => toggle(item.id)}
+                onMouseEnter={e => { if (!checked) e.currentTarget.style.background='var(--paper-3)'; }}
+                onMouseLeave={e => { if (!checked) e.currentTarget.style.background='var(--paper-2)'; }}>
+                {/* Top section: checkbox + issue name. Desktop: display:contents (grid cols 1–2). Mobile: flex row. */}
+                <div className="findings-row-top">
+                  <div style={{ paddingTop:2, flexShrink:0 }}>
+                    <div className="findings-cb" style={{ width:16, height:16, border:`2px solid ${checked ? 'var(--accent)' : 'var(--rule-2)'}`,
+                      background: checked ? 'var(--accent)' : 'transparent', display:'flex',
+                      alignItems:'center', justifyContent:'center', transition:'all 0.12s' }}>
+                      {checked && <span className="findings-cb-check" style={{ color:'#fff', fontSize:10, lineHeight:1 }}>✓</span>}
+                    </div>
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-2)',
+                      lineHeight:1.3, marginBottom:3 }}>{item.name}</div>
+                    {itemState.finding && (
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:'var(--ink-4)',
+                        lineHeight:1.4 }}>{itemState.finding}</div>
+                    )}
+                  </div>
+                </div>
+                {/* Bottom section: impact + lift + revenue. Desktop: display:contents (grid cols 3–5). Mobile: flex row indented. */}
+                <div className="findings-row-btm">
+                  <div>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 7px',
+                      background:IMPACT_BG[item.impact], color:IMPACT_COLOR[item.impact],
+                      letterSpacing:'0.04em', textTransform:'uppercase' }}>{item.impact}</span>
+                  </div>
+                  <div className="findings-col-lift" style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--accent-positive)',
+                    textAlign:'right', letterSpacing:'0.04em' }}>
+                    <span className="findings-lbl" style={{ fontFamily:"'DM Mono',monospace", fontSize:9,
+                      color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>CVR </span>
+                    +{item.lift_min}–{item.lift_max}%
+                  </div>
+                  <div className="findings-col-rev" style={{ fontFamily:"'DM Mono',monospace", fontSize:11,
+                    color: revenue > 0 ? 'var(--state-pass)' : 'var(--ink-5)',
+                    textAlign:'right', letterSpacing:'0.04em' }}>
+                    <span className="findings-lbl" style={{ fontFamily:"'DM Mono',monospace", fontSize:9,
+                      color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Mo. </span>
+                    {revenue > 0 ? `+$${fmt(monthlyImpact)}` : '—'}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Quick summary */}
+      {failItems.length > 0 && ids.size > 0 && (
+        <div style={{ marginTop:24, fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-4)',
+          letterSpacing:'0.04em' }}>
+          {roi.hasData
+            ? `${ids.size} issues · est. +$${fmt(roi.monthlyRecovery)}/mo · capped at ${roi.cappedMax.toFixed(1)}% CVR lift`
+            : `${ids.size} issues selected`}
+        </div>
+      )}
+      </div>
+    </div>
+  );
+}
+// ─── END COMPONENTS B ───
+
+// ─── COMPONENTS C: CalculatorStage, ReportStage, AuditWorkspace, App ───
+
+function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
+  const ids = checkedIds || new Set();
+  const roi = calcROI(audit, ids);
+  const pr = audit.pricing || {};
+  const failCount = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail').length;
+
+  function setPricing(k, v) { onUpdatePricing(audit.id, { ...pr, [k]: parseFloat(v) || 0 }); }
+
+  const metricCell = (label, value, sub) => (
+    <div style={{ background:'var(--paper-3)', border:'1px solid var(--rule)', padding:'16px 20px' }}>
+      <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+        color:'var(--ink-5)', marginBottom:6 }}>{label}</div>
+      <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:26, color:'var(--ink)',
+        letterSpacing:'-0.5px', lineHeight:1 }}>{value}</div>
+      {sub && <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-4)', marginTop:4 }}>{sub}</div>}
+    </div>
+  );
+
+  const sanityColor = { pass:'var(--state-pass)', warn:'var(--amber)', fail:'var(--impact-high)', neutral:'var(--ink-4)' };
+
+  return (
+    <div data-stage="calculator">
+      {/* Sticky stage header bar */}
+      <div style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
+        borderBottom:'1px solid var(--rule)', padding:'10px 20px',
+        display:'flex', alignItems:'center', gap:12 }}>
+        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+          color:'#fff', background:'var(--accent)', padding:'2px 8px' }}>03 — Calculator</span>
+        {!roi.hasData && (
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--amber)', letterSpacing:'0.04em' }}>
+            Add store metrics in Client Info to unlock
+          </span>
+        )}
+      </div>
+
+      <div style={{ maxWidth:840, margin:'0 auto', padding:'32px 24px 60px' }}>
+      <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:26, fontWeight:400, color:'var(--ink)',
+        letterSpacing:'-0.4px', marginBottom:32 }}>Revenue impact</h2>
+
+      {/* Revenue Impact Grid */}
+      <div className="calc-metrics" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:2, marginBottom:2 }}>
+        {metricCell('Monthly Sessions', roi.hasData ? fmt(roi.sessions) : '—', 'current visitors')}
+        {metricCell('Current CVR', roi.hasData ? fmtPct(roi.cvrRaw) : '—', 'baseline')}
+        {metricCell('Projected CVR', roi.hasData ? fmtPct(roi.newCVR * 100) : '—',
+          roi.hasData ? `+${roi.cappedMid.toFixed(2)}% lift (capped)` : null)}
+      </div>
+      <div className="calc-metrics" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:2, marginBottom:32 }}>
+        {metricCell('Monthly Recovery', roi.hasData ? `$${fmt(roi.monthlyRecovery)}` : '—', 'additional revenue')}
+        {metricCell('Annual Recovery', roi.hasData ? `$${fmt(roi.annualRecovery)}` : '—', 'per year')}
+        {metricCell('Client ROI', roi.hasData && roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}×` : '—',
+          roi.hasData && roi.paybackMonths > 0 ? `payback in ${roi.paybackMonths.toFixed(1)} mo` : null)}
+      </div>
+
+      {/* Your Pricing — private, no-print */}
+      <div className="no-print" style={{ border:'1px solid var(--rule)', marginBottom:32 }}>
+        <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)', padding:'10px 20px',
+          display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em',
+            textTransform:'uppercase', color:'var(--ink-5)', background:'rgba(255,255,255,0.06)',
+            border:'1px solid var(--rule)', padding:'2px 7px' }}>Private</span>
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em',
+            textTransform:'uppercase', color:'var(--ink-4)' }}>Your Pricing</span>
+        </div>
+        <div style={{ padding:'20px' }}>
+          {/* Suggested fee */}
+          {roi.hasData && roi.annualRecovery > 0 && (
+            <div style={{ marginBottom:20, padding:'14px 16px', background:'var(--paper-3)',
+              border:'1px solid var(--rule)', display:'flex', justifyContent:'space-between',
+              alignItems:'baseline', flexWrap:'wrap', gap:8 }}>
+              <div>
+                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.1em',
+                  textTransform:'uppercase', color:'var(--ink-5)', marginBottom:4 }}>Suggested fee</div>
+                <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:28, color:'var(--accent-positive)',
+                  letterSpacing:'-0.5px' }}>${fmt(roi.suggestedFee)}</div>
+                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-4)', marginTop:3 }}>
+                  {roi.suggestedPct}% of annual recovery · based on {roi.highCount} high-impact finding{roi.highCount !== 1 ? 's' : ''}
+                </div>
+              </div>
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)',
+                textAlign:'right', lineHeight:1.6 }}>
+                Range: ${fmt(roi.annualRecovery * 0.10)} (10%) –<br />${fmt(roi.annualRecovery * 0.20)} (20%)
+              </div>
+            </div>
+          )}
+          {/* Fee inputs */}
+          <div className="fg2" style={{ marginBottom:12 }}>
+            <div className="field field-private">
+              <label>Audit Fee ($)</label>
+              <CIInput type="number" value={pr.audit_fee || ''} onChange={v => setPricing('audit_fee', v)}
+                placeholder={roi.suggestedFee ? String(Math.round(roi.suggestedFee * 0.3)) : '2500'} min="0" />
+            </div>
+            <div className="field field-private">
+              <label>Implementation Fee ($)</label>
+              <CIInput type="number" value={pr.impl_fee || ''} onChange={v => setPricing('impl_fee', v)}
+                placeholder={roi.suggestedFee ? String(roi.suggestedFee) : '0'} min="0" />
+            </div>
+          </div>
+          {/* Hourly sanity check */}
+          <div className="fg2">
+            <div className="field field-private">
+              <label>Hourly Rate ($)</label>
+              <CIInput type="number" value={pr.hourly_rate || ''} onChange={v => setPricing('hourly_rate', v)}
+                placeholder="75" min="0" />
+            </div>
+            <div className="field field-private">
+              <label>Estimated Hours</label>
+              <CIInput type="number" value={pr.est_hours || ''} onChange={v => setPricing('est_hours', v)}
+                placeholder="20" min="0" />
+            </div>
+          </div>
+          {roi.hourlyRate > 0 && roi.estHours > 0 && (
+            <div style={{ marginTop:8, padding:'8px 12px', background:'var(--paper-3)',
+              border:`1px solid ${roi.sanityCheck === 'pass' ? '#86efac' : roi.sanityCheck === 'warn' ? 'rgba(200,131,74,0.4)' : 'rgba(248,113,113,0.3)'}`,
+              fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.04em',
+              color: sanityColor[roi.sanityCheck] }}>
+              Hourly sanity: ${fmt(roi.implFee)} ÷ {roi.estHours}h = ${(roi.implFee / roi.estHours).toFixed(0)}/hr
+              {roi.sanityCheck === 'pass' ? ' · on target' : roi.sanityCheck === 'warn' ? ' · below rate' : ' · well below rate'}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Proposal block — goes in report */}
+      <div style={{ border:'1px solid var(--rule)', marginBottom:32 }}>
+        <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)', padding:'10px 20px' }}>
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em',
+            textTransform:'uppercase', color:'var(--ink-4)' }}>Proposal Summary</span>
+        </div>
+        {[
+          ['Scope',
+            `60-point CRO audit · ${failCount} finding${failCount !== 1 ? 's' : ''} · ${ids.size} prioritized`,
+            null],
+          ['Projected CVR Lift',
+            roi.hasData ? `+${roi.cappedMin.toFixed(2)}–${roi.cappedMax.toFixed(2)}%` : '—',
+            roi.hasData ? `mid-point estimate: +${roi.cappedMid.toFixed(2)}%` : 'Add store metrics to calculate'],
+          ['Annual Revenue Impact',
+            roi.hasData ? `$${fmt(roi.annualRecovery)}` : '—',
+            roi.hasData ? `$${fmt(roi.monthlyRecovery)}/month` : null],
+          ['Investment',
+            roi.totalInvestment > 0 ? `$${fmt(roi.totalInvestment)}` : '—',
+            roi.auditFee > 0 || roi.implFee > 0
+              ? `Audit $${fmt(roi.auditFee)} · Implementation $${fmt(roi.implFee)}`
+              : 'Set fees in Your Pricing above'],
+          ['Client ROI',
+            roi.hasData && roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}× return` : '—',
+            roi.hasData && roi.paybackMonths > 0 ? `payback in ${roi.paybackMonths.toFixed(1)} months` : null],
+        ].map(([label, value, sub], i, arr) => (
+          <div key={label}
+            className="proposal-row"
+            style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', padding:'14px 20px',
+              borderBottom: i < arr.length - 1 ? '1px solid var(--rule)' : 'none',
+              background:'var(--paper-2)', gap:16, flexWrap:'wrap' }}>
+            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.06em',
+              textTransform:'uppercase', color:'var(--ink-4)', flexShrink:0 }}>{label}</span>
+            <div className="proposal-val" style={{ textAlign:'right' }}>
+              <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:18, color:'var(--ink)',
+                letterSpacing:'-0.3px' }}>{value}</div>
+              {sub && <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', marginTop:2 }}>{sub}</div>}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      </div>
+    </div>
+  );
+}
+
+function ReportStage({ audit, checkedIds }) {
+  const ids = checkedIds || new Set();
+  const roi = calcROI(audit, ids);
+  const ci = audit.client_info || {};
+  const failItems = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail' && ids.has(i.id));
+
+  // Group fail items by section for report layout
+  const failsBySec = SECTION_ORDER
+    .map(sec => ({ label: sec, items: failItems.filter(i => i.section === sec) }))
+    .filter(s => s.items.length > 0);
+
+  const sectionCount = failsBySec.length;
+
+  // Light report palette — independent of the dark app theme
+  const r = {
+    ink:    '#0f1117',
+    ink2:   '#374151',
+    ink3:   '#6b7280',
+    ink4:   '#9ca3af',
+    rule:   '#e5e7eb',
+    rule2:  '#d1d5db',
+    bg:     '#ffffff',
+    bg2:    '#f9fafb',
+    accent: '#6366f1',
+    high:   '#dc2626', highBg: '#fef2f2',
+    med:    '#7c3aed', medBg:  '#f5f3ff',
+    low:    '#6b7280', lowBg:  '#f3f4f6',
+  };
+
+  const mono  = "'DM Mono', monospace";
+  const serif = "'DM Serif Display', serif";
+  const sans  = "'DM Sans', sans-serif";
+
+  const impactColor = { High: r.high, Medium: r.med, Low: r.low };
+  const impactBg    = { High: r.highBg, Medium: r.medBg, Low: r.lowBg };
+
+  const pill = (text, color, bg) => (
+    <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.06em', textTransform:'uppercase',
+      color, background:bg, padding:'3px 8px', border:`1px solid ${color}22`, whiteSpace:'nowrap' }}>
+      {text}
+    </span>
+  );
+
+  return (
+    <div data-stage="report">
+      {/* Sticky dark header bar — matches other stages */}
+      <div style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
+        borderBottom:'1px solid var(--rule)', padding:'10px 20px',
+        display:'flex', alignItems:'center', gap:12 }}>
+        <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+          color:'#fff', background:'var(--accent)', padding:'2px 8px' }}>04 — Report</span>
+        <button onClick={() => window.print()} className="no-print"
+          style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
+            fontFamily:mono, fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase', cursor:'pointer' }}>
+          Print / Export PDF
+        </button>
+      </div>
+
+      {/* White paper body */}
+      <div style={{ background: r.bg, minHeight:'100%' }}>
+        <div style={{ maxWidth:760, margin:'0 auto', padding:'48px 32px 80px' }}>
+
+          {/* ── COVER ── */}
+          <div style={{ marginBottom:40 }}>
+            <div style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
+              color:r.ink3, marginBottom:20 }}>
+              CRO Audit Report · For Shopify
+            </div>
+            <h1 style={{ fontFamily:serif, fontSize:52, fontWeight:400, color:r.ink,
+              letterSpacing:'-1.2px', lineHeight:1, marginBottom:20 }}>
+              {ci.client_name || 'Client'}
+            </h1>
+            <div style={{ display:'flex', gap:32, flexWrap:'wrap', marginBottom:24 }}>
+              {[
+                ['Date',   fmtDate(ci.audit_date)],
+                ['Auditor', ci.auditor_name || '—'],
+                ['Theme',   ci.shopify_theme || '—'],
+                ...(ci.store_url ? [['URL', ci.store_url]] : []),
+              ].map(([l, v]) => (
+                <div key={l}>
+                  <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em',
+                    textTransform:'uppercase', color:r.ink4, marginBottom:4 }}>{l}</div>
+                  <div style={{ fontFamily:mono, fontSize:12, color:r.ink2 }}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ height:3, background:r.accent }} />
+          </div>
+
+          {/* ── REVENUE IMPACT SUMMARY ── */}
+          <div style={{ marginBottom:40 }}>
+            <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+              color:r.ink4, marginBottom:14 }}>Revenue Impact Summary</div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)',
+              border:`1px solid ${r.rule}`, borderBottom:'none' }}>
+              {[
+                ['Monthly Sessions', roi.hasData ? fmt(roi.sessions)         : '—', 'estimated'],
+                ['Current CVR',      roi.hasData ? fmtPct(roi.cvrRaw)        : '—', 'baseline'],
+                ['Projected CVR',    roi.hasData ? fmtPct(roi.cvrRaw + roi.cappedMid) : '—',
+                  roi.hasData ? `+${roi.cappedMin.toFixed(1)}–${roi.cappedMax.toFixed(1)}% lift` : '—'],
+                ['Monthly Recovery', roi.hasData ? `$${fmt(roi.monthlyRecovery)}` : '—', 'per month'],
+                ['Annual at Risk',   roi.hasData ? `$${fmt(roi.annualRecovery)}`  : '—', 'if issues persist'],
+                ['Issues Found',     failItems.length, `across ${sectionCount} section${sectionCount !== 1 ? 's' : ''}`],
+              ].map(([label, value, sub], i) => (
+                <div key={label} style={{ padding:'20px 18px', borderRight: i % 3 < 2 ? `1px solid ${r.rule}` : 'none',
+                  borderBottom:`1px solid ${r.rule}` }}>
+                  <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase',
+                    color:r.ink4, marginBottom:8 }}>{label}</div>
+                  <div style={{ fontFamily:serif, fontSize:28, color:r.ink, letterSpacing:'-0.5px',
+                    lineHeight:1, marginBottom:5 }}>{value}</div>
+                  <div style={{ fontFamily:mono, fontSize:10, color:r.ink4 }}>{sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── ENGAGEMENT SUMMARY (proposal) ── */}
+          {roi.hasData && (
+            <div style={{ marginBottom:48, border:`1px solid ${r.rule}` }}>
+              <div style={{ background:r.bg2, padding:'10px 18px', borderBottom:`1px solid ${r.rule}` }}>
+                <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase',
+                  color:r.ink3 }}>Engagement Summary</span>
+              </div>
+              {[
+                ['Scope',         `60-point audit · ${failItems.length} findings · ${ids.size} prioritized`],
+                ['CVR Lift',      `+${roi.cappedMin.toFixed(2)}–${roi.cappedMax.toFixed(2)}% (${roi.cappedMid.toFixed(2)}% mid)`],
+                ['Annual Impact', `$${fmt(roi.annualRecovery)}`],
+                ['Investment',    roi.totalInvestment > 0 ? `$${fmt(roi.totalInvestment)}` : 'TBD'],
+                ['Client ROI',    roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}× · payback ${roi.paybackMonths.toFixed(1)} mo` : '—'],
+              ].map(([l, v], i, arr) => (
+                <div key={l} style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline',
+                  padding:'12px 18px', borderBottom: i < arr.length - 1 ? `1px solid ${r.rule}` : 'none', gap:16 }}>
+                  <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
+                    color:r.ink3, flexShrink:0 }}>{l}</span>
+                  <span style={{ fontFamily:serif, fontSize:16, color:r.ink, letterSpacing:'-0.2px',
+                    textAlign:'right' }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── FINDINGS grouped by section ── */}
+          {failsBySec.length > 0 && (
+            <div>
+              <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+                color:r.ink4, marginBottom:24 }}>Findings</div>
+
+              {failsBySec.map(({ label, items }) => (
+                <div key={label} style={{ marginBottom:40 }}>
+                  {/* Section header */}
+                  <div style={{ fontFamily:mono, fontSize:11, letterSpacing:'0.08em', textTransform:'uppercase',
+                    color:r.ink2, paddingBottom:8, borderBottom:`2px solid ${r.ink}`, marginBottom:20 }}>
+                    {label}
+                  </div>
+
+                  {/* Finding cards */}
+                  {items.map((item) => {
+                    const state = getItemState(audit, item.id);
+                    return (
+                      <div key={item.id} style={{ marginBottom:24, paddingBottom:24,
+                        borderBottom:`1px solid ${r.rule}` }} className="print-section">
+                        {/* Item title + badges */}
+                        <div style={{ marginBottom:14 }}>
+                          <h3 style={{ fontFamily:serif, fontSize:20, fontWeight:400, color:r.ink,
+                            letterSpacing:'-0.3px', lineHeight:1.25, marginBottom:10 }}>
+                            {item.name}
+                          </h3>
+                          <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                            {pill(`${item.impact} Impact`, impactColor[item.impact], impactBg[item.impact])}
+                            {pill(`+${item.lift_min}–${item.lift_max}% CVR Lift`, r.accent, '#eef2ff')}
+                            {pill(item.estimated_fix_time, r.low, r.lowBg)}
+                          </div>
+                        </div>
+                        {/* Finding */}
+                        <div style={{ marginBottom:12 }}>
+                          <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em',
+                            textTransform:'uppercase', color:r.high, marginBottom:5 }}>Finding</div>
+                          <p style={{ fontFamily:sans, fontSize:14, color:r.ink2, lineHeight:1.65, margin:0 }}>
+                            {state.finding || item.default_finding}
+                          </p>
+                        </div>
+                        {/* Recommendation */}
+                        <div style={{ paddingLeft:14, borderLeft:`3px solid ${r.accent}` }}>
+                          <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em',
+                            textTransform:'uppercase', color:r.ink3, marginBottom:5 }}>Recommendation</div>
+                          <p style={{ fontFamily:sans, fontSize:14, color:r.ink2, lineHeight:1.65, margin:0 }}>
+                            {state.recommendation || item.default_recommendation}
+                          </p>
+                        </div>
+                        {/* Screenshot link */}
+                        {state.screenshot_url && (
+                          <div style={{ marginTop:10 }}>
+                            <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em',
+                              textTransform:'uppercase', color:r.ink4, marginBottom:4 }}>Screenshot</div>
+                            <a href={state.screenshot_url} target="_blank" rel="noopener noreferrer"
+                              style={{ fontFamily:mono, fontSize:10, color:r.accent, wordBreak:'break-all' }}>
+                              {state.screenshot_url}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty state */}
+          {failsBySec.length === 0 && (
+            <div style={{ padding:'48px 24px', textAlign:'center', border:`1px solid ${r.rule}`,
+              fontFamily:mono, fontSize:12, color:r.ink4 }}>
+              No issues marked as Fail — go back to the checklist.
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveClientInfo, onBack, theme, onToggleTheme }) {
+  const audit = store.audits[auditId];
+  const [clientInfoOpen, setClientInfoOpen] = useState(false);
+  const [stageIndex, setStageIndex] = useState(0);
+  const [checkedIds, setCheckedIds] = useState(null);
+  const [navSheetOpen, setNavSheetOpen] = useState(false);
+  const [checklistCtx, setChecklistCtx] = useState({ short: SECTIONS[0].short, idx: 1, len: SECTIONS[0].items.length });
+  const [nameEditing, setNameEditing] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [cardGlowTrigger, setCardGlowTrigger] = useState(0);
+  const nameInputRef = useRef(null);
+  const nameCancelRef = useRef(false);
+
+  useEffect(() => {
+    const ci = store.audits[auditId]?.client_info || {};
+    if (!ci.client_name || ci.client_name === 'New Client') {
+      setNameDraft('');
+      setNameEditing(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (nameEditing && nameInputRef.current) nameInputRef.current.focus();
+  }, [nameEditing]);
+
+  if (!audit) return null;
+
+  const ci = audit.client_info || {};
+  const isSetupIncomplete = !ci.client_name || ci.client_name === 'New Client' || !ci.monthly_revenue || !ci.aov || !ci.cvr;
+
+  function commitName() {
+    const trimmed = nameDraft.trim();
+    if (trimmed) {
+      onSaveClientInfo(audit.id, {
+        client_info: { ...ci, client_name: trimmed },
+        pricing: audit.pricing,
+      });
+      setCardGlowTrigger(n => n + 1);
+    }
+    setNameEditing(false);
+  }
+
+  const STAGE_LABELS = ['01 — Checklist', '02 — Findings', '03 — Calculator', '04 — Report'];
+  const NEXT_LABELS  = ['Review Findings', 'Calculate ROI', 'View Report', null];
+
+  const SLIDE = 'transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94)';
+  const stageStyle = (n) => ({
+    position:'absolute', inset:0,
+    transition: SLIDE,
+    transform: `translateY(calc((${n} - ${stageIndex}) * 100%))`,
+    willChange: 'transform',
+  });
+
+  return (
+    <div style={{ position:'fixed', inset:0, display:'flex', flexDirection:'column', background:'var(--paper)' }}>
+      {/* Demo banner (inside fixed layout so it isn't obscured) */}
+      {demoMode && <div className="demo-banner no-print">{THEME.copy.demoNotice}</div>}
+
+      {/* Audit header */}
+      <div style={{ background:'var(--paper-2)', borderBottom:'1px solid var(--rule)', padding:'0 32px',
+        height:52, display:'flex', alignItems:'center', justifyContent:'space-between', gap:16,
+        flexShrink:0, zIndex:90 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:16, minWidth:0 }}>
+          <button onClick={onBack} className="site-header__back">← Audits</button>
+          <div style={{ display:'flex', alignItems:'center', gap:8, minWidth:0 }}>
+            {nameEditing ? (
+              <React.Fragment>
+                <input
+                  ref={nameInputRef}
+                  value={nameDraft}
+                  onChange={e => setNameDraft(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { commitName(); } if (e.key === 'Escape') { nameCancelRef.current = true; setNameEditing(false); } }}
+                  onBlur={() => { if (!nameCancelRef.current) commitName(); nameCancelRef.current = false; }}
+                  placeholder="Client name..."
+                  style={{ fontFamily:"'DM Serif Display',serif", fontSize:16, color:'var(--ink)',
+                    letterSpacing:'-0.2px', background:'transparent', border:'none',
+                    borderBottom:'1px solid var(--accent)', outline:'none', minWidth:80, width:180 }}
+                />
+                <button
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={commitName}
+                  style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.06em',
+                    background:'var(--accent)', border:'none', color:'#fff', padding:'3px 8px',
+                    cursor:'pointer', flexShrink:0 }}>
+                  GO →
+                </button>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <span
+                  onClick={() => { setNameDraft(ci.client_name === 'New Client' ? '' : (ci.client_name || '')); setNameEditing(true); }}
+                  style={{ fontFamily:"'DM Serif Display',serif", fontSize:16, color:'var(--ink)',
+                    letterSpacing:'-0.2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+                    cursor:'text' }}>
+                  {ci.client_name || 'New Client'}
+                </span>
+                {isSetupIncomplete && (
+                  <button
+                    onClick={() => setClientInfoOpen(true)}
+                    style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+                      textTransform:'uppercase', color:'var(--amber)', background:'rgba(200,131,74,0.1)',
+                      border:'1px solid rgba(200,131,74,0.25)', padding:'2px 7px', whiteSpace:'nowrap',
+                      flexShrink:0, cursor:'pointer' }}
+                    className="desktop-only">
+                    Setup incomplete
+                  </button>
+                )}
+              </React.Fragment>
+            )}
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:8, flexShrink:0 }}>
+          <button onClick={() => setClientInfoOpen(true)}
+            style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
+              fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
+              cursor:'pointer' }}>
+            {isSetupIncomplete ? '+ Client Info' : 'Edit Info'}
+          </button>
+          {!demoMode && (
+            <button onClick={() => {
+              const name = (ci.client_name || 'audit').toLowerCase().replace(/\s+/g,'-');
+              downloadJSON(audit, `cro-audit-${name}-${audit.id}.json`);
+            }} style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
+              fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
+              cursor:'pointer' }} className="desktop-only">
+              Export JSON
+            </button>
+          )}
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+        </div>
+      </div>
+
+      {/* Stage container — overflow hidden blocks manual scrolling; navigation is CTA-only */}
+      <div style={{ flex:1, overflow:'hidden', position:'relative' }}>
+
+        {/* Checklist — flex column so sidebar/card scroll independently */}
+        <div data-stage="checklist" style={{ ...stageStyle(0), display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          <ChecklistStage audit={audit} onUpdateItem={onUpdateItem}
+            onScrollToFindings={() => setStageIndex(1)}
+            navSheetOpen={navSheetOpen} setNavSheetOpen={setNavSheetOpen}
+            onContextChange={setChecklistCtx}
+            cardGlowTrigger={cardGlowTrigger} />
+        </div>
+
+        {/* Findings */}
+        <div data-stage="findings" style={{ ...stageStyle(1), overflowY:'auto' }}>
+          <FindingsStage audit={audit} checkedIds={checkedIds} setCheckedIds={setCheckedIds} />
+        </div>
+
+        {/* Calculator */}
+        <div data-stage="calculator" style={{ ...stageStyle(2), overflowY:'auto' }}>
+          <CalculatorStage audit={audit} checkedIds={checkedIds} onUpdatePricing={onUpdatePricing} />
+        </div>
+
+        {/* Report */}
+        <div data-stage="report" style={{ ...stageStyle(3), overflowY:'auto' }}>
+          <ReportStage audit={audit} checkedIds={checkedIds} />
+        </div>
+
+      </div>
+
+      {/* Stage nav bar — visible on all breakpoints */}
+      <div className="mobile-bottom-bar no-print">
+        {stageIndex > 0 ? (
+          <button onClick={() => setStageIndex(stageIndex - 1)}
+            style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-3)', padding:'10px 18px',
+              fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:'0.06em',
+              textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
+            ← Back
+          </button>
+        ) : <div />}
+        <div style={{ flex:1, display:'flex', justifyContent:'center' }}>
+          {stageIndex === 0 ? (
+            <React.Fragment>
+              <span className="desktop-only" style={{ fontFamily:"'DM Mono',monospace", fontSize:10,
+                color:'var(--ink-5)', letterSpacing:'0.04em' }}>
+                {STAGE_LABELS[0]}
+              </span>
+              <button className="mobile-only" onClick={() => setNavSheetOpen(true)}
+                style={{ background:'var(--paper-3)', border:'none', padding:'6px 14px', cursor:'pointer',
+                  display:'flex', flexDirection:'column', gap:2, alignItems:'center' }}>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+                  textTransform:'uppercase', color:'var(--ink-5)' }}>≡ sections</span>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--accent)',
+                  letterSpacing:'0.04em' }}>
+                  {checklistCtx.short} · {checklistCtx.idx}/{checklistCtx.len}
+                </span>
+              </button>
+            </React.Fragment>
+          ) : (
+            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)',
+              letterSpacing:'0.04em' }}>
+              {STAGE_LABELS[stageIndex]}
+            </span>
+          )}
+        </div>
+        {NEXT_LABELS[stageIndex] ? (
+          <button onClick={() => setStageIndex(stageIndex + 1)}
+            style={{ background:'var(--accent)', border:'none', color:'#fff', padding:'10px 22px',
+              fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:'0.06em',
+              textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
+            {NEXT_LABELS[stageIndex]} →
+          </button>
+        ) : stageIndex === 3 ? (
+          <button onClick={() => window.print()}
+            style={{ background:'var(--accent)', border:'none', color:'#fff', padding:'10px 22px',
+              fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:'0.06em',
+              textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
+            Print / Export PDF
+          </button>
+        ) : <div />}
+      </div>
+
+      {/* Client info overlay */}
+      {clientInfoOpen && (
+        <ClientInfoOverlay audit={audit} lastAuditorName={store.last_auditor_name}
+          onSave={(data) => { onSaveClientInfo(audit.id, data); setClientInfoOpen(false); }}
+          onClose={() => setClientInfoOpen(false)} />
+      )}
+    </div>
+  );
+}
+
+function App() {
+  const [store, setStore] = useState(initStore);
+  const [appScreen, setAppScreen] = useState('list'); // 'list' | 'audit'
+  const [activeAuditId, setActiveAuditId] = useState(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem('cro-theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('cro-theme', theme); } catch {}
+  }, [theme]);
+
+  function toggleTheme() { setTheme(t => t === 'dark' ? 'light' : 'dark'); }
+
+  useEffect(() => {
+    if (!demoMode) {
+      try { localStorage.setItem(THEME.storage.key, JSON.stringify(store)); } catch {}
+    }
+  }, [store]);
+
+  function updateStore(fn) { setStore(prev => fn(prev)); }
+
+  function handleNew() {
+    const audit = newAudit(store.last_auditor_name);
+    updateStore(prev => ({ ...prev, audits: { ...prev.audits, [audit.id]: audit } }));
+    setActiveAuditId(audit.id);
+    setAppScreen('audit');
+  }
+
+  function handleOpen(id) {
+    setActiveAuditId(id);
+    setAppScreen('audit');
+  }
+
+  function handleArchive(id) {
+    const audit = store.audits[id];
+    const name = (audit.client_info?.client_name || 'audit').toLowerCase().replace(/\s+/g,'-');
+    downloadJSON(audit, `cro-audit-${name}-${id}.json`);
+    updateStore(prev => { const { [id]: _, ...rest } = prev.audits; return { ...prev, audits: rest }; });
+  }
+
+  function handleDuplicate(id) {
+    const audit = store.audits[id];
+    const newId = genId();
+    const now = new Date().toISOString();
+    updateStore(prev => ({
+      ...prev,
+      audits: { ...prev.audits, [newId]: { ...audit, id:newId, created_at:now, updated_at:now,
+        client_info:{ ...audit.client_info }, items:{ ...audit.items } } },
+    }));
+  }
+
+  function handleDelete(id) {
+    updateStore(prev => { const { [id]: _, ...rest } = prev.audits; return { ...prev, audits: rest }; });
+    if (activeAuditId === id) { setActiveAuditId(null); setAppScreen('list'); }
+  }
+
+  function handleImport(data) {
+    const newId = genId();
+    const now = new Date().toISOString();
+    updateStore(prev => ({
+      ...prev,
+      audits: { ...prev.audits, [newId]: { ...data, id:newId, updated_at:now } },
+    }));
+  }
+
+  function handleUpdateItem(auditId, itemId, updates) {
+    updateStore(prev => {
+      const audit = prev.audits[auditId];
+      return { ...prev, audits: { ...prev.audits, [auditId]: {
+        ...audit, updated_at: new Date().toISOString(),
+        items: { ...audit.items, [itemId]: { ...(audit.items[itemId] || {}), ...updates } },
+      }}};
+    });
+  }
+
+  function handleUpdatePricing(auditId, pricing) {
+    updateStore(prev => {
+      const audit = prev.audits[auditId];
+      return { ...prev, audits: { ...prev.audits, [auditId]: {
+        ...audit, updated_at: new Date().toISOString(), pricing,
+      }}};
+    });
+  }
+
+  function handleSaveClientInfo(auditId, { client_info, pricing }) {
+    updateStore(prev => {
+      const audit = prev.audits[auditId];
+      return {
+        ...prev,
+        last_auditor_name: client_info.auditor_name,
+        audits: { ...prev.audits, [auditId]: {
+          ...audit, client_info, updated_at: new Date().toISOString(),
+          pricing: { ...audit.pricing, audit_fee: pricing.audit_fee },
+        }},
+      };
+    });
+  }
+
+  if (appScreen === 'audit' && activeAuditId) {
+    return (
+      <AuditWorkspace
+        auditId={activeAuditId}
+        store={store}
+        onUpdateItem={handleUpdateItem}
+        onUpdatePricing={handleUpdatePricing}
+        onSaveClientInfo={handleSaveClientInfo}
+        onBack={() => setAppScreen('list')}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+      />
+    );
+  }
+
+  return (
+    <>
+      {demoMode && <div className="demo-banner">{THEME.copy.demoNotice}</div>}
+      <SiteHeader theme={theme} onToggleTheme={toggleTheme} />
+      <AuditList
+        store={store}
+        onNew={handleNew}
+        onOpen={handleOpen}
+        onArchive={handleArchive}
+        onDuplicate={handleDuplicate}
+        onDelete={handleDelete}
+        onImport={handleImport}
+        onSaveClientInfo={handleSaveClientInfo}
+      />
+    </>
+  );
+}
+// ─── END COMPONENTS C ───
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

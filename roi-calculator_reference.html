@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRO Audit System | ROI Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:   #e2e8f0;
+    --ink-2: #c8d0e0;
+    --ink-3: #94a3b8;
+    --ink-4: #64748b;
+    --ink-5: #475569;
+    --paper:   #0e1018;
+    --paper-2: #161925;
+    --paper-3: #1e2235;
+    --red: #f87171;
+    --red-light: rgba(248,113,113,0.12);
+    --green: #818cf8;
+    --green-light: rgba(129,140,248,0.12);
+    --amber: #a78bfa;
+    --amber-light: rgba(167,139,250,0.12);
+    --rule: #252840;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+    --accent: #6366f1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: var(--paper-2);
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding: 24px 48px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  .site-header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.3px;
+  }
+  .site-header .tagline {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .site-header .badge {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid var(--rule);
+    padding: 4px 10px;
+    color: var(--ink-4);
+  }
+
+  @media (max-width: 720px) {
+    .site-header {
+      padding: 24px 32px;
+    }  
+  }
+
+  /* ── LAYOUT ── */
+  .app {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+
+  /* ── WIZARD ── */
+  .wizard-wrap {
+    position: relative;
+    overflow: hidden;
+    transition: height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .wizard-step {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    transition: opacity 0.32s ease, transform 0.36s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, transform;
+  }
+
+  .wizard-step[data-state="active"] {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+  /* Inactive states: fade out + subtle directional nudge only */
+  .wizard-step[data-state="right"] {
+    opacity: 0;
+    transform: translateX(28px);
+    pointer-events: none;
+  }
+  .wizard-step[data-state="left"] {
+    opacity: 0;
+    transform: translateX(-28px);
+    pointer-events: none;
+  }
+
+  /* ── STEP 1: STACKED ROWS ── */
+  .step1-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* ── INLINE FIELDS WITHIN A CARD ── */
+  .field-row {
+    display: grid;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .field-row:last-child { margin-bottom: 0; }
+  .field-row-2 { grid-template-columns: 1fr 1fr; }
+  .field-row-4 { grid-template-columns: repeat(4, 1fr); }
+  .field-row .field { margin-bottom: 0; }
+
+  /* ── CSV PREVIEW LIST ── */
+  .csv-preview {
+    margin-top: 16px;
+    border: 1px solid var(--rule);
+    display: none;
+  }
+  .csv-preview.visible { display: block; }
+  .csv-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+  }
+  .csv-preview-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+  .csv-preview-toggle {
+    background: none;
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.15s;
+  }
+  .csv-preview-toggle:hover { opacity: 0.7; }
+  .csv-preview-list {
+    list-style: none;
+  }
+  .csv-preview-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--paper-3);
+    font-size: 13px;
+  }
+  .csv-preview-item:last-child { border-bottom: none; }
+  .csv-preview-name {
+    flex: 1;
+    color: var(--ink-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .csv-preview-section {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-4);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .csv-preview-more { display: none; }
+  .csv-preview-more.open { display: block; }
+
+  /* ── STEP 2: TOP ROW + FINDINGS ── */
+  .step2-top {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 32px;
+    align-items: start;
+    margin-bottom: 32px;
+  }
+
+  /* ── CONTINUE FOOTER ── */
+  .wizard-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    padding-top: 4px;
+  }
+
+  .continue-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.04em;
+  }
+
+  .btn-continue {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 14px 36px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-continue:disabled { opacity: 0.28; cursor: not-allowed; }
+  .btn-continue:not(:disabled):hover { opacity: 0.85; }
+
+  /* ── BACK BUTTON ── */
+  .step2-nav {
+    margin-bottom: 28px;
+  }
+  .btn-back {
+    background: none;
+    border: none;
+    color: var(--ink-4);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s;
+  }
+  .btn-back:hover { color: var(--ink); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    padding: 32px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    font-weight: 400;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-title .step {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: var(--accent);
+    color: #fff;
+    padding: 3px 8px;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 720px) {
+    .card { padding: 16px; }
+  }
+
+  /* ── FORM FIELDS ── */
+  .field {
+    margin-bottom: 20px;
+  }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .field input[type="text"],
+  .field input[type="number"] {
+    width: 100%;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus {
+    border-color: var(--accent);
+    background: var(--paper-3);
+  }
+  .field .hint {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-top: 5px;
+  }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-zone {
+    border: 2px dashed var(--rule);
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--paper);
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--ink);
+    background: var(--paper-2);
+  }
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .upload-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .upload-zone p {
+    font-size: 13px;
+    color: var(--ink-2);
+    margin-bottom: 4px;
+  }
+  .upload-zone .upload-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .upload-success {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--green-light);
+    border: 1px solid rgba(129,140,248,0.3);
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--green);
+  }
+  .upload-success.visible { display: flex; }
+
+  /* ── FINDINGS TABLE ── */
+  .findings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .findings-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+  .findings-count strong { color: var(--ink); }
+
+  .findings-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .findings-table th {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+  }
+  .findings-table th:first-child { width: 32px; }
+  .findings-table th.right { text-align: right; }
+
+  .findings-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--paper-2);
+    vertical-align: middle;
+    font-size: 13px;
+  }
+  .findings-table tr:last-child td { border-bottom: none; }
+  .findings-table tr.dimmed td { opacity: 0.35; }
+
+  .findings-table td.checkpoint-name {
+    font-size: 13px;
+    line-height: 1.4;
+    max-width: 300px;
+  }
+  .checkpoint-section {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .impact-pill {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    text-transform: uppercase;
+  }
+  .impact-pill.high { background: var(--red-light); color: var(--red); }
+  .impact-pill.medium { background: var(--amber-light); color: var(--amber); }
+  .impact-pill.low { background: var(--paper-2); color: var(--ink-3); }
+
+  .lift-range {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-2);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .revenue-impact {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--green);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .findings-table input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  /* ── ACCORDION ── */
+  .accordion {
+    margin-top: 12px;
+    border: 1px solid var(--rule);
+  }
+  .accordion-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    background: var(--paper);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    user-select: none;
+    color: var(--ink-2);
+    border: none;
+    width: 100%;
+    text-align: left;
+  }
+  .accordion-trigger:hover { background: var(--paper-2); }
+  .accordion-arrow { transition: transform 0.2s; font-size: 10px; }
+  .accordion-trigger.open .accordion-arrow { transform: rotate(180deg); }
+  .accordion-body { display: none; }
+  .accordion-body.open { display: block; }
+
+  /* ── OUTPUT PANEL ── */
+  .output-panel { }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-bottom: 24px;
+  }
+  .metric-cell {
+    background: var(--paper-2);
+    padding: 20px;
+  }
+  .metric-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .metric-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .metric-value.green { color: var(--green); }
+  .metric-value.large { font-size: 36px; }
+  .metric-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-top: 4px;
+  }
+
+  /* ── ROI PITCH ── */
+  .pitch-box {
+    background: var(--paper);
+    color: var(--ink);
+    padding: 28px;
+    /* margin-bottom: 24px; */
+    position: relative;
+    overflow: hidden;
+  }
+  .pitch-box::before {
+    content: '"';
+    font-family: 'DM Sans', sans-serif;
+    font-size: 120px;
+    color: var(--paper-2);
+    position: absolute;
+    top: 40px;
+    left: 16px;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .pitch-box p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--ink-3);
+    position: relative;
+    z-index: 1;
+  }
+  .pitch-box p strong { color: var(--ink); }
+  .pitch-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-5);
+    margin-bottom: 14px;
+    display: block;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── AUDIT FEE ── */
+  .fee-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .fee-row label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+  .fee-row input[type="number"] {
+    flex: 1;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 9px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+  }
+  .fee-row input:focus { border-color: var(--accent); background: var(--paper-3); }
+
+  /* ── ROI BAR ── */
+  .roi-bar-wrap {
+    display: none;
+  }
+  .roi-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .roi-bar-track {
+    height: 6px;
+    background: var(--paper-3);
+    overflow: hidden;
+  }
+  .roi-bar-fill {
+    height: 100%;
+    background: var(--green);
+    width: 0%;
+    transition: width 0.6s ease;
+  }
+
+  /* ── FREELANCER PANEL ── */
+  .freelancer-panel {
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    margin-bottom: 24px;
+  }
+  .freelancer-panel .card-title {
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink-2);
+  }
+  .freelancer-panel .card-title .step {
+    background: var(--accent);
+  }
+  .fp-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .fp-section:last-child { border-bottom: none; }
+  .fp-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 10px;
+  }
+  .fp-suggested {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .fp-suggested-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--green);
+  }
+  .fp-suggested-pct {
+    font-size: 13px;
+    color: var(--ink-3);
+    font-style: italic;
+  }
+  .fp-range {
+    font-size: 12px;
+    color: var(--ink-4);
+    margin-bottom: 12px;
+  }
+  .fp-override-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .fp-override-row label {
+    font-size: 11px;
+    color: var(--ink-3);
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .fp-override-row input {
+    flex: 1;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 8px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+  }
+  .fp-override-row input:focus { border-color: var(--accent); }
+  .fp-roi-result {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .fp-roi-sub {
+    font-size: 12px;
+    color: var(--ink-4);
+  }
+  .fp-sanity {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .fp-sanity-inputs {
+    display: flex;
+    gap: 10px;
+  }
+  .fp-sanity-inputs .fp-field {
+    flex: 1;
+  }
+  .fp-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-3);
+    margin-bottom: 4px;
+  }
+  .fp-field input {
+    width: 100%;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 8px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+  }
+  .fp-field input:focus { border-color: var(--accent); }
+  .fp-flag {
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 2px;
+    display: none;
+  }
+  .fp-flag.pass { background: rgba(34,197,94,0.1); color: #86efac; display: block; }
+  .fp-flag.fail { background: rgba(248,113,113,0.1); color: #fca5a5; display: block; }
+  .fp-flag.neutral { background: var(--paper-3); color: var(--ink-4); display: block; }
+
+  /* ── PRINT BUTTON ── */
+  .btn-print {
+    display: block;
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 14px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-print:hover { opacity: 0.85; }
+  .btn-print:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--ink-3);
+  }
+  .empty-state .empty-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+  .empty-state p { font-size: 13px; line-height: 1.6; max-width: 260px; margin: 0 auto; }
+
+  /* ── NOTICE ── */
+  .notice {
+    background: var(--amber-light);
+    border: 1px solid rgba(167,139,250,0.4);
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--amber);
+    margin-bottom: 20px;
+    display: none;
+  }
+  .notice.visible { display: block; }
+
+  /* ── MOBILE STICKY BUTTON (hidden on desktop) ── */
+  .mobile-sticky-btn {
+    display: none;
+  }
+
+  /* ── MOBILE STYLES ── */
+  @media (max-width: 720px) {
+    .mobile-sticky-btn {
+      display: block;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 18px 24px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      z-index: 200;
+      transition: opacity 0.15s;
+    }
+    .mobile-sticky-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+    .mobile-sticky-btn:not(:disabled):hover { opacity: 0.85; }
+    .mobile-sticky-btn[data-hidden="true"] { display: none; }
+    .app { padding: 24px 16px 60px; }
+
+    /* Stack sanity-check fields */
+    .fp-sanity-inputs { flex-direction: column; }
+
+    /* Hide in-step export button on mobile (replaced by sticky button) */
+    .btn-print { display: none; }
+
+    /* Findings table: horizontal scroll */
+    #findingsBody { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .findings-table { width: max-content; min-width: 100%; }
+
+    /* Stack all field rows to single column */
+    .field-row-2,
+    .field-row-4 { grid-template-columns: 1fr; }
+
+    /* Step 3: stack Your Pricing above Revenue Impact */
+    .step2-top {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Ensure metrics card is fully visible */
+    #metricsCard { width: 100%; }
+
+    /* Metric grid: 1 column on small screens */
+    .metric-grid { grid-template-columns: 1fr; }
+    .metric-cell[style*="grid-column"] { grid-column: auto !important; }
+
+    /* On mobile: keep hint text, hide only the button */
+    .wizard-footer { justify-content: center; }
+    .wizard-footer .btn-continue { display: none; }
+
+    /* Push step content up so last card clears the sticky button */
+    .wizard-step { padding-bottom: 80px; }
+  }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { background: #fff; color: #111; font-size: 13px; }
+
+    /* ── Hide UI chrome and input-only steps ── */
+    .site-header, .btn-print, .upload-zone, .fee-row, .roi-bar-wrap,
+    .accordion, .no-print, .wizard-footer, .step2-nav,
+    #step1 { display: none !important; }
+
+    /* ── Wizard: make all remaining steps flow normally ── */
+    .app { padding: 0; max-width: 100%; }
+    .wizard-wrap { overflow: visible !important; height: auto !important; }
+    .wizard-step { position: static !important; transform: none !important; opacity: 1 !important; pointer-events: auto !important; }
+    .step2-top { display: block !important; }
+    .output-panel { position: static; }
+
+    /* ── Print cover: white with indigo accent rule ── */
+    .print-cover {
+      display: flex !important;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 200px;
+      background: #fff !important;
+      border-bottom: 3px solid #4338ca;
+      padding: 32px 0 24px;
+      margin-bottom: 32px;
+      page-break-after: avoid;
+    }
+    .print-cover .cover-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #4338ca;
+      margin-bottom: 10px;
+    }
+    .print-cover h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 30px;
+      font-weight: 400;
+      color: #111;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .print-cover .cover-meta {
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* ── Cards ── */
+    .card { background: #fff !important; border: 1px solid #ddd; box-shadow: none; padding: 24px; }
+    .card-title { font-size: 15px; color: #111 !important; border-color: #ddd !important; }
+    .card-title .step { background: #4338ca !important; color: #fff !important; }
+
+    /* ── Findings table: hide checkbox column ── */
+    .findings-table th:first-child,
+    .findings-table td:first-child { display: none !important; }
+    .findings-table th { background: #f5f5f5 !important; color: #444 !important; }
+    .findings-table td { color: #222 !important; border-color: #eee !important; }
+    .findings-table tr.dimmed td { opacity: 0.4; }
+
+    /* ── Impact pills ── */
+    .impact-pill.high   { background: #fef2f2 !important; color: #b91c1c !important; border: 1px solid #fecaca; }
+    .impact-pill.medium { background: #f5f3ff !important; color: #6d28d9 !important; border: 1px solid #ddd6fe; }
+    .impact-pill.low    { background: #f5f5f5 !important; color: #555 !important; border: 1px solid #e5e7eb; }
+
+    /* ── Revenue metrics ── */
+    .metric-grid { background: #eee !important; border-color: #eee !important; }
+    .metric-cell { background: #fff !important; }
+    .metric-value { font-size: 24px; color: #111 !important; }
+    .metric-value.large { font-size: 30px; }
+    .metric-value.green { color: #4338ca !important; }
+    .metric-label { color: #555 !important; }
+    .metric-sub { color: #888 !important; }
+    #outROI { color: #4338ca !important; }
+
+    /* ── Pitch box: white with left accent border, no dark background ── */
+    .pitch-box {
+      background: #f8f8fb !important;
+      border: 1px solid #ddd !important;
+      border-left: 4px solid #4338ca !important;
+    }
+    .pitch-box::before { display: none !important; }
+    .pitch-label { display: none !important; }
+    .pitch-box p { color: #222 !important; }
+    .pitch-box p strong { color: #111 !important; }
+
+    /* ── Findings header ── */
+    .findings-header { border-color: #ddd !important; }
+    .findings-count { color: #555 !important; }
+    .findings-count strong { color: #111 !important; }
+
+    /* ── Misc ── */
+    .revenue-impact { color: #4338ca !important; }
+    * { border-color: #ddd; }
+  }
+
+  .print-cover { display: none; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>CRO Audit System | ROI Calculator</h1>
+  <span class="tagline">Shopify · Notion CSV Edition</span>
+  <span class="badge">v3.0</span>
+</header>
+
+<!-- PRINT COVER (hidden on screen) -->
+<div class="print-cover" id="printCover">
+  <div class="cover-label">CRO Audit Results</div>
+  <h2 id="coverClientName">Client Store</h2>
+  <div class="cover-meta">
+    Prepared by <span id="coverAuditor">—</span> &nbsp;·&nbsp; <span id="coverDate"></span>
+  </div>
+</div>
+
+<div class="app">
+  <div class="wizard-wrap" id="wizardWrap">
+
+    <!-- ══ STEP 1: Inputs ══ -->
+    <div class="wizard-step" id="step1">
+      <div class="step1-grid">
+
+        <!-- 01 Client & Auditor -->
+        <div class="card">
+          <div class="card-title"><span class="step">01</span> Client &amp; Auditor</div>
+          <div class="field-row field-row-2">
+            <div class="field">
+              <label>Client Name</label>
+              <input type="text" id="clientName" placeholder="Acme Boards Co." oninput="recalc()">
+            </div>
+            <div class="field">
+              <label>Auditor Name</label>
+              <input type="text" id="auditorName" placeholder="Your name" oninput="recalc()">
+            </div>
+          </div>
+        </div>
+
+        <!-- 02 Store Metrics -->
+        <div class="card">
+          <div class="card-title"><span class="step">02</span> Store Metrics</div>
+          <div class="field-row field-row-4">
+            <div class="field">
+              <label>Monthly Revenue ($)</label>
+              <input type="number" id="monthlyRevenue" placeholder="50000" oninput="recalc()">
+            </div>
+            <div class="field">
+              <label>Average Order Value ($)</label>
+              <input type="number" id="aov" placeholder="85" oninput="recalc()">
+            </div>
+            <div class="field">
+              <label>Conversion Rate (%)</label>
+              <input type="number" id="cvr" placeholder="1.8" step="0.1" oninput="recalc()">
+              <div class="hint">Shopify avg: 1.8%</div>
+            </div>
+            <div class="field">
+              <label>Audit Fee ($)</label>
+              <input type="number" id="auditFee" placeholder="2500" oninput="recalc()">
+            </div>
+          </div>
+        </div>
+
+        <!-- 03 Upload CSV -->
+        <div class="card">
+          <div class="card-title"><span class="step">03</span> Upload Notion CSV Export</div>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="csvInput" accept=".csv" onchange="handleFile(this.files[0])">
+            <span class="upload-icon">⬆</span>
+            <p>Drop your Notion CSV export here</p>
+            <p class="upload-sub">From Notion: ··· → Export → CSV format</p>
+          </div>
+          <div class="upload-success" id="uploadSuccess">
+            <span>✓</span>
+            <span id="uploadMsg">Loaded</span>
+          </div>
+          <div class="notice" id="noFailsNotice">
+            No failed items found in this export. Make sure you've marked items as "Fail" in your Notion audit before exporting.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Step 1 footer -->
+      <div class="wizard-footer">
+        <span class="continue-hint" id="continueHint">Fill in store metrics and upload your Notion CSV to continue</span>
+        <button class="btn-continue" id="continueBtn" onclick="goToStep(2)" disabled>
+          Review Findings &nbsp;→
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 2: Configure Findings ══ -->
+    <div class="wizard-step" id="step2">
+
+      <div class="step2-nav">
+        <button class="btn-back" onclick="goToStep(1)">← Back to inputs</button>
+      </div>
+
+      <!-- 06 Findings — full width -->
+      <div class="card" id="findingsCard" style="margin-bottom:24px">
+        <div class="findings-header">
+          <div class="card-title" style="margin-bottom:0; border-bottom:none; padding-bottom:0">
+            <span class="step">06</span> Findings
+          </div>
+          <span class="findings-count" id="findingsCount"></span>
+        </div>
+        <div id="findingsBody">
+          <div class="empty-state">
+            <span class="empty-icon">📋</span>
+            <p>Upload your Notion CSV export to populate findings from failed checkpoints.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 footer -->
+      <div class="wizard-footer">
+        <span class="continue-hint" id="findingsHint"></span>
+        <button class="btn-continue" onclick="goToStep(3)">
+          View Results &nbsp;→
+        </button>
+      </div>
+
+    </div><!-- end step2 -->
+
+    <!-- ══ STEP 3: Results ══ -->
+    <div class="wizard-step" id="step3">
+
+      <div class="step2-nav">
+        <button class="btn-back" onclick="goToStep(2)">← Back to findings</button>
+      </div>
+
+      <!-- Top row: 04 Your Pricing | 05 Revenue Impact Summary -->
+      <div class="step2-top">
+
+        <!-- 04 Your Pricing -->
+        <div class="card freelancer-panel no-print">
+          <div class="card-title"><span class="step">04</span> Your Pricing</div>
+
+          <div class="fp-section">
+            <div class="fp-label">Suggested Implementation Fee</div>
+            <div class="fp-suggested">
+              <span class="fp-suggested-value" id="fpSuggestedValue">—</span>
+              <span class="fp-suggested-pct" id="fpSuggestedPct"></span>
+            </div>
+            <div class="fp-range" id="fpRange">Enter store metrics and upload CSV to see your recommended fee range.</div>
+            <div class="fp-override-row">
+              <label>Your fee ($)</label>
+              <input type="number" id="fpImplFee" placeholder="0" oninput="recalc()">
+            </div>
+          </div>
+
+          <div class="fp-section">
+            <div class="fp-label">True Client ROI (audit + implementation)</div>
+            <div class="fp-roi-result" id="fpTrueROI">—</div>
+            <div class="fp-roi-sub" id="fpTrueROISub">Set your implementation fee above to calculate</div>
+          </div>
+
+          <div class="fp-section">
+            <div class="fp-label">Hourly Rate Sanity Check</div>
+            <div class="fp-sanity">
+              <div class="fp-sanity-inputs">
+                <div class="fp-field">
+                  <label>Your min. hourly rate ($)</label>
+                  <input type="number" id="fpHourlyRate" placeholder="75" oninput="recalc()">
+                </div>
+                <div class="fp-field">
+                  <label>Est. hours for this project</label>
+                  <input type="number" id="fpHours" placeholder="20" oninput="recalc()">
+                </div>
+              </div>
+              <div class="fp-flag neutral" id="fpSanityFlag">Enter your hourly rate and estimated hours to check your fee.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 05 Revenue Impact Summary -->
+        <div class="card" id="metricsCard">
+          <div class="card-title"><span class="step">05</span> Revenue Impact Summary</div>
+
+          <div class="metric-grid">
+            <div class="metric-cell">
+              <div class="metric-label">Monthly Sessions</div>
+              <div class="metric-value" id="outSessions">—</div>
+              <div class="metric-sub">estimated</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-label">Current CVR</div>
+              <div class="metric-value" id="outCVR">—</div>
+              <div class="metric-sub">baseline</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-label">Projected CVR</div>
+              <div class="metric-value green" id="outNewCVR">—</div>
+              <div class="metric-sub">after fixes</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-label">Monthly at Risk</div>
+              <div class="metric-value green" id="outMonthly">—</div>
+              <div class="metric-sub">recoverable revenue</div>
+            </div>
+            <div class="metric-cell" style="grid-column: 1 / -1">
+              <div class="metric-label">Annual Revenue at Risk</div>
+              <div class="metric-value large green" id="outAnnual">—</div>
+              <div class="metric-sub" id="outROI">Upload CSV and enter metrics to calculate</div>
+            </div>
+          </div>
+
+          <div class="roi-bar-wrap" id="roiBarWrap">
+            <div class="roi-bar-labels">
+              <span>Total investment</span>
+              <span id="roiBarLabel">—</span>
+            </div>
+            <div class="roi-bar-track">
+              <div class="roi-bar-fill" id="roiBarFill"></div>
+            </div>
+          </div>
+
+          <div class="pitch-box" id="pitchBox">
+            <span class="pitch-label">ROI Summary — copy this into your proposal</span>
+            <p id="pitchText">Enter store metrics and upload your audit CSV to generate the ROI pitch paragraph.</p>
+          </div>
+
+          <button class="btn-print" id="printBtn" onclick="window.print()" disabled>
+            Export PDF Report
+          </button>
+        </div>
+
+      </div>
+
+    </div><!-- end step3 -->
+
+  </div><!-- end wizard-wrap -->
+</div>
+
+<!-- Sticky mobile continue button — outside wizard so position:fixed works -->
+<button class="mobile-sticky-btn" id="mobileStickyBtn" onclick="mobileStickyClick()"></button>
+
+<script>
+// ── ISSUE DATABASE ──
+// Each entry: [notionNameFragment, section, impactLevel, liftMin%, liftMax%]
+// notionNameFragment is matched against the "Name" column in the Notion CSV
+const ISSUE_DB = [
+  // General
+  ["Sticky Header",           "General",            "Medium", 0.05, 0.12],
+  ["Search Visibility",       "General",            "Medium", 0.08, 0.18],
+  ["Predictive Search",       "General",            "High",   0.10, 0.22],
+  ["Logo Link",               "General",            "Low",    0.02, 0.05],
+  ["Typography Hierarchy",    "General",            "Medium", 0.03, 0.08],
+  ["Readability",             "General",            "Low",    0.02, 0.06],
+  ["Tap Targets",             "General",            "Medium", 0.06, 0.15],
+  ["Footer Policies",         "General",            "Low",    0.03, 0.08],
+  ["Social Links",            "General",            "Low",    0.01, 0.03],
+  ["404 Page",                "General",            "Low",    0.02, 0.06],
+  // Collection Page
+  ["Clear Titles",            "Collection Page",    "Low",    0.03, 0.07],
+  ["Breadcrumbs",             "Collection Page",    "Medium", 0.04, 0.10],
+  ["Filter Logic",            "Collection Page",    "Medium", 0.08, 0.18],
+  ["Active Filters",          "Collection Page",    "Low",    0.04, 0.10],
+  ["Sorting Options",         "Collection Page",    "Low",    0.05, 0.12],
+  ["Product Count",           "Collection Page",    "Low",    0.02, 0.05],
+  ["Secondary Hover Image",   "Collection Page",    "Medium", 0.07, 0.16],
+  ["Price Visibility",        "Collection Page",    "Low",    0.05, 0.12],
+  ["Quick Add",               "Collection Page",    "High",   0.12, 0.28],
+  ["Grid Consistency",        "Collection Page",    "Medium", 0.04, 0.10],
+  // Product Page
+  ["High-Res Images",         "Product Page",       "Medium", 0.10, 0.22],
+  ["Above-the-Fold CTA",      "Product Page",       "High",   0.30, 0.60],
+  ["Variant Clarity",         "Product Page",       "Low",    0.08, 0.18],
+  ["Stock Status",            "Product Page",       "Low",    0.05, 0.12],
+  ["Price Placement",         "Product Page",       "Low",    0.06, 0.14],
+  ["Value Props",             "Product Page",       "Medium", 0.10, 0.22],
+  ["Description Tabs",        "Product Page",       "Medium", 0.05, 0.12],
+  ["Social Proof",            "Product Page",       "High",   0.18, 0.40],
+  ["User Reviews",            "Product Page",       "Medium", 0.12, 0.26],
+  ["Inventory Urgency",       "Product Page",       "Medium", 0.10, 0.22],
+  // Cart
+  ["Cart Trigger",            "Cart",               "Medium", 0.08, 0.18],
+  ["Order Summary",           "Cart",               "Low",    0.04, 0.10],
+  ["Quantity Adjustment",     "Cart",               "Low",    0.03, 0.08],
+  ["Empty State",             "Cart",               "Low",    0.04, 0.10],
+  ["Discount Field",          "Cart",               "Low",    0.05, 0.12],
+  ["Trust Badges",            "Cart",               "Low",    0.06, 0.14],
+  ["Shipping Calculator",     "Cart",               "Medium", 0.12, 0.26],
+  ["Free Shipping Bar",       "Cart",               "High",   0.20, 0.45],
+  ["Upsells",                 "Cart",               "Medium", 0.15, 0.30],
+  ["Sticky CTA",              "Cart",               "Medium", 0.08, 0.18],
+  // Checkout
+  ["Guest Checkout",          "Checkout",           "Medium", 0.20, 0.40],
+  ["Breadcrumb Progress",     "Checkout",           "Low",    0.04, 0.10],
+  ["Express Checkout",        "Checkout",           "High",   0.25, 0.55],
+  ["Auto-fill Support",       "Checkout",           "Medium", 0.08, 0.18],
+  ["Order Summary Toggle",    "Checkout",           "Low",    0.03, 0.08],
+  ["Error Handling",          "Checkout",           "Medium", 0.06, 0.14],
+  ["Checkout Branding",       "Checkout",           "Low",    0.04, 0.10],
+  ["Abandoned Checkout",      "Checkout",           "High",   0.30, 0.60],
+  ["Post-Purchase Page",      "Checkout",           "Medium", 0.04, 0.10],
+  ["Order Confirmation Email","Checkout",           "Medium", 0.05, 0.12],
+  // Mobile/Performance
+  ["Page Speed",              "Mobile/Performance", "High",   0.20, 0.50],
+  ["No Content Shifting",     "Mobile/Performance", "High",   0.08, 0.18],
+  ["LCP",                     "Mobile/Performance", "High",   0.10, 0.22],
+  ["Image Format",            "Mobile/Performance", "Medium", 0.05, 0.12],
+  ["App Bloat",               "Mobile/Performance", "Medium", 0.06, 0.14],
+  ["Third-Party Scripts",     "Mobile/Performance", "Medium", 0.05, 0.12],
+  ["Mobile Navigation",       "Mobile/Performance", "Medium", 0.06, 0.14],
+  ["Input Font Size",         "Mobile/Performance", "Medium", 0.05, 0.12],
+  ["Thumb-Zone",              "Mobile/Performance", "Medium", 0.07, 0.16],
+  ["Exit Intent",             "Mobile/Performance", "Medium", 0.10, 0.22],
+];
+
+// ── LIFT CAPS ──
+const LIFT_CAP_MIN = 3.0; // %
+const LIFT_CAP_MAX = 6.0; // %
+
+// ── STATE ──
+let allFailures = [];    // enriched from CSV
+let checked = new Set(); // indices of checked failures
+let suggestedImplFee = 0; // updated by recalc(); used as fallback when input is blank
+
+// ── CSV PARSING ──
+function parseNotionCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+
+  // Parse header — handle quoted fields
+  const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+
+  const nameIdx    = headers.findIndex(h => h === 'name');
+  const statusIdx  = headers.findIndex(h => h === 'status');
+  const sectionIdx = headers.findIndex(h => h === 'section');
+  const impactIdx  = headers.findIndex(h => h === 'impact');
+
+  if (nameIdx === -1 || statusIdx === -1) return null; // bad format
+
+  const failures = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseCSVLine(lines[i]);
+    if (!cols.length) continue;
+    const status = (cols[statusIdx] || '').trim().toLowerCase();
+    if (status !== 'fail') continue;
+
+    const name    = (cols[nameIdx]    || '').trim();
+    const section = sectionIdx > -1 ? (cols[sectionIdx] || '').trim() : '';
+    const impact  = impactIdx  > -1 ? (cols[impactIdx]  || '').trim() : '';
+
+    // Match to issue DB
+    const match = matchIssue(name, section);
+    failures.push({
+      name,
+      section,
+      impact: impact || (match ? match[2] : 'Low'),
+      liftMin: match ? match[3] : 0.05,
+      liftMax: match ? match[4] : 0.10,
+    });
+  }
+  return failures;
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (ch === ',' && !inQuote) {
+      result.push(cur); cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+function matchIssue(name, section) {
+  const nameLower = name.toLowerCase();
+  let best = null;
+  let bestScore = 0;
+  for (const issue of ISSUE_DB) {
+    const frag = issue[0].toLowerCase();
+    if (nameLower.includes(frag)) {
+      const score = frag.length;
+      if (score > bestScore) { best = issue; bestScore = score; }
+    }
+  }
+  return best;
+}
+
+// ── FILE HANDLER ──
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const result = parseNotionCSV(e.target.result);
+    if (result === null) {
+      alert('This doesn\'t look like a Notion CSV export. Make sure you\'re exporting the CRO Audit Checklist database as CSV from Notion.');
+      return;
+    }
+
+    document.getElementById('noFailsNotice').classList.toggle('visible', result.length === 0);
+    document.getElementById('uploadSuccess').classList.toggle('visible', result.length > 0);
+
+    if (result.length > 0) {
+      document.getElementById('uploadMsg').textContent =
+        `${result.length} failed item${result.length !== 1 ? 's' : ''} loaded from ${file.name}`;
+    }
+
+    // Sort: High → Medium → Low, then preserve order within
+    const order = {high:0, medium:1, low:2};
+    result.sort((a,b) => (order[a.impact.toLowerCase()]||2) - (order[b.impact.toLowerCase()]||2));
+
+    allFailures = result;
+    // Auto-check top 10
+    checked = new Set(result.slice(0, 10).map((_,i) => i));
+
+    renderCsvPreview();
+    renderFindings();
+    recalc();
+    checkContinue();
+    syncWrapHeight();
+  };
+  reader.readAsText(file);
+}
+
+// ── RENDER FINDINGS ──
+function renderFindings() {
+  const body = document.getElementById('findingsBody');
+  if (!allFailures.length) {
+    body.innerHTML = `<div class="empty-state"><span class="empty-icon">📋</span><p>Upload your Notion CSV export to populate findings from failed checkpoints.</p></div>`;
+    document.getElementById('findingsCount').textContent = '';
+    return;
+  }
+
+  const revenue    = parseFloat(document.getElementById('monthlyRevenue').value) || 0;
+  const aov        = parseFloat(document.getElementById('aov').value) || 85;
+  const cvrRaw     = parseFloat(document.getElementById('cvr').value) || 1.8;
+  const cvr        = cvrRaw / 100;
+  const sessions   = revenue > 0 ? revenue / (aov * cvr) : 0;
+
+  const top10 = allFailures.slice(0, 10);
+  const rest  = allFailures.slice(10);
+
+  function buildRows(items, startIdx) {
+    return items.map((item, i) => {
+      const idx = startIdx + i;
+      const mid = (item.liftMin + item.liftMax) / 2 / 100;
+      const monthlyImpact = sessions * aov * mid;
+      const isChecked = checked.has(idx);
+      const impactClass = item.impact.toLowerCase();
+
+      return `<tr class="${isChecked ? '' : 'dimmed'}" id="row-${idx}">
+        <td><input type="checkbox" ${isChecked ? 'checked' : ''}
+          onchange="toggleCheck(${idx}, this.checked)"></td>
+        <td class="checkpoint-name">
+          ${item.name.replace(/:.*/,'').trim()}
+          <span class="checkpoint-section">${item.section}</span>
+        </td>
+        <td><span class="impact-pill ${impactClass}">${item.impact}</span></td>
+        <td class="lift-range">+${item.liftMin}–${item.liftMax}%</td>
+        <td class="revenue-impact">${revenue > 0 ? '+$' + fmt(monthlyImpact) + '/mo' : '—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  let html = `<table class="findings-table">
+    <thead><tr>
+      <th></th>
+      <th>Checkpoint</th>
+      <th>Impact</th>
+      <th class="right">CVR Lift</th>
+      <th class="right">Monthly Recovery</th>
+    </tr></thead>
+    <tbody>${buildRows(top10, 0)}</tbody>
+  </table>`;
+
+  if (rest.length) {
+    html += `<div class="accordion">
+      <button class="accordion-trigger" onclick="toggleAccordion(this)">
+        ${rest.length} additional finding${rest.length !== 1 ? 's' : ''}
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <table class="findings-table">
+          <tbody>${buildRows(rest, 10)}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  body.innerHTML = html;
+  document.getElementById('findingsCount').innerHTML =
+    `<strong>${allFailures.length}</strong> failures · <strong>${checked.size}</strong> included`;
+}
+
+function toggleCheck(idx, val) {
+  if (val) checked.add(idx); else checked.delete(idx);
+  const row = document.getElementById(`row-${idx}`);
+  if (row) row.classList.toggle('dimmed', !val);
+  document.getElementById('findingsCount').innerHTML =
+    `<strong>${allFailures.length}</strong> failures · <strong>${checked.size}</strong> included`;
+  recalc();
+}
+
+function toggleAccordion(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+
+// ── RECALC ──
+function recalc() {
+  const clientName  = document.getElementById('clientName').value.trim() || 'the client store';
+  const auditorName = document.getElementById('auditorName').value.trim() || 'your auditor';
+  const revenue     = parseFloat(document.getElementById('monthlyRevenue').value) || 0;
+  const aov         = parseFloat(document.getElementById('aov').value) || 85;
+  const cvrRaw      = parseFloat(document.getElementById('cvr').value) || 1.8;
+  const auditFee    = parseFloat(document.getElementById('auditFee').value) || 0;
+  // implFee resolved after suggestedImplFee is computed below — do not read here
+  const cvr         = cvrRaw / 100;
+  const sessions    = revenue > 0 ? revenue / (aov * cvr) : 0;
+
+  // Update cover
+  document.getElementById('coverClientName').textContent = clientName;
+  document.getElementById('coverAuditor').textContent = auditorName;
+  document.getElementById('coverDate').textContent = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  // Aggregate checked failures
+  let totalLiftMid = 0;
+  let totalLiftMin = 0;
+  let totalLiftMax = 0;
+  for (const idx of checked) {
+    const item = allFailures[idx];
+    if (!item) continue;
+    totalLiftMid += (item.liftMin + item.liftMax) / 2;
+    totalLiftMin += item.liftMin;
+    totalLiftMax += item.liftMax;
+  }
+
+  // Cap
+  const cappedMid = Math.min(totalLiftMid, (LIFT_CAP_MIN + LIFT_CAP_MAX) / 2);
+  const cappedMin = Math.min(totalLiftMin, LIFT_CAP_MIN);
+  const cappedMax = Math.min(totalLiftMax, LIFT_CAP_MAX);
+
+  const liftMidDec = cappedMid / 100;
+  const newCVR     = cvr + liftMidDec;
+  const newRevenue = sessions * aov * newCVR;
+  const monthlyRecovery = newRevenue - revenue;
+  const annualRecovery  = monthlyRecovery * 12;
+  const roiMultiple     = auditFee > 0 ? annualRecovery / auditFee : 0;
+  const paybackMonths   = auditFee > 0 && monthlyRecovery > 0 ? auditFee / monthlyRecovery : 0;
+
+  // ── FREELANCER PANEL ──
+  const hasData = revenue > 0 && sessions > 0;
+  if (hasData && annualRecovery > 0) {
+    // Determine suggested % based on ratio of high-impact failures
+    let highCount = 0;
+    let medCount  = 0;
+    for (const idx of checked) {
+      const item = allFailures[idx];
+      if (!item) continue;
+      if (item.impact === 'High')   highCount++;
+      if (item.impact === 'Medium') medCount++;
+    }
+    const total = checked.size || 1;
+    const highRatio = highCount / total;
+    let suggestedPct = highRatio >= 0.5 ? 20 : highRatio >= 0.25 ? 15 : 10;
+    const suggestedFee = Math.round(annualRecovery * (suggestedPct / 100));
+    const minFee = Math.round(annualRecovery * 0.10);
+    const maxFee = Math.round(annualRecovery * 0.20);
+    suggestedImplFee = suggestedFee; // store for fallback — must be set before implFee is read
+
+    document.getElementById('fpSuggestedValue').textContent = '$' + fmt(suggestedFee);
+    document.getElementById('fpSuggestedPct').textContent   = `${suggestedPct}% of annual recovery — based on ${highCount} high-impact finding${highCount !== 1 ? 's' : ''}`;
+    document.getElementById('fpRange').textContent          = `Typical range: $${fmt(minFee)} (10%) – $${fmt(maxFee)} (20%). Adjust below if needed.`;
+
+    // Pre-fill placeholder if input is blank
+    const implInput = document.getElementById('fpImplFee');
+    if (!implInput.value) implInput.placeholder = fmt(suggestedFee);
+  } else {
+    document.getElementById('fpSuggestedValue').textContent = '—';
+    document.getElementById('fpSuggestedPct').textContent   = '';
+    document.getElementById('fpRange').textContent          = 'Enter store metrics and upload CSV to see your recommended fee range.';
+    suggestedImplFee = 0;
+  }
+
+  // Resolve implFee now that suggestedImplFee reflects the current run
+  const implFee        = parseFloat(document.getElementById('fpImplFee').value) || suggestedImplFee;
+  const totalInvestment    = auditFee + implFee;
+  const totalROIMultiple   = totalInvestment > 0 ? annualRecovery / totalInvestment : 0;
+  const totalPaybackMonths = totalInvestment > 0 && monthlyRecovery > 0 ? totalInvestment / monthlyRecovery : 0;
+
+  recalcFP();
+
+  // Update metrics
+  document.getElementById('outSessions').textContent  = hasData ? fmt(sessions)   : '—';
+  document.getElementById('outCVR').textContent       = hasData ? cvrRaw.toFixed(2) + '%' : '—';
+  document.getElementById('outNewCVR').textContent    = hasData ? (newCVR * 100).toFixed(2) + '%' : '—';
+  document.getElementById('outMonthly').textContent   = hasData ? '$' + fmt(monthlyRecovery) : '—';
+  document.getElementById('outAnnual').textContent    = hasData ? '$' + fmt(annualRecovery) : '—';
+
+  // ROI sub-line — use total investment (audit + impl) so number is realistic
+  let roiLine = 'Upload CSV and enter metrics to calculate';
+  if (hasData && totalInvestment > 0 && totalROIMultiple > 0) {
+    roiLine = `${totalROIMultiple.toFixed(1)}× return on total investment · pays back in ${totalPaybackMonths.toFixed(1)} months`;
+  } else if (hasData) {
+    roiLine = `Enter your audit fee to see ROI multiple`;
+  }
+  document.getElementById('outROI').textContent = roiLine;
+
+  // ROI bar — scale against total investment
+  if (hasData && totalInvestment > 0 && annualRecovery > 0) {
+    const pct = Math.min((annualRecovery / (totalInvestment * 20)) * 100, 100);
+    document.getElementById('roiBarFill').style.width = pct + '%';
+    document.getElementById('roiBarLabel').textContent = totalROIMultiple > 0 ? totalROIMultiple.toFixed(1) + '× ROI' : '';
+  }
+
+  // Pitch paragraph
+  const pitchText = document.getElementById('pitchText');
+  if (hasData && checked.size > 0) {
+    const failsText = checked.size === 1 ? '1 critical issue' : `${checked.size} CRO issues`;
+    const liftRange = `${cappedMin.toFixed(1)}–${cappedMax.toFixed(1)}%`;
+    let pitch = `Our audit of <strong>${clientName}</strong> identified ${failsText} across the purchase funnel. `;
+    pitch += `Based on your current monthly revenue of <strong>$${fmt(revenue)}</strong> and conversion rate of <strong>${cvrRaw.toFixed(2)}%</strong>, `;
+    pitch += `addressing these findings is estimated to recover <strong>$${fmt(annualRecovery)}</strong> in annual revenue `;
+    pitch += `(a ${liftRange} lift in conversion rate, bringing you from ${cvrRaw.toFixed(2)}% to an estimated ${(newCVR*100).toFixed(2)}%). `;
+    const totalEngagement = auditFee + implFee;
+    if (totalEngagement > 0 && annualRecovery > 0) {
+      const totalROI = annualRecovery / totalEngagement;
+      if (implFee > 0) {
+        pitch += `At a total engagement cost of <strong>$${fmt(totalEngagement)}</strong> ($${fmt(auditFee)} audit + $${fmt(implFee)} implementation), this represents a <strong>${totalROI.toFixed(1)}× return</strong> — paying back in approximately ${paybackMonths.toFixed(1)} months.`;
+      } else {
+        pitch += `At an audit investment of <strong>$${fmt(auditFee)}</strong>, this represents a <strong>${roiMultiple.toFixed(1)}× return</strong> — paying back in approximately ${paybackMonths.toFixed(1)} months.`;
+      }
+    }
+    pitchText.innerHTML = pitch;
+  } else {
+    pitchText.textContent = 'Enter store metrics and upload your audit CSV to generate the ROI pitch paragraph.';
+  }
+
+  // Enable print
+  document.getElementById('printBtn').disabled = !(hasData && checked.size > 0);
+  syncMobileStickyBtn();
+
+  // Re-render findings table to update revenue column
+  if (allFailures.length) renderFindings();
+
+  checkContinue();
+  syncWrapHeight();
+}
+
+// ── FREELANCER PANEL RECALC ──
+function recalcFP() {
+  const revenue    = parseFloat(document.getElementById('monthlyRevenue').value) || 0;
+  const aov        = parseFloat(document.getElementById('aov').value) || 85;
+  const cvrRaw     = parseFloat(document.getElementById('cvr').value) || 1.8;
+  const auditFee   = parseFloat(document.getElementById('auditFee').value) || 0;
+  const implFee    = parseFloat(document.getElementById('fpImplFee').value) || suggestedImplFee;
+  const hourlyRate = parseFloat(document.getElementById('fpHourlyRate').value) || 0;
+  const hours      = parseFloat(document.getElementById('fpHours').value) || 0;
+
+  const cvr      = cvrRaw / 100;
+  const sessions = revenue > 0 ? revenue / (aov * cvr) : 0;
+  const hasData  = revenue > 0 && sessions > 0;
+
+  // Recalculate annualRecovery locally
+  let totalLiftMid = 0;
+  for (const idx of checked) {
+    const item = allFailures[idx];
+    if (!item) continue;
+    totalLiftMid += (item.liftMin + item.liftMax) / 2;
+  }
+  const cappedMid      = Math.min(totalLiftMid, (LIFT_CAP_MIN + LIFT_CAP_MAX) / 2);
+  const newCVR         = cvr + (cappedMid / 100);
+  const monthlyRecovery = (sessions * aov * newCVR) - revenue;
+  const annualRecovery  = monthlyRecovery * 12;
+
+  // True client ROI
+  const totalEngagement = auditFee + implFee;
+  const trueROIEl    = document.getElementById('fpTrueROI');
+  const trueROISubEl = document.getElementById('fpTrueROISub');
+
+  if (hasData && totalEngagement > 0 && annualRecovery > 0) {
+    const trueROI = annualRecovery / totalEngagement;
+    trueROIEl.textContent    = trueROI.toFixed(1) + '× return';
+    trueROISubEl.textContent = `$${fmt(annualRecovery)} annual recovery ÷ ($${fmt(auditFee)} audit + $${fmt(implFee)} implementation)`;
+  } else if (implFee === 0) {
+    trueROIEl.textContent    = '—';
+    trueROISubEl.textContent = 'Set your implementation fee above to calculate';
+  } else {
+    trueROIEl.textContent    = '—';
+    trueROISubEl.textContent = 'Enter store metrics and upload CSV to calculate';
+  }
+
+  // Hourly sanity check
+  const flagEl = document.getElementById('fpSanityFlag');
+  flagEl.className = 'fp-flag';
+
+  if (hourlyRate > 0 && hours > 0 && implFee > 0) {
+    const hourlyEarnings = hourlyRate * hours;
+    const diff = implFee - hourlyEarnings;
+    const diffPct = Math.round((diff / hourlyEarnings) * 100);
+    if (implFee >= hourlyEarnings) {
+      flagEl.className = 'fp-flag pass';
+      flagEl.textContent = `✅  Your fee of $${fmt(implFee)} beats your hourly estimate of $${fmt(hourlyEarnings)} by $${fmt(diff)} (+${diffPct}%). You're ahead.`;
+    } else {
+      flagEl.className = 'fp-flag fail';
+      flagEl.textContent = `⚠️  Your fee of $${fmt(implFee)} is $${fmt(Math.abs(diff))} below your hourly estimate of $${fmt(hourlyEarnings)}. Consider adjusting your fee or scope.`;
+    }
+  } else if (hourlyRate > 0 || hours > 0 || implFee > 0) {
+    flagEl.className = 'fp-flag neutral';
+    flagEl.textContent = 'Enter your implementation fee, hourly rate, and estimated hours to check.';
+  }
+}
+
+// ── HELPERS ──
+function fmt(n) {
+  return Math.round(n).toLocaleString('en-US');
+}
+
+// ── WIZARD ──
+function syncWrapHeight() {
+  const active = document.querySelector('.wizard-step[data-state="active"]');
+  if (active) {
+    document.getElementById('wizardWrap').style.height = active.scrollHeight + 'px';
+  }
+}
+
+let currentStep = 1;
+
+function goToStep(n) {
+  if (n === currentStep) return;
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  requestAnimationFrame(() => {
+    const fromEl = document.getElementById('step' + currentStep);
+    const toEl   = document.getElementById('step' + n);
+    fromEl.dataset.state = n > currentStep ? 'left' : 'right';
+    toEl.dataset.state   = 'active';
+    currentStep = n;
+    syncWrapHeight();
+    if (n === 3) recalc(); // fresh calculations when entering results
+    syncMobileStickyBtn();
+  });
+}
+
+// ── MOBILE STICKY BUTTON ──
+function syncMobileStickyBtn() {
+  const btn = document.getElementById('mobileStickyBtn');
+  if (!btn) return;
+  btn.dataset.hidden = 'false';
+  if (currentStep === 3) {
+    // On step 3 mirror the Export PDF button state
+    const printBtn = document.getElementById('printBtn');
+    btn.textContent = 'Export PDF Report';
+    btn.disabled = printBtn ? printBtn.disabled : true;
+    return;
+  }
+  // Mirror text and disabled state from the real in-step continue button
+  const realBtn = document.querySelector('#step' + currentStep + ' .btn-continue');
+  if (realBtn) {
+    btn.textContent = realBtn.textContent.trim();
+    btn.disabled = realBtn.disabled;
+  }
+}
+
+function mobileStickyClick() {
+  if (currentStep === 3) {
+    window.print();
+    return;
+  }
+  goToStep(currentStep + 1);
+}
+
+function renderCsvPreview() {
+  const preview  = document.getElementById('csvPreview');
+  const listWrap = document.getElementById('csvPreviewList');
+  const countEl  = document.getElementById('csvPreviewCount');
+  const toggleEl = document.getElementById('csvPreviewToggle');
+
+  // CSV preview panel removed in v3 — nothing to render
+  if (!preview) return;
+  if (!allFailures.length) { preview.classList.remove('visible'); return; }
+
+  preview.classList.add('visible');
+  countEl.textContent = `${allFailures.length} failed item${allFailures.length !== 1 ? 's' : ''} found`;
+
+  const PREVIEW_COUNT = 5;
+  const shown = allFailures.slice(0, PREVIEW_COUNT);
+  const rest  = allFailures.slice(PREVIEW_COUNT);
+
+  function itemHTML(item) {
+    const cls = item.impact.toLowerCase();
+    return `<li class="csv-preview-item">
+      <span class="impact-pill ${cls}">${item.impact}</span>
+      <span class="csv-preview-name">${item.name.replace(/:.*/,'').trim()}</span>
+      <span class="csv-preview-section">${item.section}</span>
+    </li>`;
+  }
+
+  let html = `<ul class="csv-preview-list">${shown.map(itemHTML).join('')}</ul>`;
+  if (rest.length) {
+    html += `<ul class="csv-preview-list csv-preview-more" id="csvPreviewMore">${rest.map(itemHTML).join('')}</ul>`;
+    toggleEl.textContent = `Show all ${allFailures.length}`;
+    toggleEl.style.display = '';
+  } else {
+    toggleEl.style.display = 'none';
+  }
+  listWrap.innerHTML = html;
+  syncWrapHeight();
+}
+
+function toggleCsvPreview() {
+  const more     = document.getElementById('csvPreviewMore');
+  const toggleEl = document.getElementById('csvPreviewToggle');
+  if (!more) return;
+  const isOpen = more.classList.toggle('open');
+  toggleEl.textContent = isOpen ? 'Show less' : `Show all ${allFailures.length}`;
+  syncWrapHeight();
+}
+
+function checkContinue() {
+  const revenue = parseFloat(document.getElementById('monthlyRevenue').value) || 0;
+  const csvLoaded = allFailures.length > 0;
+  const ready = csvLoaded && revenue > 0;
+  document.getElementById('continueBtn').disabled = !ready;
+  syncMobileStickyBtn();
+  const hint = document.getElementById('continueHint');
+  if (!csvLoaded && revenue === 0) {
+    hint.textContent = 'Fill in store metrics and upload your Notion CSV to continue';
+  } else if (!csvLoaded) {
+    hint.textContent = 'Upload your Notion CSV to continue';
+  } else if (revenue === 0) {
+    hint.textContent = 'Enter monthly revenue to continue';
+  } else {
+    hint.textContent = '';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('step1').dataset.state = 'active';
+  document.getElementById('step2').dataset.state = 'right';
+  document.getElementById('step3').dataset.state = 'right';
+  syncWrapHeight();
+  checkContinue();
+});
+
+// Recalc wrapper height on resize (layout reflow on mobile orientation change etc.)
+window.addEventListener('resize', syncWrapHeight);
+
+// Drag and drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) { document.getElementById('csvInput').files = e.dataTransfer.files; handleFile(file); }
+});
+</script>
+</body>
+</html>

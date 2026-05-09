@@ -1,0 +1,335 @@
+/*
+ * CRO Audit System for Shopify — Design Tokens
+ * Extracted from: index.html, roi-calculator.html, free-roi-calculator.html
+ * Black Design Inc · timblackdesign.com
+ * ─────────────────────────────────────────────────────────────────
+ */
+
+/* ══════════════════════════════════════════════════════════════════
+   FONTS — import in HTML with:
+   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── FONT FAMILIES ── */
+  --font-display:  'DM Serif Display', Georgia, serif;
+  --font-sans:     'DM Sans', system-ui, sans-serif;
+  --font-mono:     'DM Mono', 'Courier New', monospace;
+
+  /* ── TYPE SCALE ── */
+  --text-hero:        clamp(42px, 5.5vw, 72px);   /* Hero H1 */
+  --text-hero-sub:    clamp(34px, 4.4vw, 58px);   /* Hero H1 line 2 */
+  --text-section:     clamp(32px, 4vw, 52px);      /* Section H2 */
+  --text-card-title:  22px;                        /* Card / component heading */
+  --text-title-sm:    17px;                        /* Smaller card title / header */
+  --text-metric-xl:   56px;                        /* Stat cell large number */
+  --text-metric-lg:   36px;                        /* Metric value large */
+  --text-metric-md:   28px;                        /* Metric value medium */
+  --text-price:       76px;                        /* Price display */
+  --text-body:        15px;                        /* Body / paragraph */
+  --text-body-sm:     13px;                        /* Small body / list items */
+  --text-body-xs:     12px;                        /* Hint / fine print */
+  --text-ui:          14px;                        /* UI input text */
+  --text-label:       11px;                        /* Form label */
+  --text-kicker:      10px;                        /* Section kicker / nav / mono label */
+  --text-meta:        9px;                         /* Footer / badge meta */
+
+  /* ── LETTER SPACING ── */
+  --ls-display:  -2.5px;   /* Hero headline */
+  --ls-section:  -1.5px;   /* Section H2 */
+  --ls-card:     -0.5px;   /* Card titles */
+  --ls-kicker:    0.14em;  /* Kicker / section label */
+  --ls-label:     0.08em;  /* Form labels, metric labels */
+  --ls-nav:       0.10em;  /* Nav links */
+  --ls-button:    0.06em;  /* Button text */
+  --ls-meta:      0.10em;  /* Footer / badges */
+  --ls-step:      0.06em;  /* Step number badges */
+
+  /* ── LINE HEIGHTS ── */
+  --lh-display: 1.0;
+  --lh-section: 1.05;
+  --lh-body:    1.6;
+  --lh-prose:   1.8;
+  --lh-tight:   1.3;
+  --lh-label:   1.4;
+
+  /* ── FONT WEIGHTS ── */
+  --fw-light:    300;
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+
+  /* ══════════════════════════════════════════════════════════════════
+     COLORS — DARK MODE (calculator, app UI, hero, nav)
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* Paper (background) */
+  --dark-paper:    #0e1018;   /* Base background */
+  --dark-paper-2:  #161925;   /* Card / surface */
+  --dark-paper-3:  #1e2235;   /* Raised surface / input bg / table header */
+  --dark-ghost:    #0a0c14;   /* Decorative oversize text */
+
+  /* Rules (borders) */
+  --dark-rule:     #252840;   /* Standard border */
+  --dark-rule-2:   #363a55;   /* Stronger rule / slider track */
+
+  /* Ink (text) */
+  --dark-ink:      #e2e8f0;   /* Primary text */
+  --dark-ink-2:    #c8d0e0;   /* Secondary text */
+  --dark-ink-3:    #94a3b8;   /* Tertiary / body on dark */
+  --dark-ink-4:    #64748b;   /* Muted / labels */
+  --dark-ink-5:    #475569;   /* Very muted / meta */
+
+  /* ══════════════════════════════════════════════════════════════════
+     COLORS — LIGHT MODE (marketing sections)
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* Paper */
+  --light-paper:    #f8f9ff;  /* Off-white, blue undertone */
+  --light-paper-2:  #f0f2fe;  /* Light card background */
+  --light-paper-3:  #e8eafe;  /* Raised light surface */
+  --light-panel:    linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+
+  /* Rules */
+  --light-rule:     #dde0f5;
+  --light-rule-2:   #c4c8e8;
+
+  /* Ink (indigo scale) */
+  --light-ink:      #1e1b4b;  /* Deep indigo-black */
+  --light-ink-2:    #312e81;  /* Rich indigo */
+  --light-ink-3:    #4c4a8e;  /* Medium indigo */
+  --light-ink-4:    #6366a8;  /* Lighter indigo */
+  --light-ink-5:    #8688c0;  /* Muted indigo */
+
+  /* ══════════════════════════════════════════════════════════════════
+     ACCENT / BRAND
+     ══════════════════════════════════════════════════════════════════ */
+
+  --accent:            #6366f1;                      /* Indigo-500 — primary CTA, focus, badges */
+  --accent-bg:         rgba(99, 102, 241, 0.12);     /* Tinted accent background */
+  --accent-positive:   #818cf8;                      /* Indigo-400 — positive metrics, revenue values (dark mode) */
+  --accent-positive-bg: rgba(129, 140, 248, 0.12);   /* Tinted positive background (dark mode) */
+  --accent-print:      #4338ca;                      /* Indigo-700 — print stylesheet accent */
+
+  /* ══════════════════════════════════════════════════════════════════
+     SEMANTIC — IMPACT PILLS & STATE
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* High impact — red */
+  --impact-high:        #f87171;
+  --impact-high-bg:     rgba(248, 113, 113, 0.12);
+
+  /* Medium impact — violet */
+  --impact-medium:      #a78bfa;
+  --impact-medium-bg:   rgba(167, 139, 250, 0.12);
+
+  /* Low impact — muted (no named color; uses paper-2 + ink-3) */
+  --impact-low:         var(--dark-ink-3);
+  --impact-low-bg:      var(--dark-paper-2);
+
+  /* State: pass / fail / neutral */
+  --state-pass:         #86efac;   /* Green-300 */
+  --state-pass-bg:      rgba(34, 197, 94, 0.08);
+  --state-fail:         #fca5a5;   /* Red-300 */
+  --state-fail-bg:      rgba(248, 113, 113, 0.08);
+  --state-neutral-bg:   var(--dark-paper-3);
+
+  /* ══════════════════════════════════════════════════════════════════
+     MISC SEMANTIC (amber — used in landing page report card)
+     ══════════════════════════════════════════════════════════════════ */
+  --amber:       #c8834a;   /* Used for "amber" metric values in hero report card */
+
+  /* ══════════════════════════════════════════════════════════════════
+     SHADOWS
+     ══════════════════════════════════════════════════════════════════ */
+
+  --shadow:     0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.5);
+  --shadow-xl:  0 8px 40px rgba(0,0,0,0.5);
+
+  /* ══════════════════════════════════════════════════════════════════
+     SPACING
+     ══════════════════════════════════════════════════════════════════ */
+
+  --space-1:    4px;
+  --space-2:    8px;
+  --space-3:    12px;
+  --space-4:    16px;
+  --space-5:    20px;
+  --space-6:    24px;
+  --space-7:    28px;
+  --space-8:    32px;
+  --space-10:   40px;
+  --space-12:   48px;
+  --space-14:   56px;
+  --space-16:   64px;
+  --space-20:   80px;
+  --space-28:   112px;   /* Standard section vertical padding */
+
+  --card-pad:         32px;   /* Standard card padding desktop */
+  --card-pad-mobile:  16px;   /* Card padding mobile */
+  --section-h-pad:    52px;   /* Section horizontal padding desktop */
+  --section-v-pad:    112px;  /* Section vertical padding desktop */
+  --nav-height:       58px;
+  --max-width:        1200px;
+  --max-width-app:    1120px;
+
+  /* ══════════════════════════════════════════════════════════════════
+     BORDERS & RADIUS
+     ══════════════════════════════════════════════════════════════════ */
+
+  --radius: 0;             /* Square corners — always */
+  --radius-pill: 20px;     /* Only: hero badge pill */
+  --radius-circle: 50%;    /* Only: range slider thumb */
+  --border: 1px solid;
+
+  /* ══════════════════════════════════════════════════════════════════
+     TRANSITIONS
+     ══════════════════════════════════════════════════════════════════ */
+
+  --transition-fast:     0.15s;
+  --transition-base:     0.20s;
+  --transition-slow:     0.32s;
+  --ease-spring:         cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-material:       cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SEMANTIC CSS VARIABLES (apply to your root or component scope)
+   These map abstract tokens to named semantic roles.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Dark mode surface (default for app / calculator) */
+.surface-dark,
+[data-theme="dark"] {
+  --paper:     var(--dark-paper);
+  --paper-2:   var(--dark-paper-2);
+  --paper-3:   var(--dark-paper-3);
+  --ghost:     var(--dark-ghost);
+  --rule:      var(--dark-rule);
+  --rule-2:    var(--dark-rule-2);
+  --ink:       var(--dark-ink);
+  --ink-2:     var(--dark-ink-2);
+  --ink-3:     var(--dark-ink-3);
+  --ink-4:     var(--dark-ink-4);
+  --ink-5:     var(--dark-ink-5);
+  --green:     var(--accent-positive);
+  --green-bg:  var(--accent-positive-bg);
+  background:  var(--dark-paper);
+  color:       var(--dark-ink);
+}
+
+/* Light mode surface (marketing sections) */
+.surface-light,
+[data-theme="light"] {
+  --paper:     var(--light-paper);
+  --paper-2:   var(--light-paper-2);
+  --paper-3:   var(--light-paper-3);
+  --rule:      var(--light-rule);
+  --rule-2:    var(--light-rule-2);
+  --ink:       var(--light-ink);
+  --ink-2:     var(--light-ink-2);
+  --ink-3:     var(--light-ink-3);
+  --ink-4:     var(--light-ink-4);
+  --ink-5:     var(--light-ink-5);
+  --green:     var(--accent);
+  --green-bg:  var(--accent-bg);
+  background:  var(--light-paper);
+  color:       var(--light-ink);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   TYPOGRAPHY SEMANTIC CLASSES
+   ══════════════════════════════════════════════════════════════════ */
+
+.type-hero {
+  font-family: var(--font-display);
+  font-size: var(--text-hero);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  font-weight: var(--fw-regular);
+}
+
+.type-section {
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  line-height: var(--lh-section);
+  letter-spacing: var(--ls-section);
+  font-weight: var(--fw-regular);
+}
+
+.type-card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--ls-card);
+  line-height: var(--lh-tight);
+}
+
+.type-metric-xl {
+  font-family: var(--font-display);
+  font-size: var(--text-metric-xl);
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.type-metric-lg {
+  font-family: var(--font-display);
+  font-size: var(--text-metric-lg);
+  line-height: 1;
+}
+
+.type-metric-md {
+  font-family: var(--font-display);
+  font-size: var(--text-metric-md);
+  line-height: 1;
+}
+
+.type-body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--lh-prose);
+  font-weight: var(--fw-light);
+}
+
+.type-body-sm {
+  font-family: var(--font-sans);
+  font-size: var(--text-body-sm);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-regular);
+}
+
+.type-kicker {
+  font-family: var(--font-mono);
+  font-size: var(--text-kicker);
+  letter-spacing: var(--ls-kicker);
+  text-transform: uppercase;
+}
+
+.type-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  font-weight: var(--fw-semibold);
+}
+
+.type-meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+}
+
+.type-mono-ui {
+  font-family: var(--font-mono);
+  font-size: var(--text-ui);
+}
+
+.type-button {
+  font-family: var(--font-sans);
+  font-size: var(--text-body-sm);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-button);
+  text-transform: uppercase;
+}

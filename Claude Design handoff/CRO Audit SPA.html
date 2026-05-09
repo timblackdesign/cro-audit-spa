@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRO Audit System — for Shopify</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: #0e1018;
+  color: #e2e8f0;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+#root { height: 100%; display: flex; flex-direction: column; }
+button { cursor: pointer; border-radius: 0 !important; }
+input, textarea, button, select { font-family: inherit; border-radius: 0; }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+a { text-decoration: none; color: inherit; }
+textarea { resize: vertical; }
+
+/* ── DESIGN TOKENS ── */
+:root {
+  --paper:   #0e1018;
+  --paper-2: #161925;
+  --paper-3: #1e2235;
+  --rule:    #252840;
+  --rule-2:  #363a55;
+  --ink:     #e2e8f0;
+  --ink-2:   #c8d0e0;
+  --ink-3:   #94a3b8;
+  --ink-4:   #64748b;
+  --ink-5:   #475569;
+  --accent:  #6366f1;
+  --accent-bg: rgba(99,102,241,0.12);
+  --accent-positive: #818cf8;
+  --accent-positive-bg: rgba(129,140,248,0.12);
+  --impact-high:       #f87171;
+  --impact-high-bg:    rgba(248,113,113,0.12);
+  --impact-medium:     #a78bfa;
+  --impact-medium-bg:  rgba(167,139,250,0.12);
+  --state-pass:        #86efac;
+  --state-pass-bg:     rgba(34,197,94,0.08);
+  --state-fail:        #fca5a5;
+  --state-fail-bg:     rgba(248,113,113,0.08);
+  --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
+}
+
+/* ── SCREEN TRANSITIONS ── */
+@keyframes slideUpIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUpOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-12px); }
+}
+.screen-enter {
+  animation: slideUpIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.screen-exit {
+  animation: slideUpOut 0.18s ease-in forwards;
+  pointer-events: none;
+}
+/* Prevent animation clipping */
+main.screen-enter, main.screen-exit {
+  overflow: visible;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--paper); }
+::-webkit-scrollbar-thumb { background: var(--rule-2); }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-5); }
+
+/* ── PRINT STYLES ── */
+@media print {
+  body { background: #fff !important; color: #111 !important; }
+  #root { display: block !important; height: auto !important; }
+  .no-print { display: none !important; }
+  #print-document {
+    background: #fff !important;
+    color: #111 !important;
+    box-shadow: none !important;
+  }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @page { margin: 0.75in; size: letter; }
+}
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 680px) {
+  .calculator-grid { grid-template-columns: 1fr !important; }
+  .metric-grid-3 { grid-template-columns: 1fr 1fr !important; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Data -->
+<script src="data/audit-items.js"></script>
+
+<!-- Components -->
+<script type="text/babel" src="Components.jsx"></script>
+
+<!-- Screens -->
+<script type="text/babel" src="screens/AuditList.jsx"></script>
+<script type="text/babel" src="screens/ClientInfo.jsx"></script>
+<script type="text/babel" src="screens/AuditScreen.jsx"></script>
+<script type="text/babel" src="screens/FindingsScreen.jsx"></script>
+<script type="text/babel" src="screens/CalculatorScreen.jsx"></script>
+<script type="text/babel" src="screens/ReportScreen.jsx"></script>
+
+<!-- Tweaks -->
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<!-- Main App -->
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+// ── DEMO MODE ── detect from URL
+const DEMO_MODE = window.location.pathname.includes('/demo') || window.location.search.includes('demo=1');
+const STORAGE_KEY = 'liftkit-audits-v1';
+
+// ── HELPERS ──
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function loadStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { audits: {}, active_audit_id: null, last_auditor_name: null };
+  } catch { return { audits: {}, active_audit_id: null, last_auditor_name: null }; }
+}
+
+function saveStorage(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+}
+
+// ── SEED DEMO AUDIT for demo mode ──
+const DEMO_AUDIT = {
+  id: 'demo-audit',
+  client_info: {
+    client_name: 'Acme Boards Co.',
+    auditor_name: 'Tim Black',
+    store_url: 'acmeboards.myshopify.com',
+    shopify_theme: 'Dawn 12.0',
+    audit_date: '2026-05-03',
+    monthly_revenue: 50000,
+    aov: 85,
+    cvr: 1.8,
+    audit_fee: 500,
+  },
+  items: {
+    'pdp-01': { status: 'fail', finding: '', recommendation: '' },
+    'cart-01': { status: 'fail', finding: '', recommendation: '' },
+    'cart-04': { status: 'fail', finding: '', recommendation: '' },
+    'chk-01': { status: 'fail', finding: '', recommendation: '' },
+    'chk-04': { status: 'fail', finding: '', recommendation: '' },
+    'pdp-03': { status: 'fail', finding: '', recommendation: '' },
+    'col-02': { status: 'fail', finding: '', recommendation: '' },
+    'gen-02': { status: 'fail', finding: '', recommendation: '' },
+    'mob-01': { status: 'fail', finding: '', recommendation: '' },
+    'mob-06': { status: 'fail', finding: '', recommendation: '' },
+    'pdp-07': { status: 'pass', finding: '', recommendation: '' },
+    'gen-01': { status: 'pass', finding: '', recommendation: '' },
+    'cart-03': { status: 'pass', finding: '', recommendation: '' },
+    'chk-06': { status: 'na', finding: '', recommendation: '' },
+    'gen-09': { status: 'na', finding: '', recommendation: '' },
+  },
+  pricing: {},
+  pitch_override: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
+// ── APP ──
+function App() {
+  const [screen, setScreen] = useState('list');
+  const [transitioning, setTransitioning] = useState(false);
+  const [displayScreen, setDisplayScreen] = useState('list');
+
+  // Animated screen transition
+  const goTo = useCallback((nextScreen) => {
+    if (nextScreen === displayScreen) return;
+    setTransitioning(true);
+    setTimeout(() => {
+      setDisplayScreen(nextScreen);
+      setScreen(nextScreen);
+      setTransitioning(false);
+    }, 200);
+  }, [displayScreen]);
+  const [store, setStore] = useState(() => DEMO_MODE ? { audits: { 'demo-audit': DEMO_AUDIT }, active_audit_id: null, last_auditor_name: 'Tim Black' } : loadStorage());
+  const [activeAuditId, setActiveAuditId] = useState(null);
+  const [draftClientInfo, setDraftClientInfo] = useState(null);
+  const [checkedIds, setCheckedIds] = useState({});
+
+  // Pre-check logic: top 10 by impact→effort→order when entering findings screen
+  const initCheckedIds = useCallback((audit) => {
+    const items = window.AUDIT_ITEMS || [];
+    const auditItems = audit.items || {};
+    const failItems = items.filter(item => auditItems[item.id]?.status === 'fail');
+    const impactRank = { High: 0, Medium: 1, Low: 2 };
+    const effortRank = { Low: 0, Medium: 1, High: 2 };
+    const ranked = [...failItems].sort((a, b) => {
+      if (impactRank[a.impact] !== impactRank[b.impact]) return impactRank[a.impact] - impactRank[b.impact];
+      if (effortRank[a.effort] !== effortRank[b.effort]) return effortRank[a.effort] - effortRank[b.effort];
+      return items.indexOf(a) - items.indexOf(b);
+    });
+    const next = {};
+    ranked.forEach((item, i) => { next[item.id] = i < 10; });
+    return next;
+  }, []);
+
+  // Persist to localStorage (not in demo mode)
+  useEffect(() => {
+    if (!DEMO_MODE) saveStorage(store);
+  }, [store]);
+
+  // ── Active audit helpers ──
+  const activeAudit = activeAuditId ? store.audits[activeAuditId] : null;
+
+  const updateAudit = useCallback((id, updates) => {
+    setStore(s => ({
+      ...s,
+      audits: {
+        ...s.audits,
+        [id]: { ...s.audits[id], ...updates, updated_at: new Date().toISOString() },
+      },
+    }));
+  }, []);
+
+  const updateItem = useCallback((itemId, itemState) => {
+    if (!activeAuditId) return;
+    setStore(s => ({
+      ...s,
+      audits: {
+        ...s.audits,
+        [activeAuditId]: {
+          ...s.audits[activeAuditId],
+          items: { ...(s.audits[activeAuditId].items || {}), [itemId]: itemState },
+          updated_at: new Date().toISOString(),
+        },
+      },
+    }));
+  }, [activeAuditId]);
+
+  // ── List actions ──
+  const handleNew = () => {
+    // Create audit immediately — no upfront form. Drop straight into checklist.
+    const id = genId();
+    const today = new Date().toISOString().slice(0, 10);
+    const audit = {
+      id,
+      client_info: {
+        client_name: 'New Client',
+        auditor_name: store.last_auditor_name || '',
+        store_url: '',
+        shopify_theme: '',
+        audit_date: today,
+        monthly_revenue: '',
+        aov: '',
+        cvr: '',
+        audit_fee: '',
+      },
+      items: {},
+      pricing: {},
+      pitch_override: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    setStore(s => ({
+      ...s,
+      audits: { ...s.audits, [id]: audit },
+    }));
+    setActiveAuditId(id);
+    goTo('audit');
+  };
+
+  const handleOpen = (id) => {
+    setActiveAuditId(id);
+    goTo('audit');
+  };
+
+  const handleDelete = (id) => {
+    setStore(s => {
+      const { [id]: _, ...rest } = s.audits;
+      return { ...s, audits: rest };
+    });
+  };
+
+  const handleArchive = (id) => {
+    const audit = store.audits[id];
+    if (!audit) return;
+    // Export JSON
+    const blob = new Blob([JSON.stringify(audit, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cro-audit-${(audit.client_info?.client_name || 'audit').toLowerCase().replace(/\s+/g, '-')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    handleDelete(id);
+  };
+
+  const handleDuplicate = (id) => {
+    const audits = store.audits;
+    if (Object.keys(audits).length >= 5) return;
+    const original = audits[id];
+    const newId = genId();
+    const copy = {
+      ...original,
+      id: newId,
+      client_info: { ...original.client_info, client_name: original.client_info?.client_name + ' (copy)' },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    setStore(s => ({ ...s, audits: { ...s.audits, [newId]: copy } }));
+  };
+
+  // ── Client info form submit ──
+  const handleEditInfoSave = () => {
+    updateAudit(activeAuditId, { client_info: draftClientInfo });
+    setStore(s => ({ ...s, last_auditor_name: draftClientInfo.auditor_name || s.last_auditor_name }));
+    goTo('audit');
+  };
+
+  // ── NAV config ──
+  const NAV_STEPS = [
+    { id: 'list',       label: 'Audits',       visible: true },
+    { id: 'audit',      label: 'Checklist',    visible: !!activeAuditId },
+    { id: 'calculator', label: 'Calculator',   visible: !!activeAuditId },
+    { id: 'report',     label: 'Report',       visible: !!activeAuditId },
+  ];
+
+  const stepOrder = ['list', 'audit', 'findings', 'calculator', 'report'];
+  const currentStepIdx = stepOrder.indexOf(screen === 'new-audit' || screen === 'edit-info' ? 'list' : screen);
+
+  // ── TWEAKS ──
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "accentColor": "#6366f1",
+    "demoModeIndicator": "badge",
+    "showProgressPct": true,
+    "defaultSection": "General"
+  }/*EDITMODE-END*/;
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  // Apply accent color tweak
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent', tweaks.accentColor);
+  }, [tweaks.accentColor]);
+
+  const auditList = Object.values(store.audits);
+
+  // ── RENDER ──
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+
+      {/* ── HEADER ── */}
+      <header className="no-print" style={{
+        background: 'var(--paper-2)',
+        borderBottom: '1px solid var(--rule)',
+        height: 52,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 20px',
+        flexShrink: 0,
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        gap: 16,
+      }}>
+        {/* Logo */}
+        <button
+          onClick={() => { goTo('list'); setActiveAuditId(null); }}
+          style={{ background: 'none', border: 'none', padding: 0, display: 'flex', alignItems: 'baseline', gap: 8, cursor: 'pointer' }}
+        >
+          <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 16, color: 'var(--ink)', letterSpacing: '-0.3px' }}>
+            CRO Audit System
+          </span>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-5)' }}>
+            for Shopify
+          </span>
+        </button>
+
+        {/* Step nav — removed from header, now lives in audit sticky bar */}
+
+        {/* Right side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Active audit name — primary edit entry point */}
+          {activeAudit && (
+            <button
+              onClick={() => {
+                setDraftClientInfo({ ...activeAudit.client_info });
+                goTo('edit-info');
+              }}
+              style={{
+                background: 'var(--paper-3)',
+                border: '1px solid var(--rule)',
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 10,
+                color: 'var(--ink-3)',
+                cursor: 'pointer',
+                letterSpacing: '0.04em',
+                maxWidth: 200,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                padding: '5px 10px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+              title="Edit client info"
+            >
+              <span style={{ color: 'var(--ink-5)', fontSize: 9 }}>✎</span>
+              {activeAudit.client_info?.client_name || 'New Client'}
+            </button>
+          )}
+
+          {/* Demo badge */}
+          {DEMO_MODE && tweaks.demoModeIndicator === 'badge' && (
+            <span style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: 9,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#c8834a',
+              background: 'rgba(200,131,74,0.12)',
+              border: '1px solid rgba(200,131,74,0.3)',
+              padding: '3px 8px',
+            }}>
+              Demo
+            </span>
+          )}
+
+          {/* Not demo: export/import */}
+          {!DEMO_MODE && (
+            <div style={{ display: 'flex', gap: 4 }}>
+              <label style={{ background: 'var(--paper-3)', border: '1px solid var(--rule)', color: 'var(--ink-4)', fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '5px 10px', cursor: 'pointer' }}>
+                Import
+                <input type="file" accept=".json" style={{ display: 'none' }} onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    try {
+                      const audit = JSON.parse(ev.target.result);
+                      if (audit.id) {
+                        setStore(s => ({ ...s, audits: { ...s.audits, [audit.id]: audit } }));
+                      }
+                    } catch {}
+                  };
+                  reader.readAsText(file);
+                  e.target.value = '';
+                }} />
+              </label>
+            </div>
+          )}
+
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-5)', border: '1px solid var(--rule)', padding: '4px 8px' }}>v1.0</span>
+        </div>
+      </header>
+
+      {/* ── DEMO BANNER ── */}
+      {DEMO_MODE && tweaks.demoModeIndicator === 'banner' && (
+        <div className="no-print" style={{ background: 'rgba(200,131,74,0.08)', borderBottom: '1px solid rgba(200,131,74,0.2)', padding: '8px 20px', textAlign: 'center' }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#c8834a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            Demo mode — changes are not saved · Refresh to reset
+          </span>
+        </div>
+      )}
+
+      {/* ── MAIN CONTENT ── */}
+      <main
+        key={displayScreen}
+        className={transitioning ? 'screen-exit' : 'screen-enter'}
+        style={{ flex: 1, overflowY: displayScreen === 'audit' ? 'hidden' : 'auto', display: 'flex', flexDirection: 'column', minHeight: 0 }}
+      >
+
+        {displayScreen === 'list' && (
+          <AuditListScreen
+            audits={auditList}
+            onOpen={handleOpen}
+            onNew={handleNew}
+            onDelete={handleDelete}
+            onArchive={handleArchive}
+            onDuplicate={handleDuplicate}
+            demoMode={DEMO_MODE}
+          />
+        )}
+
+        {displayScreen === 'edit-info' && (
+          <ClientInfoScreen
+            clientInfo={draftClientInfo || {}}
+            onChange={setDraftClientInfo}
+            onStart={handleEditInfoSave}
+            onBack={() => setScreen(activeAuditId ? 'audit' : 'list')}
+            demoMode={DEMO_MODE}
+            isEditing={true}
+          />
+        )}
+
+        {displayScreen === 'audit' && activeAudit && (
+          <AuditScreen
+            audit={activeAudit}
+            onUpdateItem={updateItem}
+            onComplete={() => {
+              const freshAudit = store.audits[activeAuditId];
+              setCheckedIds(initCheckedIds(freshAudit));
+              goTo('findings');
+            }}
+            onBack={() => goTo('list')}
+            onEditInfo={() => {
+              setDraftClientInfo({ ...activeAudit.client_info });
+              goTo('edit-info');
+            }}
+          />
+        )}
+
+        {displayScreen === 'findings' && activeAudit && (
+          <FindingsScreen
+            audit={activeAudit}
+            checkedIds={checkedIds}
+            onToggle={(id) => setCheckedIds(c => ({ ...c, [id]: !c[id] }))}
+            onSetChecked={setCheckedIds}
+            onBack={() => goTo('audit')}
+            onContinue={() => goTo('calculator')}
+            onEditInfo={() => {
+              setDraftClientInfo({ ...activeAudit.client_info });
+              goTo('edit-info');
+            }}
+          />
+        )}
+
+        {displayScreen === 'calculator' && activeAudit && (
+          <CalculatorScreen
+            audit={activeAudit}
+            checkedIds={checkedIds}
+            onBack={() => goTo('findings')}
+            onViewReport={() => goTo('report')}
+          />
+        )}
+
+        {displayScreen === 'report' && activeAudit && (
+          <ReportScreen
+            audit={activeAudit}
+            onBack={() => goTo('calculator')}
+          />
+        )}
+
+      </main>
+
+      {/* ── TWEAKS PANEL ── */}
+      <TweaksPanel>
+        <TweakSection label="Brand" />
+        <TweakColor label="Accent Color" value={tweaks.accentColor} onChange={v => setTweak('accentColor', v)} />
+        <TweakSection label="Demo Mode" />
+        <TweakRadio
+          label="Demo Indicator"
+          value={tweaks.demoModeIndicator}
+          options={['badge', 'banner', 'none']}
+          onChange={v => setTweak('demoModeIndicator', v)}
+        />
+        <TweakSection label="Audit UX" />
+        <TweakToggle label="Show Progress %" value={tweaks.showProgressPct} onChange={v => setTweak('showProgressPct', v)} />
+      </TweaksPanel>
+
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
