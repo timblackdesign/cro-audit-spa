@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're in — CRO Audit System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:    #e2e8f0;
+  --ink-3:  #94a3b8;
+  --ink-4:  #8496af;
+  --ink-5:  #64748b;
+  --paper:  #0e1018;
+  --paper-2:#161925;
+  --rule:   #252840;
+  --accent: #6366f1;
+  --accent-positive:    #818cf8;
+  --accent-positive-bg: rgba(129,140,248,0.12);
+  --state-pass:    #86efac;
+  --state-pass-bg: rgba(34,197,94,0.08);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  max-width: 480px;
+  width: 100%;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 48px 40px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--state-pass-bg);
+  border: 1px solid var(--state-pass);
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--state-pass);
+  margin-bottom: 28px;
+}
+
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--state-pass);
+  border-radius: 50%;
+}
+
+h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.email-line {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--accent-positive);
+  margin-bottom: 32px;
+  letter-spacing: 0.02em;
+}
+
+.divider {
+  height: 1px;
+  background: var(--rule);
+  margin-bottom: 28px;
+}
+
+.instructions {
+  margin-bottom: 32px;
+}
+
+.step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.step:last-child { margin-bottom: 0; }
+
+.step-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-5);
+  letter-spacing: 0.06em;
+  width: 20px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.step-text {
+  font-size: 14px;
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+
+.step-text strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.cta {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cta:hover { background: #4f46e5; }
+
+.brand {
+  margin-top: 32px;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-5);
+}
+
+@media (max-width: 520px) {
+  .card { padding: 32px 24px; }
+  h1 { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="badge">Purchase confirmed</div>
+  <h1>You're in.</h1>
+  <div class="email-line" id="email-line">Account active</div>
+
+  <div class="divider"></div>
+
+  <div class="instructions">
+    <div class="step">
+      <span class="step-num">01</span>
+      <span class="step-text">Click the button below to open the CRO Audit System.</span>
+    </div>
+    <div class="step">
+      <span class="step-num">02</span>
+      <span class="step-text">Enter your email and click <strong>Send magic link</strong>.</span>
+    </div>
+    <div class="step">
+      <span class="step-num">03</span>
+      <span class="step-text">Check your inbox and click the link — you'll be signed in instantly. No password required.</span>
+    </div>
+  </div>
+
+  <a href="index.html" class="cta">Launch the tool</a>
+</div>
+
+<div class="brand">CRO Audit System &nbsp;·&nbsp; by Black Design, Inc.</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get('email');
+  const el = document.getElementById('email-line');
+  if (email) {
+    el.textContent = email;
+  }
+</script>
+</body>
+</html>
