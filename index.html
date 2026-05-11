@@ -2552,7 +2552,7 @@ function App() {
         setDbError('Could not load audits. Check your connection.');
         setAuditsLoading(false);
       });
-  }, [user]);
+  }, [user?.id]);
 
   // Debounced save — only fires for audits whose updated_at changed since last save
   useEffect(() => {
