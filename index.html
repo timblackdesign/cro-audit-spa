@@ -580,7 +580,10 @@ function initStore() {
   if (demoMode) return defaultStore();
   try {
     const raw = localStorage.getItem(THEME.storage.key);
-    if (raw) return { ...defaultStore(), ...JSON.parse(raw) };
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { audits: {}, last_auditor_name: parsed.last_auditor_name ?? null };
+    }
   } catch {}
   return defaultStore();
 }
@@ -636,6 +639,36 @@ function downloadJSON(data, filename) {
   const a = document.createElement('a');
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
+}
+
+// ── SUPABASE DB HELPERS ──
+async function fetchAuditsFromDB(userId) {
+  const { data, error } = await _supabase
+    .from('audits')
+    .select('id, data, created_at, updated_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  const audits = {};
+  (data || []).forEach(row => {
+    audits[row.id] = { ...row.data, id: row.id, created_at: row.created_at, updated_at: row.updated_at };
+  });
+  return audits;
+}
+
+async function upsertAuditToDB(userId, audit) {
+  const { error } = await _supabase.from('audits').upsert({
+    id: audit.id,
+    user_id: userId,
+    data: audit,
+    updated_at: audit.updated_at,
+  });
+  if (error) throw error;
+}
+
+async function deleteAuditFromDB(auditId) {
+  const { error } = await _supabase.from('audits').delete().eq('id', auditId);
+  if (error) throw error;
 }
 
 function preCheckItems(audit) {
@@ -869,7 +902,40 @@ function SiteHeader({ onBack, auditName, theme, onToggleTheme }) {
   );
 }
 
-function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onImport, onSaveClientInfo, user, onSignOut }) {
+function ConfirmDialog({ dialog, onClose }) {
+  if (!dialog) return null;
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-panel" style={{ maxWidth:420 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
+            {dialog.title}
+          </span>
+          <button onClick={onClose} style={{ background:'none', border:'none', color:'var(--ink-4)',
+            fontFamily:"'DM Mono',monospace", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
+            ×
+          </button>
+        </div>
+        <div className="modal-body">
+          <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:'var(--ink-3)', lineHeight:1.6, margin:0 }}>
+            {dialog.message}
+          </p>
+        </div>
+        <div className="modal-footer">
+          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+          <button onClick={() => { dialog.onConfirm(); onClose(); }}
+            className="btn"
+            style={{ background: dialog.danger ? 'var(--impact-high)' : 'var(--accent)', color:'#fff',
+              borderColor: dialog.danger ? 'var(--impact-high)' : 'var(--accent)' }}>
+            {dialog.confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onImport, onSaveClientInfo, user, onSignOut, auditsLoading, dbError, onDismissError }) {
   const [listClientInfoId, setListClientInfoId] = useState(null);
   const importRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(null);
@@ -911,6 +977,19 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
   return (
     <React.Fragment>
     <main style={{ maxWidth:840, margin:'0 auto', padding:'48px 24px 100px' }}>
+      {/* Error banner */}
+      {dbError && (
+        <div style={{ marginBottom:20, padding:'12px 18px', background:'rgba(220,38,38,0.1)',
+          border:'1px solid rgba(220,38,38,0.3)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--impact-high)', letterSpacing:'0.04em', lineHeight:1.5 }}>
+            {dbError}
+          </span>
+          <button onClick={onDismissError} style={{ background:'none', border:'none', color:'var(--ink-4)',
+            fontFamily:"'DM Mono',monospace", fontSize:16, cursor:'pointer', lineHeight:1, padding:'0 4px', flexShrink:0 }}>
+            ×
+          </button>
+        </div>
+      )}
       {/* Header row */}
       <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:40, gap:16, flexWrap:'wrap' }}>
         <div>
@@ -962,8 +1041,21 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
         </div>
       )}
 
+      {/* Loading skeleton */}
+      {auditsLoading && (
+        <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+          {[0,1,2].map(i => (
+            <div key={i} style={{ background:'var(--paper-2)', border:'1px solid var(--rule)', padding:'14px 20px' }}>
+              <div style={{ height:2, background:'var(--rule)', marginBottom:14 }} />
+              <div style={{ height:14, width:`${55 + i * 15}%`, background:'var(--rule-2)', marginBottom:10, borderRadius:2 }} />
+              <div style={{ height:10, width:'30%', background:'var(--rule)', borderRadius:2 }} />
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Empty state */}
-      {audits.length === 0 && (
+      {!auditsLoading && audits.length === 0 && (
         <div style={{ border:'1px solid var(--rule)', padding:'64px 32px', textAlign:'center', background:'var(--paper-2)' }}>
           <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:'var(--ink-3)', marginBottom:12, letterSpacing:'-0.3px' }}>
             No audits yet
@@ -981,7 +1073,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
       )}
 
       {/* Audit list */}
-      {audits.length > 0 && (
+      {!auditsLoading && audits.length > 0 && (
         <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
           {audits.map((audit, idx) => {
             const { done, total, pct } = progressPct(audit);
@@ -1037,7 +1129,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                             {[
                               { label:'Duplicate', action:() => { onDuplicate(audit.id); setMenuOpen(null); } },
                               { label:'Archive & Export', action:() => { onArchive(audit.id); setMenuOpen(null); } },
-                              { label:'Delete', action:() => { if (confirm(`Delete "${audit.client_info?.client_name || 'this audit'}"?`)) { onDelete(audit.id); setMenuOpen(null); } }, danger:true },
+                              { label:'Delete', action:() => { onDelete(audit.id); setMenuOpen(null); }, danger:true },
                             ].map(item => (
                               <button key={item.label} onClick={item.action}
                                 style={{ display:'block', width:'100%', textAlign:'left', padding:'10px 14px',
@@ -1099,10 +1191,11 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
         <>
           <input ref={importRef} type="file" accept=".json" style={{display:'none'}} onChange={handleImportFile} />
           <div style={{ marginTop:24, display:'flex', gap:10 }}>
-            <button onClick={() => importRef.current?.click()}
-              style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-5)', padding:'8px 16px',
+            <button onClick={() => !atCap && importRef.current?.click()} disabled={atCap}
+              style={{ background:'none', border:'1px solid var(--rule)',
+                color: atCap ? 'var(--ink-5)' : 'var(--ink-4)', padding:'8px 16px',
                 fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.06em', textTransform:'uppercase',
-                cursor:'pointer' }}>
+                cursor: atCap ? 'not-allowed' : 'pointer', opacity: atCap ? 0.5 : 1 }}>
               Import JSON
             </button>
           </div>
@@ -2406,6 +2499,12 @@ function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('cro-theme') || 'dark');
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(!demoMode);
+  const [auditsLoading, setAuditsLoading] = useState(!demoMode);
+  const [dbError, setDbError] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
+  const saveTimers = useRef({});
+  // Track updated_at of last-saved version per audit to skip unnecessary Supabase writes
+  const savedAt = useRef({});
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -2431,16 +2530,65 @@ function App() {
     await _supabase.auth.signOut();
   }
 
+  // Persist last_auditor_name to localStorage (audits live in Supabase now)
   useEffect(() => {
     if (!demoMode) {
-      try { localStorage.setItem(THEME.storage.key, JSON.stringify(store)); } catch {}
+      try { localStorage.setItem(THEME.storage.key, JSON.stringify({ last_auditor_name: store.last_auditor_name })); } catch {}
     }
-  }, [store]);
+  }, [store.last_auditor_name]);
+
+  // Load audits from Supabase after auth resolves
+  useEffect(() => {
+    if (demoMode || !user) return;
+    setAuditsLoading(true);
+    fetchAuditsFromDB(user.id)
+      .then(audits => {
+        Object.values(audits).forEach(a => { savedAt.current[a.id] = a.updated_at; });
+        setStore(prev => ({ ...prev, audits }));
+        setAuditsLoading(false);
+      })
+      .catch(err => {
+        console.error('fetchAudits:', err);
+        setDbError('Could not load audits. Check your connection.');
+        setAuditsLoading(false);
+      });
+  }, [user]);
+
+  // Debounced save — only fires for audits whose updated_at changed since last save
+  useEffect(() => {
+    if (demoMode || !user) return;
+    Object.values(store.audits).forEach(audit => {
+      if (savedAt.current[audit.id] === audit.updated_at) return;
+      clearTimeout(saveTimers.current[audit.id]);
+      saveTimers.current[audit.id] = setTimeout(() => {
+        upsertAuditToDB(user.id, audit)
+          .then(() => { savedAt.current[audit.id] = audit.updated_at; })
+          .catch(err => {
+            console.error('upsertAudit:', err);
+            setDbError('Save failed. Check your connection.');
+          });
+      }, 1500);
+    });
+  }, [store.audits]);
 
   function updateStore(fn) { setStore(prev => fn(prev)); }
 
-  function handleNew() {
+  function handleDismissError() { setDbError(null); }
+
+  async function handleNew() {
+    if (!demoMode && Object.keys(store.audits).length >= THEME.limits.maxActiveAudits) return;
     const audit = newAudit(store.last_auditor_name);
+    if (!demoMode) {
+      try {
+        await upsertAuditToDB(user.id, audit);
+        savedAt.current[audit.id] = audit.updated_at;
+      } catch (err) {
+        setDbError(err.message?.includes('audit_limit_reached')
+          ? THEME.copy.workspaceFull
+          : 'Could not create audit. Check your connection.');
+        return;
+      }
+    }
     updateStore(prev => ({ ...prev, audits: { ...prev.audits, [audit.id]: audit } }));
     setActiveAuditId(audit.id);
     setAppScreen('audit');
@@ -2453,34 +2601,97 @@ function App() {
 
   function handleArchive(id) {
     const audit = store.audits[id];
-    const name = (audit.client_info?.client_name || 'audit').toLowerCase().replace(/\s+/g,'-');
-    downloadJSON(audit, `cro-audit-${name}-${id}.json`);
-    updateStore(prev => { const { [id]: _, ...rest } = prev.audits; return { ...prev, audits: rest }; });
+    const clientName = audit.client_info?.client_name || 'this audit';
+    setConfirmDialog({
+      title: 'Export & Delete',
+      message: `"${clientName}" will be exported as a JSON file and removed from your workspace. You can reimport it later if you have an open slot.`,
+      confirmLabel: 'Export & Delete',
+      danger: true,
+      onConfirm: async () => {
+        const name = clientName.toLowerCase().replace(/\s+/g, '-');
+        downloadJSON(audit, `cro-audit-${name}-${id}.json`);
+        if (!demoMode) {
+          try {
+            await deleteAuditFromDB(id);
+            delete savedAt.current[id];
+          } catch (err) {
+            setDbError('Delete failed. Check your connection.');
+            return;
+          }
+        }
+        updateStore(prev => { const { [id]: _, ...rest } = prev.audits; return { ...prev, audits: rest }; });
+      },
+    });
   }
 
-  function handleDuplicate(id) {
+  async function handleDuplicate(id) {
+    if (!demoMode && Object.keys(store.audits).length >= THEME.limits.maxActiveAudits) {
+      setDbError(THEME.copy.workspaceFull);
+      return;
+    }
     const audit = store.audits[id];
     const newId = genId();
     const now = new Date().toISOString();
-    updateStore(prev => ({
-      ...prev,
-      audits: { ...prev.audits, [newId]: { ...audit, id:newId, created_at:now, updated_at:now,
-        client_info:{ ...audit.client_info }, items:{ ...audit.items } } },
-    }));
+    const dupeAudit = { ...audit, id: newId, created_at: now, updated_at: now,
+      client_info: { ...audit.client_info }, items: { ...audit.items } };
+    if (!demoMode) {
+      try {
+        await upsertAuditToDB(user.id, dupeAudit);
+        savedAt.current[newId] = dupeAudit.updated_at;
+      } catch (err) {
+        setDbError(err.message?.includes('audit_limit_reached')
+          ? THEME.copy.workspaceFull
+          : 'Could not duplicate audit. Check your connection.');
+        return;
+      }
+    }
+    updateStore(prev => ({ ...prev, audits: { ...prev.audits, [newId]: dupeAudit } }));
   }
 
   function handleDelete(id) {
-    updateStore(prev => { const { [id]: _, ...rest } = prev.audits; return { ...prev, audits: rest }; });
-    if (activeAuditId === id) { setActiveAuditId(null); setAppScreen('list'); }
+    const audit = store.audits[id];
+    const clientName = audit.client_info?.client_name || 'this audit';
+    setConfirmDialog({
+      title: 'Delete Audit',
+      message: `Delete "${clientName}"? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      danger: true,
+      onConfirm: async () => {
+        if (!demoMode) {
+          try {
+            await deleteAuditFromDB(id);
+            delete savedAt.current[id];
+          } catch (err) {
+            setDbError('Delete failed. Check your connection.');
+            return;
+          }
+        }
+        updateStore(prev => { const { [id]: _, ...rest } = prev.audits; return { ...prev, audits: rest }; });
+        if (activeAuditId === id) { setActiveAuditId(null); setAppScreen('list'); }
+      },
+    });
   }
 
-  function handleImport(data) {
+  async function handleImport(data) {
+    if (!demoMode && Object.keys(store.audits).length >= THEME.limits.maxActiveAudits) {
+      setDbError(THEME.copy.workspaceFull);
+      return;
+    }
     const newId = genId();
     const now = new Date().toISOString();
-    updateStore(prev => ({
-      ...prev,
-      audits: { ...prev.audits, [newId]: { ...data, id:newId, updated_at:now } },
-    }));
+    const audit = { ...data, id: newId, updated_at: now };
+    if (!demoMode) {
+      try {
+        await upsertAuditToDB(user.id, audit);
+        savedAt.current[newId] = audit.updated_at;
+      } catch (err) {
+        setDbError(err.message?.includes('audit_limit_reached')
+          ? THEME.copy.workspaceFull
+          : 'Could not import audit. Check your connection.');
+        return;
+      }
+    }
+    updateStore(prev => ({ ...prev, audits: { ...prev.audits, [newId]: audit } }));
   }
 
   function handleUpdateItem(auditId, itemId, updates) {
@@ -2521,16 +2732,19 @@ function App() {
 
   if (appScreen === 'audit' && activeAuditId) {
     return (
-      <AuditWorkspace
-        auditId={activeAuditId}
-        store={store}
-        onUpdateItem={handleUpdateItem}
-        onUpdatePricing={handleUpdatePricing}
-        onSaveClientInfo={handleSaveClientInfo}
-        onBack={() => setAppScreen('list')}
-        theme={theme}
-        onToggleTheme={toggleTheme}
-      />
+      <>
+        <AuditWorkspace
+          auditId={activeAuditId}
+          store={store}
+          onUpdateItem={handleUpdateItem}
+          onUpdatePricing={handleUpdatePricing}
+          onSaveClientInfo={handleSaveClientInfo}
+          onBack={() => setAppScreen('list')}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
+        <ConfirmDialog dialog={confirmDialog} onClose={() => setConfirmDialog(null)} />
+      </>
     );
   }
 
@@ -2549,7 +2763,11 @@ function App() {
         onSaveClientInfo={handleSaveClientInfo}
         user={user}
         onSignOut={handleSignOut}
+        auditsLoading={auditsLoading}
+        dbError={dbError}
+        onDismissError={handleDismissError}
       />
+      <ConfirmDialog dialog={confirmDialog} onClose={() => setConfirmDialog(null)} />
     </>
   );
 }
