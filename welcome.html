@@ -169,7 +169,7 @@ h1 {
 <div class="card">
   <div class="badge">Purchase confirmed</div>
   <h1>You're in.</h1>
-  <div class="email-line" id="email-line">Account active</div>
+  <div class="email-line">Your account is active.</div>
 
   <div class="divider"></div>
 
@@ -193,13 +193,5 @@ h1 {
 
 <div class="brand">CRO Audit System &nbsp;·&nbsp; by Black Design, Inc.</div>
 
-<script>
-  const params = new URLSearchParams(window.location.search);
-  const email = params.get('email');
-  const el = document.getElementById('email-line');
-  if (email) {
-    el.textContent = email;
-  }
-</script>
 </body>
 </html>
