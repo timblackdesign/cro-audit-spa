@@ -723,7 +723,9 @@ function LoginScreen() {
       options: { emailRedirectTo: window.location.origin },
     });
     if (error) {
-      setErrorMsg(error.message);
+      // signInWithOtp with "Enable new user signups" off returns an error for unknown emails.
+      // Show a purchase prompt rather than a raw error string.
+      setErrorMsg('no-account');
       setStatus('error');
     } else {
       setStatus('sent');
@@ -774,7 +776,14 @@ function LoginScreen() {
               {status === 'sending' ? 'Sending…' : 'Send magic link'}
             </button>
             {status === 'error' && (
-              <p style={{ color:'var(--state-fail)', fontSize:13, marginTop:10 }}>{errorMsg}</p>
+              <p style={{ color:'var(--state-fail)', fontSize:13, marginTop:10 }}>
+                No account found for that email.{' '}
+                <a href="https://blackdesigninc.gumroad.com/l/croauditsystem-for-shopify"
+                  style={{ color:'var(--state-fail)', textUnderlineOffset:2 }}>
+                  Purchase the CRO Audit Kit
+                </a>
+                {' '}to get access.
+              </p>
             )}
           </form>
         )}
