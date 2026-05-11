@@ -1,6 +1,6 @@
 [build]
   publish = "."
-  command = ""
+  command = "node scripts/export-checklist.js"
 
 [functions]
   directory = "netlify/functions"
