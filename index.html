@@ -470,6 +470,11 @@ body {
   .checklist-card-scroll { padding-bottom: 20px !important; }
 }
 
+/* Audit list view — tighter top padding on mobile */
+@media (max-width: 700px) {
+  .audits-main { padding-top: 20px !important; }
+}
+
 /* Calculator metric grid — 1 col on mobile */
 @media (max-width: 700px) {
   .calc-metrics { grid-template-columns: 1fr !important; }
@@ -950,7 +955,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
 
   return (
     <React.Fragment>
-    <main style={{ maxWidth:840, margin:'0 auto', padding:'48px 24px 100px' }}>
+    <main className="audits-main" style={{ maxWidth:840, margin:'0 auto', padding:'48px 24px 100px' }}>
       {/* Error banner */}
       {dbError && (
         <div style={{ marginBottom:20, padding:'12px 18px', background:'rgba(220,38,38,0.1)',
@@ -964,8 +969,43 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
           </button>
         </div>
       )}
-      {/* Header row */}
-      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:40, gap:16, flexWrap:'wrap' }}>
+
+      {/* Mobile header — stacked layout with + button top-right */}
+      <div className="mobile-only" style={{ position:'relative', marginBottom:20 }}>
+        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
+          color:'var(--ink-5)', marginBottom:8 }}>
+          {demoMode ? 'Demo Mode' : `Active audits: ${audits.length} of ${THEME.limits.maxActiveAudits}`}
+        </div>
+        <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:32, fontWeight:400, color:'var(--ink)',
+          letterSpacing:'-0.5px', lineHeight:1.05, marginBottom:8 }}>Your audits</h1>
+        {user && !demoMode && (
+          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-5)',
+              letterSpacing:'0.04em', overflow:'hidden', maxWidth:200, textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+              {user.email}
+            </span>
+            <span style={{ color:'var(--rule-2)' }}>·</span>
+            <button onClick={onSignOut}
+              style={{ background:'none', border:'none', padding:0, fontFamily:"'DM Sans',sans-serif",
+                fontSize:12, color:'var(--ink-5)', cursor:'pointer', textDecoration:'underline',
+                textUnderlineOffset:2 }}>
+              Sign out
+            </button>
+          </div>
+        )}
+        <button onClick={onNew} disabled={!demoMode && atCap}
+          style={{ position:'absolute', top:0, right:0, width:44, height:44,
+            background:(!demoMode && atCap) ? 'var(--paper-3)' : 'var(--accent)',
+            color:(!demoMode && atCap) ? 'var(--ink-5)' : '#fff', border:'none',
+            fontFamily:"'DM Sans',sans-serif", fontSize:22, fontWeight:400, lineHeight:1,
+            cursor:(!demoMode && atCap) ? 'not-allowed' : 'pointer',
+            display:'flex', alignItems:'center', justifyContent:'center' }}>
+          +
+        </button>
+      </div>
+
+      {/* Desktop header row */}
+      <div className="desktop-only" style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:40, gap:16, flexWrap:'wrap' }}>
         <div>
           <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
             color:'var(--ink-5)', marginBottom:10 }}>
@@ -1001,9 +1041,9 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
         </div>
       </div>
 
-      {/* Workspace cap bar */}
+      {/* Workspace cap bar — desktop only */}
       {!demoMode && audits.length > 0 && (
-        <div style={{ marginBottom:24, display:'flex', alignItems:'center', gap:10 }}>
+        <div className="desktop-only" style={{ marginBottom:24, display:'flex', alignItems:'center', gap:10 }}>
           <div style={{ flex:1, height:2, background:'var(--rule)', position:'relative' }}>
             <div style={{ position:'absolute', left:0, top:0, height:'100%', background:'var(--accent)',
               width:`${(audits.length / THEME.limits.maxActiveAudits) * 100}%`, transition:'width 0.3s' }} />
