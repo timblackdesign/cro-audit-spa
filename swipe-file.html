@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Closing Swipe File — CRO Audit System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:   #e2e8f0;
+  --ink-2: #c8d0e0;
+  --ink-3: #94a3b8;
+  --ink-4: #8496af;
+  --ink-5: #64748b;
+  --paper:   #0e1018;
+  --paper-2: #161925;
+  --paper-3: #1e2235;
+  --rule:   #252840;
+  --rule-2: #363a55;
+  --accent:    #6366f1;
+  --accent-dk: #4338ca;
+  --accent-positive:    #818cf8;
+  --accent-positive-bg: rgba(129,140,248,0.12);
+  --state-pass:    #86efac;
+  --state-pass-bg: rgba(34,197,94,0.08);
+  --amber: #c8834a;
+  --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER ── */
+.site-header {
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--rule);
+  padding: 0 24px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.site-header__name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 17px;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+}
+.header-sep { color: var(--ink-5); font-size: 13px; }
+.header-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.back-link {
+  margin-left: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  text-decoration: none;
+  border: 1px solid var(--rule);
+  padding: 5px 12px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.back-link:hover { color: var(--ink); border-color: var(--rule-2); }
+
+/* ── PAGE LAYOUT ── */
+.page-content {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* ── PAGE INTRO ── */
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 38px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+.page-intro-text {
+  color: var(--ink-3);
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 580px;
+  margin-bottom: 24px;
+}
+.golden-rule {
+  border: 1px solid rgba(99,102,241,0.3);
+  background: rgba(99,102,241,0.06);
+  border-radius: 4px;
+  padding: 14px 18px;
+  margin-bottom: 40px;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.65;
+}
+.golden-rule strong { color: var(--accent-positive); }
+
+/* ── QUICK SETUP ── */
+.quick-setup {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  margin-bottom: 48px;
+}
+.quick-setup__header {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.quick-setup__label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-5);
+}
+.quick-setup__note {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-5);
+  margin-left: auto;
+}
+.quick-setup__fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+}
+@media (max-width: 600px) {
+  .quick-setup__fields { grid-template-columns: 1fr; }
+}
+.setup-field {
+  padding: 16px 18px;
+  border-right: 1px solid var(--rule);
+}
+.setup-field:last-child { border-right: none; }
+@media (max-width: 600px) {
+  .setup-field { border-right: none; border-bottom: 1px solid var(--rule); }
+  .setup-field:last-child { border-bottom: none; }
+}
+.setup-field label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-bottom: 6px;
+}
+.setup-field input {
+  width: 100%;
+  background: var(--paper-3);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  padding: 7px 10px;
+  border-radius: 3px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.setup-field input::placeholder { color: var(--ink-5); }
+.setup-field input:focus { border-color: var(--accent); }
+.setup-field .persist-note {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-5);
+  margin-top: 5px;
+}
+
+/* ── TEMPLATE CARDS ── */
+.templates-heading {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-5);
+  margin-bottom: 16px;
+}
+.card {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.card-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #fff;
+  background: var(--accent);
+  padding: 2px 7px;
+  flex-shrink: 0;
+}
+.card-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -0.2px;
+}
+.card-tagline {
+  font-size: 12px;
+  color: var(--ink-4);
+  font-style: italic;
+  margin-left: auto;
+}
+@media (max-width: 540px) {
+  .card-tagline { margin-left: 0; width: 100%; }
+}
+
+/* ── CARD SECTIONS ── */
+.card-section {
+  border-bottom: 1px solid var(--rule);
+  padding: 14px 18px;
+}
+.card-section:last-child { border-bottom: none; }
+.section-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-5);
+}
+.copy-btn {
+  margin-left: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: none;
+  border: 1px solid var(--rule-2);
+  color: var(--ink-4);
+  padding: 4px 12px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.copy-btn:hover { color: var(--ink); border-color: var(--ink-4); }
+.copy-btn.copied {
+  background: var(--state-pass-bg);
+  border-color: var(--state-pass);
+  color: var(--state-pass);
+}
+
+.subject-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--ink-2);
+  padding: 8px 12px;
+  background: var(--paper-3);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  line-height: 1.5;
+}
+.subject-alt {
+  font-size: 11px;
+  color: var(--ink-5);
+  font-style: italic;
+  margin-top: 6px;
+}
+
+.body-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+/* ── INLINE MARKS ── */
+mark.fill-setup {
+  background: rgba(99,102,241,0.12);
+  color: var(--accent-positive);
+  border: 1px dashed rgba(99,102,241,0.35);
+  border-radius: 3px;
+  padding: 0px 5px;
+  font-size: 0.88em;
+  font-style: normal;
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap;
+}
+mark.fill-manual {
+  background: rgba(200,131,74,0.12);
+  color: var(--amber);
+  border: 1px dashed rgba(200,131,74,0.4);
+  border-radius: 3px;
+  padding: 0px 5px;
+  font-size: 0.88em;
+  font-style: normal;
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap;
+}
+
+/* ── T4 AUDIT DETAILS ── */
+.audit-details-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.audit-details-note {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-5);
+  font-style: italic;
+}
+.detail-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 540px) {
+  .detail-inputs { grid-template-columns: 1fr; }
+}
+.detail-inputs.three-col { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 600px) {
+  .detail-inputs.three-col { grid-template-columns: 1fr; }
+}
+.detail-field label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-bottom: 5px;
+}
+.detail-field input {
+  width: 100%;
+  background: var(--paper-3);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 6px 9px;
+  border-radius: 3px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.detail-field input::placeholder { color: var(--ink-5); }
+.detail-field input:focus { border-color: var(--accent); }
+
+/* ── CALLOUT ── */
+.callout {
+  background: var(--paper-3);
+  border-left: 3px solid var(--accent);
+  padding: 12px 14px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.65;
+  border-radius: 0 3px 3px 0;
+}
+.callout strong { color: var(--ink-2); }
+.card-section .callout { margin-top: 10px; }
+
+/* ── TIPS SECTION ── */
+.section-heading {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+  margin: 48px 0 20px;
+}
+.tips-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 580px) {
+  .tips-grid { grid-template-columns: 1fr; }
+}
+.tip-card {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 18px;
+}
+.tip-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-positive);
+  margin-bottom: 6px;
+}
+.tip-title {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 14px;
+  margin-bottom: 7px;
+}
+.tip-body {
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.65;
+}
+.tip-body blockquote {
+  border-left: 2px solid var(--rule-2);
+  padding-left: 10px;
+  color: var(--ink-4);
+  font-style: italic;
+  margin-top: 8px;
+}
+.tip-card.wide {
+  grid-column: 1 / -1;
+}
+
+/* ── QUICK REFERENCE ── */
+.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4px;
+  font-size: 13px;
+}
+.ref-table th {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-5);
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper-2);
+}
+.ref-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-3);
+  vertical-align: top;
+}
+.ref-table tr:last-child td { border-bottom: none; }
+.ref-table td:first-child { color: var(--ink-2); }
+.ref-table td:last-child {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent-positive);
+  white-space: nowrap;
+}
+
+/* ── FOOTER ── */
+.page-footer {
+  margin-top: 60px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-5);
+}
+
+@media print {
+  .site-header, .back-link, .copy-btn, .quick-setup, .setup-field .persist-note { display: none !important; }
+  body { background: #fff; color: #111; }
+  .card { border: 1px solid #ddd; break-inside: avoid; }
+  mark.fill-setup, mark.fill-manual { background: #fef3c7; color: #92400e; border: 1px dashed #f59e0b; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="site-header">
+  <span class="site-header__name">CRO Audit System</span>
+  <span class="header-sep">·</span>
+  <span class="header-sub">Closing Swipe File</span>
+  <a href="index.html" class="back-link">← Back to audit</a>
+</header>
+
+<div class="page-content">
+
+  <!-- ── PAGE INTRO ── -->
+  <h1 class="page-title">Closing<br>Swipe File</h1>
+  <p class="page-intro-text">These scripts are the skeleton. Your personality is the skin. Use the structure, but always add one specific detail about their store — a product, a recent launch, something from their About page — to show you actually visited. That's what separates a reply from a delete.</p>
+  <div class="golden-rule">
+    <strong>The golden rule:</strong> Every script anchors to revenue, not design. Store owners don't care about aesthetics — they care about sales. Never lead with how something looks. Always lead with what it's costing them.
+  </div>
+
+  <!-- ── QUICK SETUP ── -->
+  <div class="quick-setup">
+    <div class="quick-setup__header">
+      <span class="quick-setup__label">Quick Setup</span>
+      <span class="quick-setup__note">Scripts update live as you type</span>
+    </div>
+    <div class="quick-setup__fields">
+      <div class="setup-field">
+        <label for="input-client">Client first name</label>
+        <input type="text" id="input-client" placeholder="e.g. Sarah" oninput="updateState('clientName', this.value)">
+      </div>
+      <div class="setup-field">
+        <label for="input-store">Store name</label>
+        <input type="text" id="input-store" placeholder="e.g. Acme Store" oninput="updateState('storeName', this.value)">
+      </div>
+      <div class="setup-field">
+        <label for="input-auditor">Your name</label>
+        <input type="text" id="input-auditor" placeholder="e.g. Tim Black" oninput="updateState('auditorName', this.value)">
+        <div class="persist-note">Saved automatically</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TEMPLATES ── -->
+  <div class="templates-heading">The Scripts</div>
+
+  <!-- T1: Foot-in-the-Door -->
+  <div class="card" id="card-t1">
+    <div class="card-header">
+      <span class="card-num">01</span>
+      <span class="card-name">The Foot-in-the-Door</span>
+      <span class="card-tagline">Cold outreach — get a yes to a quick audit</span>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Subject</span>
+        <button class="copy-btn" id="copy-subject-t1" onclick="copySubject('t1')">Copy subject</button>
+      </div>
+      <div class="subject-text" id="subject-t1"></div>
+      <div class="subject-alt">Alternative: I found a revenue leak on your [Product Category] page</div>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Email body</span>
+        <button class="copy-btn" id="copy-body-t1" onclick="copyBody('t1')">Copy email</button>
+      </div>
+      <div class="body-text" id="body-t1"></div>
+      <div class="callout" style="margin-top:14px;">
+        <strong>Screenshot rule:</strong> Never send this email without a visual. Screenshot the exact issue, circle it in red, attach it. It proves you visited and aren't a bot — and it makes the problem impossible to ignore.
+      </div>
+    </div>
+  </div>
+
+  <!-- T2: Strategy-First Pivot -->
+  <div class="card" id="card-t2">
+    <div class="card-header">
+      <span class="card-num">02</span>
+      <span class="card-name">The Strategy-First Pivot</span>
+      <span class="card-tagline">They asked for a redesign or hourly work</span>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Subject</span>
+        <button class="copy-btn" id="copy-subject-t2" onclick="copySubject('t2')">Copy subject</button>
+      </div>
+      <div class="subject-text" id="subject-t2"></div>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Email body</span>
+        <button class="copy-btn" id="copy-body-t2" onclick="copyBody('t2')">Copy email</button>
+      </div>
+      <div class="body-text" id="body-t2"></div>
+    </div>
+  </div>
+
+  <!-- T3: Efficiency Pivot -->
+  <div class="card" id="card-t3">
+    <div class="card-header">
+      <span class="card-num">03</span>
+      <span class="card-name">The Efficiency Pivot</span>
+      <span class="card-tagline">They want tasks done quickly, no time for explanation</span>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Subject</span>
+        <button class="copy-btn" id="copy-subject-t3" onclick="copySubject('t3')">Copy subject</button>
+      </div>
+      <div class="subject-text" id="subject-t3"></div>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Email body</span>
+        <button class="copy-btn" id="copy-body-t3" onclick="copyBody('t3')">Copy email</button>
+      </div>
+      <div class="body-text" id="body-t3"></div>
+    </div>
+  </div>
+
+  <!-- T4: Sending the Audit -->
+  <div class="card" id="card-t4">
+    <div class="card-header">
+      <span class="card-num">04</span>
+      <span class="card-name">Sending the Audit</span>
+      <span class="card-tagline">Delivering the completed audit — anchor to revenue before they open anything</span>
+    </div>
+    <div class="card-section">
+      <div class="audit-details-header">
+        <span class="section-label">Audit details</span>
+        <span class="audit-details-note">pull these from your calculator step</span>
+      </div>
+      <div class="detail-inputs">
+        <div class="detail-field">
+          <label for="input-rev">Monthly revenue ($)</label>
+          <input type="text" id="input-rev" placeholder="e.g. 85,000" oninput="updateState('monthlyRevenue', this.value)">
+        </div>
+        <div class="detail-field">
+          <label for="input-roi">Monthly recovery estimate ($)</label>
+          <input type="text" id="input-roi" placeholder="e.g. 4,250" oninput="updateState('roiAmount', this.value)">
+        </div>
+      </div>
+      <div class="detail-inputs three-col" style="margin-top:10px;">
+        <div class="detail-field">
+          <label for="input-f1">Top finding #1</label>
+          <input type="text" id="input-f1" placeholder="e.g. No trust badges at checkout" oninput="updateState('finding1', this.value)">
+        </div>
+        <div class="detail-field">
+          <label for="input-f2">Top finding #2</label>
+          <input type="text" id="input-f2" placeholder="e.g. Add to cart below fold on mobile" oninput="updateState('finding2', this.value)">
+        </div>
+        <div class="detail-field">
+          <label for="input-f3">Top finding #3</label>
+          <input type="text" id="input-f3" placeholder="e.g. No cart abandonment recovery" oninput="updateState('finding3', this.value)">
+        </div>
+      </div>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Subject</span>
+        <button class="copy-btn" id="copy-subject-t4" onclick="copySubject('t4')">Copy subject</button>
+      </div>
+      <div class="subject-text" id="subject-t4"></div>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Email body</span>
+        <button class="copy-btn" id="copy-body-t4" onclick="copyBody('t4')">Copy email</button>
+      </div>
+      <div class="body-text" id="body-t4"></div>
+      <div class="callout" style="margin-top:14px;">
+        <strong>Loom power move:</strong> Record a 90-second screen recording of you navigating their store on mobile, narrating the top 3 findings as you go. Embed the link above the finding list. Put <strong>VIDEO</strong> in the subject line — it significantly increases open rates and makes the problems impossible to dismiss.
+      </div>
+    </div>
+  </div>
+
+  <!-- T5: Retainer Pivot -->
+  <div class="card" id="card-t5">
+    <div class="card-header">
+      <span class="card-num">05</span>
+      <span class="card-name">The Retainer Pivot</span>
+      <span class="card-tagline">After Phase 1 — pitching ongoing work</span>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Subject</span>
+        <button class="copy-btn" id="copy-subject-t5" onclick="copySubject('t5')">Copy subject</button>
+      </div>
+      <div class="subject-text" id="subject-t5"></div>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Email body</span>
+        <button class="copy-btn" id="copy-body-t5" onclick="copyBody('t5')">Copy email</button>
+      </div>
+      <div class="body-text" id="body-t5"></div>
+    </div>
+  </div>
+
+  <!-- T6: Friendly Follow-Up -->
+  <div class="card" id="card-t6">
+    <div class="card-header">
+      <span class="card-num">06</span>
+      <span class="card-name">The Friendly Follow-Up</span>
+      <span class="card-tagline">No response 3–5 days after sending the audit</span>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Subject</span>
+        <button class="copy-btn" id="copy-subject-t6" onclick="copySubject('t6')">Copy subject</button>
+      </div>
+      <div class="subject-text" id="subject-t6"></div>
+    </div>
+    <div class="card-section">
+      <div class="section-row">
+        <span class="section-label">Email body</span>
+        <button class="copy-btn" id="copy-body-t6" onclick="copyBody('t6')">Copy email</button>
+      </div>
+      <div class="body-text" id="body-t6"></div>
+    </div>
+  </div>
+
+  <!-- ── TIPS ── -->
+  <h2 class="section-heading">5 Tips to Double Your Response Rate</h2>
+  <div class="tips-grid">
+    <div class="tip-card">
+      <div class="tip-num">Tip 01</div>
+      <div class="tip-title">Always attach a visual</div>
+      <div class="tip-body">Never send a cold outreach email without a screenshot of the specific issue. Circle it in red. It proves you visited, makes the problem tangible, and gives them something to forward to their team.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">Tip 02</div>
+      <div class="tip-title">Anchor to lost profit, not design</div>
+      <div class="tip-body">
+        Store owners don't lie awake thinking about their font size. They lie awake thinking about their conversion rate.
+        <blockquote>"Your body text is below 16px on mobile, which triggers iOS auto-zoom during checkout — a known cause of cart abandonment."</blockquote>
+      </div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">Tip 03</div>
+      <div class="tip-title">Use the compliment sandwich</div>
+      <div class="tip-body">
+        Before presenting problems, find one thing they're doing well. Lead with it. It gives the audit credibility and makes you sound like a partner rather than a critic.
+        <blockquote>"The product photography on your homepage is excellent — it's clearly doing a lot of work for the brand. That's exactly why I want to make sure the checkout flow is as strong as the top of funnel."</blockquote>
+      </div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">Tip 04</div>
+      <div class="tip-title">The Loom power move</div>
+      <div class="tip-body">A 90-second screen recording of you navigating their broken mobile checkout is worth more than any written report. Record it, keep it under 2 minutes, put <strong>VIDEO</strong> in the subject line. It's the single highest-leverage thing you can do to increase response rates on cold outreach.</div>
+    </div>
+    <div class="tip-card wide">
+      <div class="tip-num">Tip 05</div>
+      <div class="tip-title">Soften the ask</div>
+      <div class="tip-body">Don't ask for a 60-minute meeting — that sounds like work. Ask for a 10-minute call. Don't ask "are you ready to move forward?" — ask "which of these would you want to tackle first?" Smaller asks get faster yeses from busy people.</div>
+    </div>
+  </div>
+
+  <!-- ── QUICK REFERENCE ── -->
+  <h2 class="section-heading">Quick Reference</h2>
+  <table class="ref-table">
+    <thead>
+      <tr>
+        <th>Situation</th>
+        <th>Script to use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Cold outreach — you found them</td><td>01 — Foot-in-the-Door</td></tr>
+      <tr><td>They asked for a redesign or hourly work</td><td>02 — Strategy-First Pivot</td></tr>
+      <tr><td>They want tasks done quickly, no time for explanation</td><td>03 — Efficiency Pivot</td></tr>
+      <tr><td>Delivering the completed audit</td><td>04 — Sending the Audit</td></tr>
+      <tr><td>After Phase 1 — pitching ongoing work</td><td>05 — Retainer Pivot</td></tr>
+      <tr><td>No response after 3–5 days</td><td>06 — Friendly Follow-Up</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">CRO Audit System · Closing Swipe File · timblackdesign.com</div>
+
+</div><!-- /page-content -->
+
+<script>
+const state = {
+  clientName: '',
+  storeName: '',
+  auditorName: '',
+  monthlyRevenue: '',
+  roiAmount: '',
+  finding1: '',
+  finding2: '',
+  finding3: '',
+};
+
+const LABELS = {
+  '%client%':    'Client name',
+  '%store%':     'Store name',
+  '%you%':       'Your name',
+  '%rev%':       'Monthly revenue',
+  '%roi%':       'Estimated recovery',
+  '%finding1%':  'Top finding #1',
+  '%finding2%':  'Top finding #2',
+  '%finding3%':  'Top finding #3',
+};
+
+const TEMPLATES = [
+  {
+    id: 't1',
+    subject: "Quick question about %store%'s mobile checkout",
+    body: `Hi %client%,
+
+I was browsing %store% on my phone today and noticed a friction point on your product page — the [specific issue].
+
+I see this pattern a lot on Shopify stores at your traffic level, and it typically costs brands 5–10% in lost conversions on mobile.
+
+I've put together a quick audit with 3 specific fixes you could make this week to recover some of that revenue. Do you have 2 minutes for me to send over a short screen recording of what I found?
+
+Best,
+%you%`,
+  },
+  {
+    id: 't2',
+    subject: 'A more strategic approach to %store%',
+    body: `Hi %client%,
+
+I'd love to help with [what they requested] for %store%.
+
+Before we move into design or implementation though, I've found that the most successful projects start with a Revenue-First Audit. Rather than changing the look of the site, I want to make sure we're actually fixing the friction points that are currently costing you sales.
+
+I've developed a 60-point Conversion Rate Optimization audit that identifies exactly where your visitors are dropping off and puts a dollar figure on the revenue leak you're currently experiencing. It ensures every hour we spend on implementation is actually moving the needle — rather than guessing at what looks good.
+
+Would you be open to starting with the audit so we have a data-driven roadmap before we touch anything?
+
+Best,
+%you%`,
+  },
+  {
+    id: 't3',
+    subject: 'Re: [their email subject]',
+    body: `Hi %client%,
+
+Happy to help with those updates.
+
+One thing I've shifted in my process recently — rather than working through a task list hourly, I now run a quick Conversion Prioritization Audit first. It lets us rank every fix by revenue impact versus effort, so we tackle the changes that will actually move your conversion rate before spending time on lower-priority items.
+
+I can run this for %store% this week and we'll have a much clearer plan for where to focus. Does that sound like a better use of our time?
+
+Best,
+%you%`,
+  },
+  {
+    id: 't4',
+    subject: 'Your CRO Audit for %store%',
+    body: `Hi %client%,
+
+As promised, here's the audit.
+
+I focused on the high-impact areas that directly affect your conversion rate and checkout completion. Based on your current monthly revenue of $%rev%, even a conservative 0.5% lift from these fixes could recover an additional $%roi% per month.
+
+The top 3 findings:
+1. %finding1%
+2. %finding2%
+3. %finding3%
+
+I've attached the full report with the revenue breakdown for each finding. I'd love to walk through the results on a quick 10-minute call — do you have time on [day] at [time]?
+
+Best,
+%you%`,
+  },
+  {
+    id: 't5',
+    subject: '90-Day Conversion Roadmap for %store%',
+    body: `Hi %client%,
+
+Great walking through the audit results with you. As we discussed, the [Phase 1 fixes] are a strong start — but the stores that see compounding results are the ones that treat CRO as an ongoing process, not a one-time fix.
+
+I've mapped out a 90-Day Roadmap based on the remaining findings in the audit:
+
+• Month 1: [Month 1 focus]
+• Month 2: [Month 2 focus]
+• Month 3: [Month 3 focus]
+
+My retainer for managing this end-to-end — strategy, implementation, and monthly reporting — is $[retainer amount]/month.
+
+If that works, I can send the agreement over today and start the first round of work as early as [start date].
+
+Best,
+%you%`,
+  },
+  {
+    id: 't6',
+    subject: 'Re: %store% CRO Audit',
+    body: `Hi %client%,
+
+Wanted to follow up on the audit I sent over.
+
+Based on the numbers we looked at, every week these friction points stay live is revenue the store isn't recovering. I don't want that to get lost in the inbox.
+
+Are you ready to move forward on the high-priority fixes, or has the timing shifted? Either way, happy to adjust the plan to fit where you're at.
+
+Best,
+%you%`,
+  },
+];
+
+function getVarMap() {
+  return {
+    '%client%':   state.clientName,
+    '%store%':    state.storeName,
+    '%you%':      state.auditorName,
+    '%rev%':      state.monthlyRevenue,
+    '%roi%':      state.roiAmount,
+    '%finding1%': state.finding1,
+    '%finding2%': state.finding2,
+    '%finding3%': state.finding3,
+  };
+}
+
+function fillText(str) {
+  const vars = getVarMap();
+  let result = str;
+  for (const [token, value] of Object.entries(vars)) {
+    const label = LABELS[token] || token;
+    result = result.split(token).join(value || '[' + label + ']');
+  }
+  return result;
+}
+
+function fillHTML(str) {
+  const vars = getVarMap();
+  let result = str;
+  for (const [token, value] of Object.entries(vars)) {
+    const label = LABELS[token] || token;
+    if (value) {
+      result = result.split(token).join(escapeHTML(value));
+    } else {
+      result = result.split(token).join('<mark class="fill-setup">' + escapeHTML(label) + '</mark>');
+    }
+  }
+  // Style any remaining [bracket placeholders] as manual-fill
+  result = result.replace(/\[([^\]\n]+)\]/g, '<mark class="fill-manual">[$1]</mark>');
+  return result;
+}
+
+function escapeHTML(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderAll() {
+  TEMPLATES.forEach(t => {
+    const subjectEl = document.getElementById('subject-' + t.id);
+    if (subjectEl) subjectEl.innerHTML = fillHTML(t.subject);
+
+    const bodyEl = document.getElementById('body-' + t.id);
+    if (bodyEl) bodyEl.innerHTML = fillHTML(t.body);
+  });
+}
+
+function updateState(key, value) {
+  state[key] = value.trim();
+  if (key === 'auditorName') {
+    try { localStorage.setItem('cro-swipe-auditor-name', value.trim()); } catch (e) {}
+  }
+  renderAll();
+}
+
+async function copyText(text, btnId) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e2) {}
+    document.body.removeChild(ta);
+  }
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.classList.add('copied');
+  const orig = btn.textContent;
+  btn.textContent = 'Copied ✓';
+  setTimeout(() => {
+    btn.textContent = orig;
+    btn.classList.remove('copied');
+  }, 2000);
+}
+
+function copySubject(id) {
+  const t = TEMPLATES.find(t => t.id === id);
+  if (t) copyText(fillText(t.subject), 'copy-subject-' + id);
+}
+
+function copyBody(id) {
+  const t = TEMPLATES.find(t => t.id === id);
+  if (t) copyText(fillText(t.body), 'copy-body-' + id);
+}
+
+function setInput(id, value) {
+  if (!value) return;
+  const el = document.getElementById(id);
+  if (el) el.value = value;
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  // Auditor name persists in localStorage
+  try {
+    const saved = localStorage.getItem('cro-swipe-auditor-name');
+    if (saved) {
+      state.auditorName = saved;
+      setInput('input-auditor', saved);
+    }
+  } catch (e) {}
+
+  // Pre-fill from URL params passed by the audit report step
+  const params = new URLSearchParams(window.location.search);
+  const store   = params.get('store')   || '';
+  const auditor = params.get('auditor') || '';
+  const rev     = params.get('rev')     || '';
+  const roi     = params.get('roi')     || '';
+
+  if (store)   { state.storeName       = store;   setInput('input-store', store); }
+  if (auditor) { state.auditorName     = auditor; setInput('input-auditor', auditor);
+    try { localStorage.setItem('cro-swipe-auditor-name', auditor); } catch(e) {} }
+  if (rev)     { state.monthlyRevenue  = rev;     setInput('input-rev', rev); }
+  if (roi)     { state.roiAmount       = roi;     setInput('input-roi', roi); }
+
+  renderAll();
+});
+</script>
+</body>
+</html>
