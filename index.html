@@ -553,6 +553,67 @@ const SECTIONS = SECTION_ORDER.map(s => ({
   items: AUDIT_ITEMS.filter(i => i.section === s),
 }));
 
+// ── SORT UTILITIES ──
+const IMPACT_RANK = { High: 0, Medium: 1, Low: 2 };
+const EFFORT_RANK = { Low: 0, Medium: 1 };
+
+function quickWinsScore(item) {
+  return (2 - IMPACT_RANK[item.impact]) + (1 - EFFORT_RANK[item.effort]);
+}
+
+function getGroupedItems(sortBy) {
+  switch (sortBy) {
+    case 'impact':
+      return ['High', 'Medium', 'Low']
+        .map(level => ({
+          key: `impact-${level.toLowerCase()}`,
+          label: `${level} Impact`,
+          items: AUDIT_ITEMS.filter(i => i.impact === level),
+        }))
+        .filter(g => g.items.length > 0);
+    case 'effort':
+      return ['Low', 'Medium']
+        .map(level => ({
+          key: `effort-${level.toLowerCase()}`,
+          label: `${level} Effort`,
+          items: AUDIT_ITEMS.filter(i => i.effort === level),
+        }))
+        .filter(g => g.items.length > 0);
+    case 'quickwins':
+      return [
+        { key: 'qw-3', label: 'Quick Wins',       score: 3 },
+        { key: 'qw-2', label: 'High Value',        score: 2 },
+        { key: 'qw-1', label: 'Worth It',          score: 1 },
+        { key: 'qw-0', label: 'Lower Priority',    score: 0 },
+      ]
+        .map(t => ({ ...t, items: AUDIT_ITEMS.filter(i => quickWinsScore(i) === t.score) }))
+        .filter(g => g.items.length > 0);
+    case 'lift':
+      return [
+        { key: 'lift-high', label: 'High Lift (≥30%)',    items: AUDIT_ITEMS.filter(i => i.lift_max >= 0.30) },
+        { key: 'lift-med',  label: 'Medium Lift (15–29%)', items: AUDIT_ITEMS.filter(i => i.lift_max >= 0.15 && i.lift_max < 0.30) },
+        { key: 'lift-low',  label: 'Lower Lift (<15%)',    items: AUDIT_ITEMS.filter(i => i.lift_max < 0.15) },
+      ].filter(g => g.items.length > 0);
+    default: // 'section'
+      return SECTIONS.map(s => ({ key: s.id, label: s.label, items: s.items }));
+  }
+}
+
+function sortItems(items, sortBy) {
+  switch (sortBy) {
+    case 'impact':
+      return [...items].sort((a, b) => IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact]);
+    case 'effort':
+      return [...items].sort((a, b) => EFFORT_RANK[a.effort] - EFFORT_RANK[b.effort]);
+    case 'quickwins':
+      return [...items].sort((a, b) => quickWinsScore(b) - quickWinsScore(a));
+    case 'lift':
+      return [...items].sort((a, b) => b.lift_max - a.lift_max);
+    default:
+      return items;
+  }
+}
+
 // ── STORAGE ──
 const defaultStore = () => ({ audits: {}, last_auditor_name: null });
 function initStore() {
@@ -1346,10 +1407,36 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
 
 // ─── COMPONENTS B: ChecklistStage, FindingsStage ───
 
+function SortControl({ value, onChange, options }) {
+  return (
+    <div style={{ display:'flex', gap:4, flexWrap:'wrap' }}>
+      {options.map(opt => {
+        const active = value === opt.value;
+        return (
+          <button key={opt.value} onClick={() => onChange(opt.value)}
+            style={{
+              fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+              textTransform:'uppercase', padding:'4px 8px', cursor:'pointer',
+              border: active ? '1px solid var(--accent)' : '1px solid var(--rule-2)',
+              background: active ? 'var(--accent)' : 'transparent',
+              color: active ? '#fff' : 'var(--ink-4)',
+              transition:'all 0.12s',
+              whiteSpace:'nowrap',
+            }}>
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChange, cardGlowTrigger }) {
   const [activeItemId, setActiveItemId] = useState(SECTIONS[0].items[0].id);
   const [openSections, setOpenSections] = useState(new Set([SECTIONS[0].id]));
+  const [checklistSort, setChecklistSort] = useState('section');
   const sidebarRef = useRef(null);
+  const groupsRef = useRef(getGroupedItems('section'));
   const [showDetails, setShowDetails] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1369,9 +1456,10 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
       const { scrollTop, scrollHeight, clientHeight } = sidebar;
       if (scrollTop + clientHeight >= scrollHeight - 8) {
         setOpenSections(prev => {
-          const lastOpenIdx = SECTIONS.reduce((max, s, i) => prev.has(s.id) ? i : max, -1);
-          if (lastOpenIdx >= 0 && lastOpenIdx < SECTIONS.length - 1) {
-            return new Set([...prev, SECTIONS[lastOpenIdx + 1].id]);
+          const gs = groupsRef.current;
+          const lastOpenIdx = gs.reduce((max, g, i) => prev.has(g.key) ? i : max, -1);
+          if (lastOpenIdx >= 0 && lastOpenIdx < gs.length - 1) {
+            return new Set([...prev, gs[lastOpenIdx + 1].key]);
           }
           return prev;
         });
@@ -1405,15 +1493,23 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
     onUpdateItem(audit.id, activeItemId, { [field]: value });
   }, [audit.id, activeItemId, onUpdateItem]);
 
-  const allItemsFlat = SECTIONS.flatMap(s => s.items);
+  const groups = getGroupedItems(checklistSort);
+  groupsRef.current = groups;
+  const allItemsFlat = groups.flatMap(g => g.items);
   const activeIdx = allItemsFlat.findIndex(i => i.id === activeItemId);
   const prevItem = activeIdx > 0 ? allItemsFlat[activeIdx - 1] : null;
   const nextItem = activeIdx < allItemsFlat.length - 1 ? allItemsFlat[activeIdx + 1] : null;
 
+  function handleSortChange(newSort) {
+    const newGroups = getGroupedItems(newSort);
+    setChecklistSort(newSort);
+    setOpenSections(new Set([newGroups[0].key]));
+  }
+
   function goTo(item) {
     setActiveItemId(item.id);
-    const sec = SECTIONS.find(s => s.items.some(i => i.id === item.id));
-    if (sec) setOpenSections(prev => new Set([...prev, sec.id]));
+    const group = groupsRef.current.find(g => g.items.some(i => i.id === item.id));
+    if (group) setOpenSections(prev => new Set([...prev, group.key]));
     setShowDetails(false);
     setShowNotes(false);
     setSidebarOpen(false);
@@ -1493,27 +1589,43 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
         )}
         {/* Sidebar */}
         <div ref={sidebarRef} className={`checklist-sidebar${sidebarOpen ? ' open' : ''}`}>
-          {SECTIONS.map(sec => {
-            const isOpen = openSections.has(sec.id);
-            const done = sectionDone(sec);
+          {/* Sort control */}
+          <div style={{ padding:'10px 12px 8px', borderBottom:'1px solid var(--rule)', background:'var(--paper)' }}>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:8, letterSpacing:'0.1em', textTransform:'uppercase',
+              color:'var(--ink-5)', marginBottom:6 }}>Sort by</div>
+            <SortControl
+              value={checklistSort}
+              onChange={handleSortChange}
+              options={[
+                { value:'section',   label:'Section' },
+                { value:'impact',    label:'Impact' },
+                { value:'effort',    label:'Effort' },
+                { value:'quickwins', label:'Quick Wins' },
+                { value:'lift',      label:'CVR Lift' },
+              ]}
+            />
+          </div>
+          {groups.map(group => {
+            const isOpen = openSections.has(group.key);
+            const done = sectionDone(group);
             return (
-              <div key={sec.id}>
+              <div key={group.key}>
                 <button className={`sidebar-acc-btn${isOpen ? ' open' : ''}`}
-                  onClick={() => setOpenSections(prev => { const n = new Set(prev); n.has(sec.id) ? n.delete(sec.id) : n.add(sec.id); return n; })}>
+                  onClick={() => setOpenSections(prev => { const n = new Set(prev); n.has(group.key) ? n.delete(group.key) : n.add(group.key); return n; })}>
                   <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em',
                     textTransform:'uppercase', color: isOpen ? 'var(--ink-2)' : 'var(--ink-5)' }}>
-                    {sec.short}
+                    {group.label}
                   </span>
                   <span style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
                     <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10,
-                      color: done === sec.items.length ? 'var(--state-pass)' : 'var(--ink-5)' }}>
-                      {done}/{sec.items.length}
+                      color: done === group.items.length ? 'var(--state-pass)' : 'var(--ink-5)' }}>
+                      {done}/{group.items.length}
                     </span>
                     <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:'var(--ink-5)',
                       transform: isOpen ? 'rotate(180deg)' : 'none', transition:'transform 0.15s', display:'inline-block' }}>▼</span>
                   </span>
                 </button>
-                {isOpen && sec.items.map((item, idx) => {
+                {isOpen && group.items.map((item, idx) => {
                   const isActive = item.id === activeItemId;
                   const dot = statusDot(item.id);
                   return (
@@ -1765,6 +1877,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
 
 function FindingsStage({ audit, checkedIds, setCheckedIds }) {
   const failItems = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail');
+  const [findingsSort, setFindingsSort] = useState('impact');
 
   useEffect(() => {
     if (checkedIds === null && failItems.length > 0) {
@@ -1783,18 +1896,31 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
   const IMPACT_BG    = { High:'var(--impact-high-bg)', Medium:'var(--impact-medium-bg)', Low:'var(--paper-3)' };
 
   const roi = calcROI(audit, ids);
+  const sortedFailItems = sortItems(failItems, findingsSort);
 
   return (
     <div data-stage="findings">
       {/* Sticky stage header bar */}
       <div style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
         borderBottom:'1px solid var(--rule)', padding:'10px 20px',
-        display:'flex', alignItems:'center', gap:12 }}>
+        display:'flex', alignItems:'center', gap:12, flexWrap:'wrap' }}>
         <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-          color:'#fff', background:'var(--accent)', padding:'2px 8px' }}>02 — Findings</span>
-        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', letterSpacing:'0.04em' }}>
+          color:'#fff', background:'var(--accent)', padding:'2px 8px', flexShrink:0 }}>02 — Findings</span>
+        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', letterSpacing:'0.04em', flexShrink:0 }}>
           {failItems.length} issue{failItems.length !== 1 ? 's' : ''} found · {ids.size} selected for ROI
         </span>
+        <div style={{ marginLeft:'auto' }}>
+          <SortControl
+            value={findingsSort}
+            onChange={setFindingsSort}
+            options={[
+              { value:'impact',    label:'Impact' },
+              { value:'effort',    label:'Effort' },
+              { value:'quickwins', label:'Quick Wins' },
+              { value:'lift',      label:'CVR Lift' },
+            ]}
+          />
+        </div>
       </div>
 
       <div style={{ maxWidth:840, margin:'0 auto', padding:'32px 24px 60px' }}>
@@ -1819,7 +1945,7 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
                 textTransform:'uppercase', color:'var(--ink-5)', textAlign: i >= 3 ? 'right' : 'left' }}>{h}</div>
             ))}
           </div>
-          {failItems.map(item => {
+          {sortedFailItems.map(item => {
             const checked = ids.has(item.id);
             const itemState = getItemState(audit, item.id);
             const ci = audit.client_info || {};
