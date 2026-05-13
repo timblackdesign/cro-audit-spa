@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep *)",
+      "Bash(open /Users/timblack/Development/Muse/CROAuditSPA_V1/*)"
+    ]
+  }
+}

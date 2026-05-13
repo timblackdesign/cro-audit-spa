@@ -2115,6 +2115,13 @@ function ReportStage({ audit, checkedIds }) {
             fontFamily:mono, fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase', cursor:'pointer' }}>
           Print / Export PDF
         </button>
+        <a href={`swipe-file.html?store=${encodeURIComponent(ci.client_name||'')}&auditor=${encodeURIComponent(ci.auditor_name||'')}&rev=${encodeURIComponent(ci.monthly_revenue||'')}&roi=${encodeURIComponent(roi.hasData ? String(Math.round(roi.monthlyRecovery)) : '')}`}
+          target="_blank" className="no-print"
+          style={{ marginLeft:'auto', background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)',
+            padding:'6px 14px', fontFamily:mono, fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
+            textDecoration:'none', display:'inline-block' }}>
+          Get closing scripts →
+        </a>
       </div>
 
       {/* White paper body */}
