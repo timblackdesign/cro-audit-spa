@@ -651,15 +651,8 @@ async function deleteAuditFromDB(auditId) {
 }
 
 function preCheckItems(audit) {
-  const IMPACT_RANK = { High: 0, Medium: 1, Low: 2 };
-  const EFFORT_RANK = { Low: 0, Medium: 1, High: 2 };
   const failItems = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail');
-  const sorted = [...failItems].sort((a, b) => {
-    if (IMPACT_RANK[a.impact] !== IMPACT_RANK[b.impact]) return IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact];
-    if (EFFORT_RANK[a.effort] !== EFFORT_RANK[b.effort]) return EFFORT_RANK[a.effort] - EFFORT_RANK[b.effort];
-    return AUDIT_ITEMS.indexOf(a) - AUDIT_ITEMS.indexOf(b);
-  });
-  return new Set(sorted.slice(0, THEME.limits.maxPreChecked).map(i => i.id));
+  return new Set(failItems.filter(i => i.impact === 'High').map(i => i.id));
 }
 
 function calcROI(audit, checkedIds) {
@@ -1227,7 +1220,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
   );
 }
 
-function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose }) {
+function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) {
   const ci = audit?.client_info || {};
   const pr = audit?.pricing || {};
   const [form, setForm] = useState({
@@ -1273,6 +1266,20 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose }) {
             ×
           </button>
         </div>
+        {onSkip && (
+          <div style={{ background:'rgba(200,131,74,0.1)', borderBottom:'1px solid rgba(200,131,74,0.25)',
+            padding:'10px 24px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+            <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--amber)', lineHeight:1.4 }}>
+              Revenue data is needed to calculate projected uplift. Fill it in now, or skip to see lift percentages only.
+            </span>
+            <button type="button" onClick={onSkip}
+              style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
+                background:'none', border:'1px solid rgba(200,131,74,0.4)', color:'var(--amber)',
+                padding:'4px 10px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
+              Skip for now →
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSave}>
           <div className="modal-body">
             <div style={{ marginBottom:18 }}>
@@ -1328,7 +1335,7 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose }) {
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={!canSave}>Save Changes</button>
+            <button type="submit" className="btn btn-primary" disabled={!canSave}>{onSkip ? 'Save and Continue →' : 'Save Changes'}</button>
           </div>
         </form>
       </div>
@@ -1795,7 +1802,7 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
         letterSpacing:'-0.4px', marginBottom:6 }}>Issues found</h2>
       <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-4)', lineHeight:1.6,
         marginBottom:28 }}>
-        Select which issues to include in the ROI calculation. Top 10 are pre-selected by impact and effort.
+        Select which issues to include in the ROI calculation. High impact items are checked by default.
       </p>
 
       {failItems.length === 0 ? (
@@ -2291,6 +2298,7 @@ function ReportStage({ audit, checkedIds }) {
 function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveClientInfo, onBack, theme, onToggleTheme }) {
   const audit = store.audits[auditId];
   const [clientInfoOpen, setClientInfoOpen] = useState(false);
+  const [clientInfoSkipTarget, setClientInfoSkipTarget] = useState(null);
   const [stageIndex, setStageIndex] = useState(0);
   const [checkedIds, setCheckedIds] = useState(null);
   const [checklistCtx, setChecklistCtx] = useState({ short: SECTIONS[0].short, idx: 1, len: SECTIONS[0].items.length });
@@ -2466,7 +2474,16 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
           </span>
         </div>
         {NEXT_LABELS[stageIndex] ? (
-          <button onClick={() => setStageIndex(stageIndex + 1)}
+          <button onClick={() => {
+            const nextIdx = stageIndex + 1;
+            const metricsIncomplete = !ci.monthly_revenue || !ci.aov || !ci.cvr;
+            if (stageIndex === 1 && metricsIncomplete) {
+              setClientInfoSkipTarget(nextIdx);
+              setClientInfoOpen(true);
+            } else {
+              setStageIndex(nextIdx);
+            }
+          }}
             style={{ background:'var(--accent)', border:'none', color:'#fff', padding:'10px 22px',
               fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:'0.06em',
               textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
@@ -2485,8 +2502,9 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
       {/* Client info overlay */}
       {clientInfoOpen && (
         <ClientInfoOverlay audit={audit} lastAuditorName={store.last_auditor_name}
-          onSave={(data) => { onSaveClientInfo(audit.id, data); setClientInfoOpen(false); }}
-          onClose={() => setClientInfoOpen(false)} />
+          onSave={(data) => { onSaveClientInfo(audit.id, data); if (clientInfoSkipTarget !== null) setStageIndex(clientInfoSkipTarget); setClientInfoOpen(false); setClientInfoSkipTarget(null); }}
+          onClose={() => { setClientInfoOpen(false); setClientInfoSkipTarget(null); }}
+          onSkip={clientInfoSkipTarget !== null ? () => { setStageIndex(clientInfoSkipTarget); setClientInfoOpen(false); setClientInfoSkipTarget(null); } : null} />
       )}
     </div>
   );
