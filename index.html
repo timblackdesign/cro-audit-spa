@@ -577,12 +577,8 @@ function getGroupedItems(sortBy) {
         }))
         .filter(g => g.items.length > 0);
     case 'fix_time':
-      return [
-        { key: 'ft-fast',     label: 'Fast',     values: ['< 30 min', '1-2 hrs'] },
-        { key: 'ft-moderate', label: 'Moderate', values: ['1 day', '3 days'] },
-        { key: 'ft-extended', label: 'Extended', values: ['1 week', '2 weeks', '1 month+'] },
-      ]
-        .map(t => ({ ...t, items: AUDIT_ITEMS.filter(i => t.values.includes(i.estimated_fix_time)) }))
+      return FIX_TIME_OPTIONS
+        .map(v => ({ key: `ft-${v}`, label: v, items: AUDIT_ITEMS.filter(i => i.estimated_fix_time === v) }))
         .filter(g => g.items.length > 0);
     case 'quickwins':
       return [
