@@ -489,8 +489,8 @@ body {
 }
 
 /* Findings table / card responsive */
-.findings-header { display: grid; grid-template-columns: 32px 1fr 80px 80px 100px; background: var(--paper-3); border-bottom: 1px solid var(--rule); padding: 8px 16px; }
-.findings-row { display: grid; grid-template-columns: 32px 1fr 80px 80px 100px; border-bottom: 1px solid var(--rule); padding: 10px 16px; align-items: start; cursor: pointer; transition: background 0.12s; }
+.findings-header { display: grid; grid-template-columns: 32px 1fr 80px 80px 80px 100px; background: var(--paper-3); border-bottom: 1px solid var(--rule); padding: 8px 16px; }
+.findings-row { display: grid; grid-template-columns: 32px 1fr 80px 80px 80px 100px; border-bottom: 1px solid var(--rule); padding: 10px 16px; align-items: start; cursor: pointer; transition: background 0.12s; }
 @media (min-width: 701px) {
   .findings-row-top, .findings-row-btm { display: contents; }
   .findings-lbl { display: none !important; }
@@ -558,10 +558,12 @@ const SECTIONS = SECTION_ORDER.map(s => ({
 
 // ── SORT UTILITIES ──
 const IMPACT_RANK = { High: 0, Medium: 1, Low: 2 };
-const EFFORT_RANK = { Low: 0, Medium: 1 };
+const FIX_TIME_RANK = { '< 30 min': 0, '1-2 hrs': 1, '1 day': 2, '3 days': 3, '1 week': 4, '2 weeks': 5, '1 month+': 6 };
+const FIX_TIME_OPTIONS = ['< 30 min', '1-2 hrs', '1 day', '3 days', '1 week', '2 weeks', '1 month+'];
 
 function quickWinsScore(item) {
-  return (2 - IMPACT_RANK[item.impact]) + (1 - EFFORT_RANK[item.effort]);
+  const fixRank = FIX_TIME_RANK[item.estimated_fix_time] ?? 2;
+  return (2 - IMPACT_RANK[item.impact]) + (fixRank <= 1 ? 1 : 0);
 }
 
 function getGroupedItems(sortBy) {
@@ -574,13 +576,13 @@ function getGroupedItems(sortBy) {
           items: AUDIT_ITEMS.filter(i => i.impact === level),
         }))
         .filter(g => g.items.length > 0);
-    case 'effort':
-      return ['Low', 'Medium']
-        .map(level => ({
-          key: `effort-${level.toLowerCase()}`,
-          label: `${level} Effort`,
-          items: AUDIT_ITEMS.filter(i => i.effort === level),
-        }))
+    case 'fix_time':
+      return [
+        { key: 'ft-fast',     label: 'Fast',     values: ['< 30 min', '1-2 hrs'] },
+        { key: 'ft-moderate', label: 'Moderate', values: ['1 day', '3 days'] },
+        { key: 'ft-extended', label: 'Extended', values: ['1 week', '2 weeks', '1 month+'] },
+      ]
+        .map(t => ({ ...t, items: AUDIT_ITEMS.filter(i => t.values.includes(i.estimated_fix_time)) }))
         .filter(g => g.items.length > 0);
     case 'quickwins':
       return [
@@ -606,8 +608,8 @@ function sortItems(items, sortBy) {
   switch (sortBy) {
     case 'impact':
       return [...items].sort((a, b) => IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact]);
-    case 'effort':
-      return [...items].sort((a, b) => EFFORT_RANK[a.effort] - EFFORT_RANK[b.effort]);
+    case 'fix_time':
+      return [...items].sort((a, b) => FIX_TIME_RANK[a.estimated_fix_time] - FIX_TIME_RANK[b.estimated_fix_time]);
     case 'quickwins':
       return [...items].sort((a, b) => quickWinsScore(b) - quickWinsScore(a));
     case 'lift':
@@ -662,11 +664,12 @@ function getItemState(audit, itemId) {
   const item = AUDIT_ITEMS.find(i => i.id === itemId);
   const saved = audit?.items?.[itemId] || {};
   return {
-    status:         saved.status         ?? 'tbd',
-    finding:        saved.finding        !== undefined ? saved.finding        : (item?.default_finding || ''),
-    recommendation: saved.recommendation !== undefined ? saved.recommendation : (item?.default_recommendation || ''),
-    notes:          saved.notes          ?? '',
-    screenshot_url: saved.screenshot_url ?? '',
+    status:             saved.status             ?? 'tbd',
+    finding:            saved.finding            !== undefined ? saved.finding            : (item?.default_finding || ''),
+    recommendation:     saved.recommendation     !== undefined ? saved.recommendation     : (item?.default_recommendation || ''),
+    notes:              saved.notes              ?? '',
+    screenshot_url:     saved.screenshot_url     ?? '',
+    estimated_fix_time: saved.estimated_fix_time ?? item?.estimated_fix_time ?? '< 30 min',
   };
 }
 
@@ -1703,7 +1706,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
               options={[
                 { value:'section',   label:'Section' },
                 { value:'impact',    label:'Impact' },
-                { value:'effort',    label:'Effort' },
+                { value:'fix_time',  label:'Fix Time' },
                 { value:'quickwins', label:'Quick Wins' },
                 { value:'lift',      label:'CVR Lift' },
               ]}
@@ -1820,14 +1823,14 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                 <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
                   background:IMPACT_BG[activeItem.impact], color:IMPACT_COLOR[activeItem.impact],
                   letterSpacing:'0.04em', textTransform:'uppercase' }}>{activeItem.impact}</span>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
-                  background:'var(--paper-3)', color:'var(--ink-4)', letterSpacing:'0.04em', textTransform:'uppercase' }}>
-                  Effort: {activeItem.effort}
-                </span>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
-                  background:'var(--paper-3)', color:'var(--ink-4)', letterSpacing:'0.04em', textTransform:'uppercase' }}>
-                  {activeItem.estimated_fix_time}
-                </span>
+                <select value={itemState.estimated_fix_time}
+                  onChange={e => updateItem('estimated_fix_time', e.target.value)}
+                  style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
+                    background:'var(--paper-3)', color:'var(--ink-4)', letterSpacing:'0.04em',
+                    textTransform:'uppercase', border:'none', cursor:'pointer', appearance:'none',
+                    WebkitAppearance:'none' }}>
+                  {FIX_TIME_OPTIONS.map(v => React.createElement('option', { key:v, value:v }, v))}
+                </select>
                 <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
                   background:'var(--paper-3)', color:'var(--accent-positive)', letterSpacing:'0.04em' }}>
                   +{activeItem.lift_min}–{activeItem.lift_max}% CVR
@@ -2028,7 +2031,7 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
             onChange={setFindingsSort}
             options={[
               { value:'impact',    label:'Impact' },
-              { value:'effort',    label:'Effort' },
+              { value:'fix_time',  label:'Fix Time' },
               { value:'quickwins', label:'Quick Wins' },
               { value:'lift',      label:'CVR Lift' },
             ]}
@@ -2053,9 +2056,9 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
         <div style={{ border:'1px solid var(--rule)' }}>
           {/* Table header — hidden on mobile via .findings-header CSS */}
           <div className="findings-header">
-            {['', 'Finding', 'Impact', 'CVR Lift', 'Monthly +'].map((h, i) => (
+            {['', 'Finding', 'Impact', 'Fix Time', 'CVR Lift', 'Monthly +'].map((h, i) => (
               <div key={i} style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.1em',
-                textTransform:'uppercase', color:'var(--ink-5)', textAlign: i >= 3 ? 'right' : 'left' }}>{h}</div>
+                textTransform:'uppercase', color:'var(--ink-5)', textAlign: i >= 4 ? 'right' : 'left' }}>{h}</div>
             ))}
           </div>
           {sortedFailItems.map(item => {
@@ -2099,6 +2102,12 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
                     <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 7px',
                       background:IMPACT_BG[item.impact], color:IMPACT_COLOR[item.impact],
                       letterSpacing:'0.04em', textTransform:'uppercase' }}>{item.impact}</span>
+                  </div>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-4)',
+                    letterSpacing:'0.04em' }}>
+                    <span className="findings-lbl" style={{ fontFamily:"'DM Mono',monospace", fontSize:9,
+                      color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Fix </span>
+                    {itemState.estimated_fix_time}
                   </div>
                   <div className="findings-col-lift" style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--accent-positive)',
                     textAlign:'right', letterSpacing:'0.04em' }}>
@@ -2482,7 +2491,7 @@ function ReportStage({ audit, checkedIds }) {
                           <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
                             {pill(`${item.impact} Impact`, impactColor[item.impact], impactBg[item.impact])}
                             {pill(`+${item.lift_min}–${item.lift_max}% CVR Lift`, r.accent, '#eef2ff')}
-                            {pill(item.estimated_fix_time, r.low, r.lowBg)}
+                            {pill(state.estimated_fix_time, r.low, r.lowBg)}
                           </div>
                         </div>
                         {/* Finding */}
