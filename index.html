@@ -539,7 +539,7 @@ const THEME = {
     status:       { pass: 'Pass', fail: 'Fail', tbd: 'TBD', na: 'N/A' },
     statusReport: { pass: 'Passed', fail: 'Issue Found', tbd: 'Not Assessed', na: 'Not Applicable' },
     demoNotice:   'Demo mode — nothing is saved. Refresh to start over.',
-    workspaceFull: 'Workspace full. Archive a completed audit to free a slot.',
+    workspaceFull: 'Active audit limit reached. Archive a completed audit to open a slot.',
   },
 };
 
@@ -990,7 +990,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
   const atCap = audits.length >= THEME.limits.maxActiveAudits;
 
   const TIPS = [
-    'New client? Start a workspace.',
+    'New client? Start an audit.',
     'Covers 60 CRO checkpoints, end to end.',
     'Generates a client ROI pitch on completion.',
     'One high-impact fix can move conversion 20–30%.',
@@ -1025,8 +1025,8 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
       if (v.status === 'fail') { meta?.impact === 'High' ? highFails++ : otherFails++; }
       else if (v.status === 'pass' || v.status === 'na') passes++;
     }
-    if (highFails > 0)  return { color:'var(--impact-high)', label:`${highFails} high-impact issue${highFails > 1 ? 's' : ''}` };
-    if (otherFails > 0) return { color:'var(--amber)',       label:`${otherFails} issue${otherFails > 1 ? 's' : ''} found` };
+    if (highFails > 0)  return { color:'var(--impact-high)', label:`${highFails} high-impact finding${highFails > 1 ? 's' : ''}` };
+    if (otherFails > 0) return { color:'var(--amber)',       label:`${otherFails} finding${otherFails > 1 ? 's' : ''}` };
     if (passes > 5)     return { color:'var(--state-pass)',  label:'Not much to flag yet.' };
     return                     { color:'var(--ink-5)',       label:'Not started' };
   };
@@ -1149,7 +1149,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
           </div>
           <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em', textTransform:'uppercase',
             color: audits.length >= THEME.limits.maxActiveAudits ? 'var(--impact-high)' : 'var(--ink-4)', whiteSpace:'nowrap' }}>
-            {audits.length}/{THEME.limits.maxActiveAudits} workspaces
+            {audits.length}/{THEME.limits.maxActiveAudits} active audits
           </span>
         </div>
       )}
@@ -2020,7 +2020,7 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
         <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
           color:'#fff', background:'var(--accent)', padding:'2px 8px', flexShrink:0 }}>02 — Findings</span>
         <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', letterSpacing:'0.04em', flexShrink:0 }}>
-          {failItems.length} issue{failItems.length !== 1 ? 's' : ''} found · {ids.size} selected for ROI
+          {failItems.length} finding{failItems.length !== 1 ? 's' : ''} · {ids.size} selected for ROI
         </span>
         <div style={{ marginLeft:'auto' }}>
           <SortControl
@@ -2038,10 +2038,10 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
 
       <div style={{ maxWidth:840, margin:'0 auto', padding:'32px 24px 60px' }}>
       <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:26, fontWeight:400, color:'var(--ink)',
-        letterSpacing:'-0.4px', marginBottom:6 }}>Issues found</h2>
+        letterSpacing:'-0.4px', marginBottom:6 }}>Findings</h2>
       <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-4)', lineHeight:1.6,
         marginBottom:28 }}>
-        Select which issues to include in the ROI calculation. High impact items are checked by default.
+        Select which findings to include in the ROI calculation. High-impact items are checked by default.
       </p>
 
       {failItems.length === 0 ? (
@@ -2053,7 +2053,7 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
         <div style={{ border:'1px solid var(--rule)' }}>
           {/* Table header — hidden on mobile via .findings-header CSS */}
           <div className="findings-header">
-            {['', 'Issue', 'Impact', 'CVR Lift', 'Monthly +'].map((h, i) => (
+            {['', 'Finding', 'Impact', 'CVR Lift', 'Monthly +'].map((h, i) => (
               <div key={i} style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.1em',
                 textTransform:'uppercase', color:'var(--ink-5)', textAlign: i >= 3 ? 'right' : 'left' }}>{h}</div>
             ))}
@@ -2125,8 +2125,8 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
         <div style={{ marginTop:24, fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-4)',
           letterSpacing:'0.04em' }}>
           {roi.hasData
-            ? `${ids.size} issues · est. +$${fmt(roi.monthlyRecovery)}/mo · capped at ${roi.cappedMax.toFixed(1)}% CVR lift`
-            : `${ids.size} issues selected`}
+            ? `${ids.size} findings · est. +$${fmt(roi.monthlyRecovery)}/mo · capped at ${roi.cappedMax.toFixed(1)}% CVR lift`
+            : `${ids.size} findings selected`}
         </div>
       )}
       </div>
@@ -2413,8 +2413,8 @@ function ReportStage({ audit, checkedIds }) {
                 ['Projected CVR',    roi.hasData ? fmtPct(roi.cvrRaw + roi.cappedMid) : '—',
                   roi.hasData ? `+${roi.cappedMin.toFixed(1)}–${roi.cappedMax.toFixed(1)}% lift` : '—'],
                 ['Monthly Recovery', roi.hasData ? `$${fmt(roi.monthlyRecovery)}` : '—', 'per month'],
-                ['Annual at Risk',   roi.hasData ? `$${fmt(roi.annualRecovery)}`  : '—', 'if issues persist'],
-                ['Issues Found',     failItems.length, `across ${sectionCount} section${sectionCount !== 1 ? 's' : ''}`],
+                ['Annual at Risk',   roi.hasData ? `$${fmt(roi.annualRecovery)}`  : '—', 'if findings persist'],
+                ['Findings',         failItems.length, `across ${sectionCount} section${sectionCount !== 1 ? 's' : ''}`],
               ].map(([label, value, sub], i) => (
                 <div key={label} style={{ padding:'20px 18px', borderRight: i % 3 < 2 ? `1px solid ${r.rule}` : 'none',
                   borderBottom:`1px solid ${r.rule}` }}>
@@ -2524,7 +2524,7 @@ function ReportStage({ audit, checkedIds }) {
           {failsBySec.length === 0 && (
             <div style={{ padding:'48px 24px', textAlign:'center', border:`1px solid ${r.rule}`,
               fontFamily:mono, fontSize:12, color:r.ink4 }}>
-              No issues marked as Fail — go back to the checklist.
+              No findings yet — go back to the checklist and mark items as Fail.
             </div>
           )}
 
@@ -2861,7 +2861,7 @@ function App() {
     const clientName = audit.client_info?.client_name || 'this audit';
     setConfirmDialog({
       title: 'Export & Delete',
-      message: `"${clientName}" will be exported as a JSON file and removed from your workspace. You can reimport it later if you have an open slot.`,
+      message: `"${clientName}" will be exported as a JSON file and removed from your active audits. You can reimport it later if you have an open slot.`,
       confirmLabel: 'Export & Delete',
       danger: true,
       onConfirm: async () => {
