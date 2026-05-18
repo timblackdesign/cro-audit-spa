@@ -1517,6 +1517,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
   const [openSections, setOpenSections] = useState(() => new Set(getGroupedItems('section').map(g => g.key)));
   const [checklistSort, setChecklistSort] = useState('section');
   const sidebarRef = useRef(null);
+  const prevSidebarOpenRef = useRef(false);
   const isMobileLayout = useRef(window.matchMedia('(max-width: 700px)').matches);
   const groupsRef = useRef(getGroupedItems('section'));
   const [showDetails, setShowDetails] = useState(false);
@@ -1611,7 +1612,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
     function handleKey(e) {
       const tag = e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      if (sidebarOpen) {
+      if (sidebarOpen && sidebarRef.current && sidebarRef.current.contains(document.activeElement)) {
         if (e.key === 'ArrowUp') {
           e.preventDefault();
           setSidebarCursor(prev => Math.max(0, prev - 1));
@@ -1631,7 +1632,13 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
   useEffect(() => {
     if (!sidebarRef.current || !sidebarCursorId) return;
     const btn = sidebarRef.current.querySelector(`[data-item-id="${sidebarCursorId}"]`);
-    if (btn) { btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); btn.focus({ preventScroll: true }); }
+    if (!btn) { prevSidebarOpenRef.current = sidebarOpen; return; }
+    btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    const sidebarJustOpened = sidebarOpen && !prevSidebarOpenRef.current;
+    prevSidebarOpenRef.current = sidebarOpen;
+    if (sidebarRef.current.contains(document.activeElement) || sidebarJustOpened) {
+      btn.focus({ preventScroll: true });
+    }
   }, [sidebarCursor, sidebarOpen]);
 
   const statusDot = (itemId) => {
@@ -1741,11 +1748,8 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                       className={`sidebar-item-btn${isActive ? ' active' : ''}${isCursor && !isActive ? ' cursor' : ''}`}
                       onClick={() => {
                         goTo(item);
-                        if (sidebarRef.current && window.getComputedStyle(sidebarRef.current).position === 'fixed') {
-                          setSidebarOpen(false);
-                        } else if (cardRef.current) {
-                          cardRef.current.focus();
-                        }
+                        setSidebarOpen(false);
+                        if (cardRef.current) cardRef.current.focus();
                       }}>
                       <span style={{ width:7, height:7, borderRadius:'50%', background:dot.color, flexShrink:0,
                         border: dot.border ? '1px solid var(--rule-2)' : 'none' }} />
