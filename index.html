@@ -747,13 +747,10 @@ function calcROI(audit, checkedIds) {
 
   const pr = audit.pricing || {};
   const auditFee       = parseFloat(pr.audit_fee)  || 0;
-  const implFee        = parseFloat(pr.impl_fee)   || 0;
   const hourlyRate     = parseFloat(pr.hourly_rate) || 0;
   const estHours       = parseFloat(pr.est_hours)  || 0;
-  const totalInvestment = auditFee + implFee;
-  const roiMultiple    = totalInvestment > 0 ? annualRecovery / totalInvestment : 0;
-  const paybackMonths  = totalInvestment > 0 && monthlyRecovery > 0 ? totalInvestment / monthlyRecovery : 0;
 
+  // Compute suggestedFee first so it can serve as the impl_fee default
   let highCount = 0;
   for (const id of ids) {
     if (AUDIT_ITEMS.find(i => i.id === id)?.impact === 'High') highCount++;
@@ -761,6 +758,11 @@ function calcROI(audit, checkedIds) {
   const highRatio      = ids.length ? highCount / ids.length : 0;
   const suggestedPct   = highRatio >= 0.5 ? 20 : highRatio >= 0.25 ? 15 : 10;
   const suggestedFee   = annualRecovery > 0 ? Math.round(annualRecovery * suggestedPct / 100) : 0;
+
+  const implFee        = parseFloat(pr.impl_fee) || suggestedFee;
+  const totalInvestment = auditFee + implFee;
+  const roiMultiple    = totalInvestment > 0 ? annualRecovery / totalInvestment : 0;
+  const paybackMonths  = totalInvestment > 0 && monthlyRecovery > 0 ? totalInvestment / monthlyRecovery : 0;
   const sanityCheck    = hourlyRate > 0 && estHours > 0
     ? (implFee >= hourlyRate * estHours * 0.9 ? 'pass' : implFee >= hourlyRate * estHours * 0.6 ? 'warn' : 'fail')
     : 'neutral';
@@ -2373,8 +2375,8 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
             </div>
             <div className="field field-private">
               <label>Implementation Fee ($)</label>
-              <CIInput type="number" value={pr.impl_fee || ''} onChange={v => setPricing('impl_fee', v)}
-                placeholder={roi.suggestedFee ? String(roi.suggestedFee) : '0'} min="0" />
+              <CIInput type="number" value={pr.impl_fee || (roi.suggestedFee ? String(roi.suggestedFee) : '')} onChange={v => setPricing('impl_fee', v)}
+                placeholder="0" min="0" />
             </div>
           </div>
           {/* Hourly sanity check */}
