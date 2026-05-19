@@ -645,7 +645,7 @@ function newAudit(lastAuditorName) {
   return {
     id,
     client_info: {
-      client_name: 'New Client', auditor_name: lastAuditorName || '',
+      audit_title: '', client_name: '', auditor_name: lastAuditorName || '',
       store_url: '', shopify_theme: '', audit_date: today(),
       monthly_revenue: 0, aov: 0, cvr: 0,
     },
@@ -886,10 +886,10 @@ function AuditUrlInput({ value, onChange }) {
   );
 }
 
-function CIInput({ type = 'text', value, onChange, placeholder, step, min }) {
+function CIInput({ type = 'text', value, onChange, placeholder, step, min, autoFocus }) {
   return (
     <input type={type} value={value} onChange={e => onChange(e.target.value)}
-      placeholder={placeholder} step={step} min={min}
+      placeholder={placeholder} step={step} min={min} autoFocus={autoFocus}
       style={{ width:'100%', border:'1px solid var(--rule)', background:'var(--paper)', padding:'9px 13px',
         fontFamily:"'DM Mono', monospace", fontSize:13, color:'var(--ink)', outline:'none',
         transition:'border-color 0.15s', borderRadius:0 }}
@@ -1013,7 +1013,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
 
   const isSetupIncomplete = (audit) => {
     const ci = audit.client_info || {};
-    return !ci.client_name || ci.client_name === 'New Client' || !ci.monthly_revenue || !ci.aov || !ci.cvr;
+    return (!ci.audit_title && !ci.client_name) || !ci.monthly_revenue || !ci.aov || !ci.cvr;
   };
 
   const auditColor = (audit) => {
@@ -1212,7 +1212,13 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                       <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                         <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:17, color:'var(--ink)',
                           lineHeight:1.2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                          {audit.client_info?.client_name || 'New Client'}
+                          {audit.client_info?.audit_title || audit.client_info?.client_name || 'New Audit'}
+                          {audit.client_info?.audit_title && audit.client_info?.client_name && (
+                            <span style={{ fontFamily:"'DM Mono',monospace", fontWeight:400,
+                              fontSize:11, color:'var(--ink-5)', marginLeft:6 }}>
+                              | {audit.client_info.client_name}
+                            </span>
+                          )}
                         </div>
                         {isSetupIncomplete(audit) && (
                           <button onClick={e => { e.stopPropagation(); setListClientInfoId(audit.id); }}
@@ -1362,6 +1368,7 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
   const ci = audit?.client_info || {};
   const pr = audit?.pricing || {};
   const [form, setForm] = useState({
+    audit_title:     ci.audit_title     || '',
     client_name:     ci.client_name     || '',
     auditor_name:    ci.auditor_name    || lastAuditorName || '',
     store_url:       ci.store_url       || '',
@@ -1373,12 +1380,13 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
     audit_fee:       pr.audit_fee       || '',
   });
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const canSave = form.client_name.trim() && form.auditor_name.trim();
+  const canSave = (form.audit_title.trim() || form.client_name.trim()) && form.auditor_name.trim();
 
   function handleSave(e) {
     e.preventDefault();
     onSave({
       client_info: {
+        audit_title:     form.audit_title.trim(),
         client_name:     form.client_name.trim(),
         auditor_name:    form.auditor_name.trim(),
         store_url:       form.store_url.trim(),
@@ -1397,7 +1405,7 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
       <div className="modal-panel" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
-            Client Info
+            Audit Info
           </span>
           <button onClick={onClose} style={{ background:'none', border:'none', color:'var(--ink-4)',
             fontFamily:"'DM Mono',monospace", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
@@ -1422,10 +1430,14 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
           <div className="modal-body">
             <div style={{ marginBottom:18 }}>
               <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
-                color:'var(--ink-5)', marginBottom:12 }}>Client &amp; Auditor</div>
+                color:'var(--ink-5)', marginBottom:12 }}>Audit Details</div>
+              <div className="field" style={{ marginBottom:10 }}>
+                <label>Audit Title</label>
+                <CIInput value={form.audit_title} onChange={v => set('audit_title', v)} placeholder="e.g. Acme Boards Q3 2026" />
+              </div>
               <div className="fg2">
                 <div className="field">
-                  <label>Client Name *</label>
+                  <label>Client Name</label>
                   <CIInput value={form.client_name} onChange={v => set('client_name', v)} placeholder="Acme Boards Co." />
                 </div>
                 <div className="field">
@@ -1476,6 +1488,128 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
             <button type="submit" className="btn btn-primary" disabled={!canSave}>{onSkip ? 'Save and Continue →' : 'Save Changes'}</button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+function NewAuditModal({ lastAuditorName, onSubmit, onClose }) {
+  const [form, setForm] = useState({
+    audit_title:     '',
+    client_name:     '',
+    auditor_name:    lastAuditorName || '',
+    store_url:       '',
+    shopify_theme:   '',
+    audit_date:      today(),
+    monthly_revenue: '',
+    aov:             '',
+    cvr:             '',
+    audit_fee:       '',
+  });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const canSubmit = form.audit_title.trim().length > 0;
+
+  function handleSubmit() {
+    if (!canSubmit) return;
+    onSubmit(form);
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
+        <div className="modal-header">
+          <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
+            New Audit
+          </span>
+          <button onClick={onClose} style={{ background:'none', border:'none', color:'var(--ink-4)',
+            fontFamily:"'DM Mono',monospace", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
+            ×
+          </button>
+        </div>
+        <div className="modal-body">
+          {/* Quickstart section */}
+          <div style={{ marginBottom:20 }}>
+            <div className="field" style={{ marginBottom:12 }}>
+              <label>Audit title *</label>
+              <CIInput autoFocus value={form.audit_title} onChange={v => set('audit_title', v)}
+                placeholder="e.g. Acme Boards Q3 2026" />
+            </div>
+            <button type="button" onClick={handleSubmit} disabled={!canSubmit}
+              style={{ width:'100%', background: canSubmit ? 'var(--accent)' : 'var(--paper-3)',
+                color: canSubmit ? '#fff' : 'var(--ink-5)', border:'none', padding:'11px 20px',
+                fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
+                textTransform:'uppercase', cursor: canSubmit ? 'pointer' : 'not-allowed', transition:'background 0.15s' }}>
+              Let's Go — I'll add the rest later →
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
+            <div style={{ flex:1, height:1, background:'var(--rule)' }} />
+            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em',
+              textTransform:'uppercase', color:'var(--ink-5)', whiteSpace:'nowrap' }}>
+              or complete setup now
+            </span>
+            <div style={{ flex:1, height:1, background:'var(--rule)' }} />
+          </div>
+
+          {/* Full form */}
+          <div style={{ marginBottom:18 }}>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
+              color:'var(--ink-5)', marginBottom:12 }}>Client &amp; Auditor</div>
+            <div className="fg2">
+              <div className="field">
+                <label>Client name</label>
+                <CIInput value={form.client_name} onChange={v => set('client_name', v)} placeholder="Acme Boards Co." />
+              </div>
+              <div className="field">
+                <label>Auditor name</label>
+                <CIInput value={form.auditor_name} onChange={v => set('auditor_name', v)} placeholder="Your name" />
+              </div>
+            </div>
+            <div className="fg3">
+              <div className="field">
+                <label>Store URL</label>
+                <CIInput value={form.store_url} onChange={v => set('store_url', v)} placeholder="example.myshopify.com" />
+              </div>
+              <div className="field">
+                <label>Shopify Theme</label>
+                <CIInput value={form.shopify_theme} onChange={v => set('shopify_theme', v)} placeholder="Dawn" />
+              </div>
+              <div className="field">
+                <label>Audit Date</label>
+                <CIInput type="date" value={form.audit_date} onChange={v => set('audit_date', v)} />
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
+              color:'var(--ink-5)', marginBottom:12 }}>Store Metrics</div>
+            <div className="fg4">
+              <div className="field">
+                <label>Monthly Revenue ($)</label>
+                <CIInput type="number" value={form.monthly_revenue} onChange={v => set('monthly_revenue', v)} placeholder="50000" min="0" />
+              </div>
+              <div className="field">
+                <label>Avg. Order Value ($)</label>
+                <CIInput type="number" value={form.aov} onChange={v => set('aov', v)} placeholder="85" min="0" />
+              </div>
+              <div className="field">
+                <label>Conversion Rate (%)</label>
+                <CIInput type="number" value={form.cvr} onChange={v => set('cvr', v)} placeholder="1.8" step="0.1" min="0" />
+              </div>
+              <div className="field field-private">
+                <label>Audit Fee ($)</label>
+                <CIInput type="number" value={form.audit_fee} onChange={v => set('audit_fee', v)} placeholder="2500" min="0" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button type="button" className="btn btn-primary" disabled={!canSubmit} onClick={handleSubmit}>
+            Start Audit →
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -2176,7 +2310,7 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
           color:'#fff', background:'var(--accent)', padding:'2px 8px' }}>03 — Calculator</span>
         {!roi.hasData && (
           <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--amber)', letterSpacing:'0.04em' }}>
-            Add store metrics in Client Info to unlock
+            Add store metrics in Audit Info to unlock
           </span>
         )}
       </div>
@@ -2391,7 +2525,7 @@ function ReportStage({ audit, checkedIds }) {
             </div>
             <h1 style={{ fontFamily:serif, fontSize:52, fontWeight:400, color:r.ink,
               letterSpacing:'-1.2px', lineHeight:1, marginBottom:20 }}>
-              {ci.client_name || 'Client'}
+              {ci.audit_title || ci.client_name || 'Client'}
             </h1>
             <div style={{ display:'flex', gap:32, flexWrap:'wrap', marginBottom:24 }}>
               {[
@@ -2557,27 +2691,20 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
   const nameCancelRef = useRef(false);
 
   useEffect(() => {
-    const ci = store.audits[auditId]?.client_info || {};
-    if (!ci.client_name || ci.client_name === 'New Client') {
-      setNameDraft('');
-      setNameEditing(true);
-    }
-  }, []);
-
-  useEffect(() => {
     if (nameEditing && nameInputRef.current) nameInputRef.current.focus();
   }, [nameEditing]);
 
   if (!audit) return null;
 
   const ci = audit.client_info || {};
-  const isSetupIncomplete = !ci.client_name || ci.client_name === 'New Client' || !ci.monthly_revenue || !ci.aov || !ci.cvr;
+  const auditDisplayTitle = ci.audit_title || ci.client_name || 'New Audit';
+  const isSetupIncomplete = (!ci.audit_title && !ci.client_name) || !ci.monthly_revenue || !ci.aov || !ci.cvr;
 
   function commitName() {
     const trimmed = nameDraft.trim();
     if (trimmed) {
       onSaveClientInfo(audit.id, {
-        client_info: { ...ci, client_name: trimmed },
+        client_info: { ...ci, audit_title: trimmed },
         pricing: audit.pricing,
       });
       setCardGlowTrigger(n => n + 1);
@@ -2620,7 +2747,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
                   onChange={e => setNameDraft(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { commitName(); } if (e.key === 'Escape') { nameCancelRef.current = true; setNameEditing(false); } }}
                   onBlur={() => { if (!nameCancelRef.current) commitName(); nameCancelRef.current = false; }}
-                  placeholder="Client name..."
+                  placeholder="Audit title..."
                   style={{ fontFamily:"'DM Serif Display',serif", fontSize:16, color:'var(--ink)',
                     letterSpacing:'-0.2px', background:'transparent', border:'none',
                     borderBottom:'1px solid var(--accent)', outline:'none', minWidth:80, width:180 }}
@@ -2637,11 +2764,11 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
             ) : (
               <React.Fragment>
                 <span
-                  onClick={() => { setNameDraft(ci.client_name === 'New Client' ? '' : (ci.client_name || '')); setNameEditing(true); }}
+                  onClick={() => { setNameDraft(ci.audit_title || ''); setNameEditing(true); }}
                   style={{ fontFamily:"'DM Serif Display',serif", fontSize:16, color:'var(--ink)',
                     letterSpacing:'-0.2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
                     cursor:'text' }}>
-                  {ci.client_name || 'New Client'}
+                  {auditDisplayTitle}
                 </span>
                 {isSetupIncomplete && (
                   <button
@@ -2663,11 +2790,11 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
             style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
               fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
               cursor:'pointer' }}>
-            {isSetupIncomplete ? '+ Client Info' : 'Edit Info'}
+            {isSetupIncomplete ? '+ Audit Info' : 'Edit Info'}
           </button>
           {!demoMode && (
             <button onClick={() => {
-              const name = (ci.client_name || 'audit').toLowerCase().replace(/\s+/g,'-');
+              const name = (ci.audit_title || ci.client_name || 'audit').toLowerCase().replace(/\s+/g,'-');
               downloadJSON(audit, `cro-audit-${name}-${audit.id}.json`);
             }} style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
               fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
@@ -2768,6 +2895,7 @@ function App() {
   const [auditsLoading, setAuditsLoading] = useState(!demoMode);
   const [dbError, setDbError] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
+  const [showNewAuditModal, setShowNewAuditModal] = useState(false);
   const saveTimers = useRef({});
   // Track updated_at of last-saved version per audit to skip unnecessary Supabase writes
   const savedAt = useRef({});
@@ -2841,9 +2969,33 @@ function App() {
 
   function handleDismissError() { setDbError(null); }
 
-  async function handleNew() {
-    if (!demoMode && Object.keys(store.audits).length >= THEME.limits.maxActiveAudits) return;
-    const audit = newAudit(store.last_auditor_name);
+  function handleNew() {
+    if (!demoMode && Object.keys(store.audits).length >= THEME.limits.maxActiveAudits) {
+      setDbError(THEME.copy.workspaceFull);
+      return;
+    }
+    setShowNewAuditModal(true);
+  }
+
+  async function handleCreateAudit(formData) {
+    const base = newAudit(store.last_auditor_name);
+    const audit = {
+      ...base,
+      client_info: {
+        ...base.client_info,
+        audit_title:     formData.audit_title.trim(),
+        client_name:     formData.client_name.trim(),
+        auditor_name:    formData.auditor_name.trim(),
+        store_url:       formData.store_url.trim(),
+        shopify_theme:   formData.shopify_theme.trim(),
+        audit_date:      formData.audit_date || today(),
+        monthly_revenue: parseFloat(formData.monthly_revenue) || 0,
+        aov:             parseFloat(formData.aov) || 0,
+        cvr:             parseFloat(formData.cvr) || 0,
+      },
+      pricing: { ...base.pricing, audit_fee: parseFloat(formData.audit_fee) || 0 },
+    };
+    setShowNewAuditModal(false);
     if (!demoMode) {
       try {
         await upsertAuditToDB(user.id, audit);
@@ -2855,7 +3007,11 @@ function App() {
         return;
       }
     }
-    updateStore(prev => ({ ...prev, audits: { ...prev.audits, [audit.id]: audit } }));
+    updateStore(prev => ({
+      ...prev,
+      last_auditor_name: formData.auditor_name.trim() || prev.last_auditor_name,
+      audits: { ...prev.audits, [audit.id]: audit },
+    }));
     setActiveAuditId(audit.id);
     setAppScreen('audit');
   }
@@ -2867,14 +3023,14 @@ function App() {
 
   function handleArchive(id) {
     const audit = store.audits[id];
-    const clientName = audit.client_info?.client_name || 'this audit';
+    const auditTitle = audit.client_info?.audit_title || audit.client_info?.client_name || 'this audit';
     setConfirmDialog({
       title: 'Export & Delete',
-      message: `"${clientName}" will be exported as a JSON file and removed from your active audits. You can reimport it later if you have an open slot.`,
+      message: `"${auditTitle}" will be exported as a JSON file and removed from your active audits. You can reimport it later if you have an open slot.`,
       confirmLabel: 'Export & Delete',
       danger: true,
       onConfirm: async () => {
-        const name = clientName.toLowerCase().replace(/\s+/g, '-');
+        const name = auditTitle.toLowerCase().replace(/\s+/g, '-');
         downloadJSON(audit, `cro-audit-${name}-${id}.json`);
         if (!demoMode) {
           try {
@@ -2916,10 +3072,10 @@ function App() {
 
   function handleDelete(id) {
     const audit = store.audits[id];
-    const clientName = audit.client_info?.client_name || 'this audit';
+    const auditTitle = audit.client_info?.audit_title || audit.client_info?.client_name || 'this audit';
     setConfirmDialog({
       title: 'Delete Audit',
-      message: `Delete "${clientName}"? This cannot be undone.`,
+      message: `Delete "${auditTitle}"? This cannot be undone.`,
       confirmLabel: 'Delete',
       danger: true,
       onConfirm: async () => {
@@ -3033,6 +3189,13 @@ function App() {
         dbError={dbError}
         onDismissError={handleDismissError}
       />
+      {showNewAuditModal && (
+        <NewAuditModal
+          lastAuditorName={store.last_auditor_name}
+          onSubmit={handleCreateAudit}
+          onClose={() => setShowNewAuditModal(false)}
+        />
+      )}
       <ConfirmDialog dialog={confirmDialog} onClose={() => setConfirmDialog(null)} />
     </>
   );
