@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CRO Audit System</title>
+<link rel="icon" href="/favicon.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -2698,7 +2699,7 @@ function ReportStage({ audit, checkedIds }) {
   return (
     <div data-stage="report">
       {/* Sticky dark header bar — matches other stages */}
-      <div style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
+      <div className="no-print" style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
         borderBottom:'1px solid var(--rule)', padding:'10px 20px',
         display:'flex', alignItems:'center', gap:12 }}>
         <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
@@ -2932,7 +2933,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
       {demoMode && <div className="demo-banner no-print">{THEME.copy.demoNotice}</div>}
 
       {/* Audit header */}
-      <div style={{ background:'var(--paper-2)', borderBottom:'1px solid var(--rule)', padding:'0 32px',
+      <div className="no-print" style={{ background:'var(--paper-2)', borderBottom:'1px solid var(--rule)', padding:'0 32px',
         height:52, display:'flex', alignItems:'center', justifyContent:'space-between', gap:16,
         flexShrink:0, zIndex:90 }}>
         <div style={{ display:'flex', alignItems:'center', gap:16, minWidth:0 }}>
