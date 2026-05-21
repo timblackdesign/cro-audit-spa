@@ -511,6 +511,13 @@ body {
   100% { border-color: var(--rule);   box-shadow: none; }
 }
 .card-glow { animation: cardGlow 900ms ease-out forwards; }
+/* Report Revenue Impact Summary — 2-col on mobile (screen only) */
+@media screen and (max-width: 700px) {
+  .rpt-metric-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .rpt-metric-cell { padding: 14px 14px !important; }
+  .rpt-metric-cell:nth-child(odd)  { border-right: 1px solid #e5e7eb !important; }
+  .rpt-metric-cell:nth-child(even) { border-right: none !important; }
+}
 </style>
 <script>(function(){var t=localStorage.getItem('cro-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
 </head>
@@ -2745,7 +2752,7 @@ function ReportStage({ audit, checkedIds }) {
           <div style={{ marginBottom:40 }}>
             <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
               color:r.ink4, marginBottom:14 }}>Revenue Impact Summary</div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)',
+            <div className="rpt-metric-grid" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)',
               border:`1px solid ${r.rule}`, borderBottom:'none' }}>
               {[
                 ['Monthly Sessions', roi.hasData ? fmt(roi.sessions)         : '—', 'estimated'],
@@ -2756,7 +2763,7 @@ function ReportStage({ audit, checkedIds }) {
                 ['Annual at Risk',   roi.hasData ? `$${fmt(roi.annualRecovery)}`  : '—', 'if findings persist'],
                 ['Findings',         failItems.length, `across ${sectionCount} section${sectionCount !== 1 ? 's' : ''}`],
               ].map(([label, value, sub], i) => (
-                <div key={label} style={{ padding:'20px 18px', borderRight: i % 3 < 2 ? `1px solid ${r.rule}` : 'none',
+                <div key={label} className="rpt-metric-cell" style={{ padding:'20px 18px', borderRight: i % 3 < 2 ? `1px solid ${r.rule}` : 'none',
                   borderBottom:`1px solid ${r.rule}` }}>
                   <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase',
                     color:r.ink4, marginBottom:8 }}>{label}</div>
@@ -2822,7 +2829,6 @@ function ReportStage({ audit, checkedIds }) {
                           <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
                             {pill(`${item.impact} Impact`, impactColor[item.impact], impactBg[item.impact])}
                             {pill(`+${item.lift_min}–${item.lift_max}% CVR Lift`, r.accent, '#eef2ff')}
-                            {pill(state.estimated_fix_time, r.low, r.lowBg)}
                           </div>
                         </div>
                         {/* Finding */}
