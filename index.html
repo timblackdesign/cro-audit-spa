@@ -820,7 +820,7 @@ function LoginScreen() {
 
         {status === 'sent' ? (
           <div style={{ background:'var(--accent-positive-bg)', border:'1px solid var(--accent-positive)',
-            borderRadius:6, padding:'16px 20px', color:'var(--accent-positive)', fontSize:14 }}>
+            borderRadius:4, padding:'16px 20px', color:'var(--accent-positive)', fontSize:14 }}>
             Check your inbox — link sent to <strong>{email}</strong>.
           </div>
         ) : (
@@ -833,14 +833,14 @@ function LoginScreen() {
               onChange={e => setEmail(e.target.value)}
               style={{ display:'block', width:'100%', padding:'12px 14px', fontSize:15,
                 fontFamily:"'DM Sans',sans-serif", background:'var(--paper-2)',
-                border:'1px solid var(--rule)', borderRadius:6, color:'var(--ink)',
+                border:'1px solid var(--rule)', borderRadius:0, color:'var(--ink)',
                 outline:'none', marginBottom:12 }}
             />
             <button type="submit" disabled={status === 'sending'}
               style={{ display:'block', width:'100%', padding:'12px 24px',
                 background: status === 'sending' ? 'var(--paper-3)' : 'var(--accent)',
                 color: status === 'sending' ? 'var(--ink-5)' : '#fff',
-                border:'none', borderRadius:6, fontFamily:"'DM Sans',sans-serif",
+                border:'none', borderRadius:0, fontFamily:"'DM Sans',sans-serif",
                 fontSize:13, fontWeight:600, letterSpacing:'0.06em',
                 textTransform:'uppercase', cursor: status === 'sending' ? 'default' : 'pointer' }}>
               {status === 'sending' ? 'Sending…' : 'Send magic link'}
