@@ -2326,7 +2326,7 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
           No failures marked yet — go back to the checklist and mark items as Fail.
         </div>
       ) : (
-        <div style={{ border:'1px solid var(--rule)' }}>
+        <div style={{ border:'1px solid var(--rule)', borderRadius:4, overflow:'hidden' }}>
           {/* Table header — hidden on mobile via .findings-header CSS */}
           <div className="findings-header">
             {['', 'Finding', 'Impact', 'Fix Time', 'CVR Lift', 'Monthly +'].map((h, i) => (
@@ -2458,22 +2458,78 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
       <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:26, fontWeight:400, color:'var(--ink)',
         letterSpacing:'-0.4px', marginBottom:32 }}>Revenue impact</h2>
 
-      {/* Revenue Impact Grid */}
-      <div className="calc-metrics" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:2, marginBottom:2 }}>
-        {metricCell('Monthly Sessions', roi.hasData ? fmt(roi.sessions) : '—', 'current visitors')}
-        {metricCell('Current CVR', roi.hasData ? fmtPct(roi.cvrRaw) : '—', 'baseline')}
-        {metricCell('Projected CVR', roi.hasData ? fmtPct(roi.newCVR * 100) : '—',
-          roi.hasData ? `+${roi.cappedMid.toFixed(2)}% lift (capped)` : null)}
-      </div>
-      <div className="calc-metrics" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:2, marginBottom:32 }}>
-        {metricCell('Monthly Recovery', roi.hasData ? `$${fmt(roi.monthlyRecovery)}` : '—', 'additional revenue')}
-        {metricCell('Annual Recovery', roi.hasData ? `$${fmt(roi.annualRecovery)}` : '—', 'per year')}
-        {metricCell('Client ROI', roi.hasData && roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}×` : '—',
-          roi.hasData && roi.paybackMonths > 0 ? `payback in ${roi.paybackMonths.toFixed(1)} mo` : null)}
-      </div>
+      {/* Revenue Impact Card */}
+      {(() => {
+        const ci2 = audit.client_info || {};
+        const revenue = parseFloat(ci2.monthly_revenue) || 0;
+        const storeLabel = revenue >= 1000000
+          ? `$${(revenue/1000000).toFixed(1).replace(/\.0$/,'')}M/MO STORE`
+          : revenue >= 1000
+            ? `$${Math.round(revenue/1000)}K/MO STORE`
+            : revenue > 0 ? `$${revenue}/MO STORE` : 'STORE';
+        const clientLabel = ci2.client_name || 'Revenue Leak Report';
+        const metricRows = [
+          { label: 'Current conversion rate', value: roi.hasData ? fmtPct(roi.cvrRaw) : '—', accent: false },
+          { label: 'Friction points identified', value: `${failCount} of 60`, accent: true },
+          { label: 'Avg. order value', value: roi.hasData ? `$${fmt(roi.aov)}` : '—', accent: false },
+          { label: 'Projected CVR lift', value: roi.hasData ? `+${roi.cappedMid.toFixed(2)}%` : '—', accent: false },
+        ];
+        return (
+          <div style={{ border:'1px solid var(--rule)', marginBottom:32, overflow:'hidden', borderRadius:4 }}>
+            {/* Card header */}
+            <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)',
+              padding:'10px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em',
+                textTransform:'uppercase', color:'var(--ink-5)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                CRO AUDIT · {clientLabel} · {storeLabel}
+              </span>
+              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.1em',
+                textTransform:'uppercase', color:'var(--ink)', flexShrink:0,
+                border:'1px solid rgba(99,102,241,0.5)', padding:'3px 10px',
+                background:'rgba(99,102,241,0.08)' }}>
+                {failCount} issues found
+              </span>
+            </div>
+            {/* Metric rows */}
+            {metricRows.map(({ label, value, accent }, i) => (
+              <div key={label} style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
+                padding:'16px 20px', borderBottom: i < metricRows.length - 1 ? '1px solid var(--rule)' : 'none',
+                background:'var(--paper-2)', gap:16 }}>
+                <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:'var(--ink-3)' }}>{label}</span>
+                <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, fontWeight:400,
+                  color: accent ? 'var(--amber)' : 'var(--ink)', letterSpacing:'-0.3px' }}>{value}</span>
+              </div>
+            ))}
+            {/* Bottom split: Annual Recovery + ROI */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', borderTop:'1px solid var(--rule)' }}>
+              <div style={{ padding:'20px 24px', borderRight:'1px solid var(--rule)', background:'var(--paper-2)' }}>
+                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em',
+                  textTransform:'uppercase', color:'var(--ink-5)', marginBottom:10 }}>Annual revenue recovered</div>
+                <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:40, color:'var(--accent)',
+                  letterSpacing:'-1px', lineHeight:1, marginBottom:roi.hasData && roi.totalInvestment > 0 ? 12 : 0 }}>
+                  {roi.hasData && roi.annualRecovery > 0 ? `$${fmt(roi.annualRecovery)}` : '—'}
+                </div>
+                {roi.hasData && roi.annualRecovery > 0 && roi.totalInvestment > 0 && (
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', lineHeight:1.6, fontStyle:'italic' }}>
+                    Client pays ${fmt(roi.auditFee)} audit + ${fmt(roi.implFee)} to fix. Store recovers ${fmt(roi.annualRecovery)}+/yr.
+                  </div>
+                )}
+              </div>
+              <div style={{ padding:'20px 24px', background:'var(--paper-2)' }}>
+                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em',
+                  textTransform:'uppercase', color:'var(--ink-5)', marginBottom:10 }}>Return on audit</div>
+                <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:40,
+                  color:'var(--ink)', letterSpacing:'-1px', lineHeight:1 }}>
+                  {roi.hasData && roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}×` : '—'}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Your Pricing — private, no-print */}
-      <div className="no-print" style={{ border:'1px solid var(--rule)', marginBottom:32 }}>
+      <div className="no-print" style={{ border:'1px solid var(--rule)', marginBottom:32, borderRadius:4, overflow:'hidden' }}>
         <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)', padding:'10px 20px',
           display:'flex', alignItems:'center', gap:8 }}>
           <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em',
@@ -2542,7 +2598,7 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
       </div>
 
       {/* Proposal block — goes in report */}
-      <div style={{ border:'1px solid var(--rule)', marginBottom:32 }}>
+      <div style={{ border:'1px solid var(--rule)', marginBottom:32, borderRadius:4, overflow:'hidden' }}>
         <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)', padding:'10px 20px' }}>
           <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em',
             textTransform:'uppercase', color:'var(--ink-4)' }}>Proposal Summary</span>
