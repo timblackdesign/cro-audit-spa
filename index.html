@@ -2362,10 +2362,12 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-2)',
-                      lineHeight:1.3, marginBottom:3 }}>{item.name}</div>
-                    {itemState.finding && (
+                      lineHeight:1.3, marginBottom:3 }}>
+                      {item.name.split(':')[0]}{itemState.finding ? `: ${itemState.finding}` : ''}
+                    </div>
+                    {itemState.recommendation && (
                       <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:'var(--ink-4)',
-                        lineHeight:1.4 }}>{itemState.finding}</div>
+                        lineHeight:1.4 }}>{itemState.recommendation}</div>
                     )}
                   </div>
                 </div>
