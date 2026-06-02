@@ -519,6 +519,19 @@ body {
   .rpt-metric-cell:nth-child(odd)  { border-right: 1px solid #e5e7eb !important; }
   .rpt-metric-cell:nth-child(even) { border-right: none !important; }
 }
+/* Viewport icons */
+.vp-icon { display:inline-flex; align-items:center; justify-content:center; border-radius:3px; transition:transform 0.15s, background 0.15s, opacity 0.15s; position:relative; }
+.vp-icon.lit { background:var(--state-fail-bg); transform:scale(1.05); }
+.vp-icon.interactive { cursor:pointer; }
+.vp-icon.interactive:hover { filter:brightness(1.15); }
+/* Strikethrough overlay for non-applicable viewport icons */
+.vp-icon-na::after {
+  content:''; position:absolute; top:1px; left:1px; right:1px; bottom:1px;
+  background: linear-gradient(to bottom right,
+    transparent calc(50% - 0.6px), var(--ink-5) calc(50% - 0.6px),
+    var(--ink-5) calc(50% + 0.6px), transparent calc(50% + 0.6px));
+  opacity:0.5; pointer-events:none; border-radius:2px;
+}
 </style>
 <script>(function(){var t=localStorage.getItem('cro-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
 </head>
@@ -674,6 +687,8 @@ function getItemState(audit, itemId) {
     notes:              saved.notes              ?? '',
     screenshot_url:     saved.screenshot_url     ?? '',
     estimated_fix_time: saved.estimated_fix_time ?? item?.estimated_fix_time ?? '< 30 min',
+    fails_on_desktop:   saved.fails_on_desktop   ?? null,
+    fails_on_mobile:    saved.fails_on_mobile    ?? null,
   };
 }
 
@@ -907,6 +922,59 @@ function CIInput({ type = 'text', value, onChange, placeholder, step, min, autoF
       onBlur={e => e.target.style.borderColor='var(--rule)'} />
   );
 }
+
+// SVG paths for the two viewport icons
+const ICON_MOBILE = (
+  <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+    <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/>
+  </svg>
+);
+const ICON_DESKTOP = (
+  <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2"/>
+    <line x1="12" y1="17" x2="12" y2="21"/>
+    <line x1="8" y1="21" x2="16" y2="21"/>
+  </svg>
+);
+
+// Props: viewport ('mobile'|'desktop'|'both'|undefined), status, failsDesktop, failsMobile, onToggle, size
+// Always renders both icons — non-applicable icon gets opacity + strikethrough overlay via .vp-icon-na CSS class.
+// Wrapped in React.memo with flat primitive props so sidebar items don't re-render on unrelated state changes.
+const ViewportIcons = React.memo(function ViewportIcons({ viewport, status, failsDesktop, failsMobile, onToggle, size = 'card' }) {
+  const vp = viewport || 'both';
+  const isFail = status === 'fail';
+  const isBoth = vp === 'both';
+  const isCard = size === 'card';
+
+  const px  = size === 'card' ? 16 : size === 'sidebar' ? 11 : 12;
+  const pad = size === 'card' ? 3 : 2;
+
+  const desktopApplies = vp === 'desktop' || vp === 'both';
+  const mobileApplies  = vp === 'mobile'  || vp === 'both';
+
+  const desktopLit = isFail && (vp === 'desktop' || (isBoth && failsDesktop !== false));
+  const mobileLit  = isFail && (vp === 'mobile'  || (isBoth && failsMobile  !== false));
+
+  const vpIcon = (applies, lit, interactive, icon, vpKey, label) => (
+    <span key={vpKey}
+      className={'vp-icon' + (applies ? '' : ' vp-icon-na') + (lit ? ' lit' : '') + (interactive ? ' interactive' : '')}
+      style={{ width:px, height:px, padding:pad, flexShrink:0,
+        color: lit ? 'var(--state-fail)' : 'var(--ink-5)',
+        opacity: applies ? (lit ? 1 : 0.4) : 0.18 }}
+      title={label}
+      onClick={interactive && onToggle ? () => onToggle(vpKey) : undefined}>
+      {icon}
+    </span>
+  );
+
+  return (
+    <span style={{ display:'inline-flex', gap:2, alignItems:'center', flexShrink:0 }}>
+      {vpIcon(desktopApplies, desktopLit, isBoth && isFail && isCard, ICON_DESKTOP, 'desktop', 'Desktop')}
+      {vpIcon(mobileApplies,  mobileLit,  isBoth && isFail && isCard, ICON_MOBILE,  'mobile',  'Mobile')}
+    </span>
+  );
+});
 
 function ThemeToggle({ theme, onToggle }) {
   return (
@@ -1799,6 +1867,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCursor, setSidebarCursor] = useState(0);
   const [cardGlowing, setCardGlowing] = useState(false);
+  const [revertMsg, setRevertMsg] = useState(false);
 
   useEffect(() => {
     if (!cardGlowTrigger) return;
@@ -1848,14 +1917,54 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
   }, [activeItemId]);
   const itemState = getItemState(audit, activeItemId);
   const isFail = itemState.status === 'fail';
+  // Ref gives callbacks stable access to current itemState without adding `audit` to their dep arrays
+  const itemStateRef = useRef(itemState);
+  itemStateRef.current = itemState;
 
   const prog = auditProgress(audit);
   const totalDone = prog.pass + prog.fail + prog.na;
   const totalPct = Math.round((totalDone / 60) * 100);
   const anyMarked = totalDone > 0;
 
+  useEffect(() => {
+    if (!revertMsg) return;
+    const t = setTimeout(() => setRevertMsg(false), 3500);
+    return () => clearTimeout(t);
+  }, [revertMsg]);
+
   const updateItem = useCallback((field, value) => {
-    onUpdateItem(audit.id, activeItemId, { [field]: value });
+    if (field === 'status' && value === 'fail' && activeItem.primary_viewport === 'both') {
+      const { fails_on_desktop, fails_on_mobile } = itemStateRef.current;
+      const extra = {};
+      if (fails_on_desktop === null) extra.fails_on_desktop = true;
+      if (fails_on_mobile  === null) extra.fails_on_mobile  = true;
+      onUpdateItem(audit.id, activeItemId, { status: 'fail', ...extra });
+    } else {
+      onUpdateItem(audit.id, activeItemId, { [field]: value });
+    }
+  }, [audit.id, activeItemId, activeItem, onUpdateItem]);
+
+  const toggleViewport = useCallback((viewport) => {
+    const { fails_on_desktop, fails_on_mobile } = itemStateRef.current;
+    const deskActive = fails_on_desktop !== false;
+    const mobActive  = fails_on_mobile  !== false;
+    if (viewport === 'mobile') {
+      const next = !mobActive;
+      if (!next && !deskActive) {
+        onUpdateItem(audit.id, activeItemId, { status: 'tbd', fails_on_mobile: false });
+        setRevertMsg(true);
+      } else {
+        onUpdateItem(audit.id, activeItemId, { fails_on_mobile: next });
+      }
+    } else {
+      const next = !deskActive;
+      if (!next && !mobActive) {
+        onUpdateItem(audit.id, activeItemId, { status: 'tbd', fails_on_desktop: false });
+        setRevertMsg(true);
+      } else {
+        onUpdateItem(audit.id, activeItemId, { fails_on_desktop: next });
+      }
+    }
   }, [audit.id, activeItemId, onUpdateItem]);
 
   const groups = getGroupedItems(checklistSort);
@@ -2017,6 +2126,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                   const isActive = item.id === activeItemId;
                   const isCursor = item.id === sidebarCursorId;
                   const dot = statusDot(item.id);
+                  const rawSt = (audit.items || {})[item.id] || {};
                   return (
                     <button key={item.id} data-item-id={item.id}
                       className={`sidebar-item-btn${isActive ? ' active' : ''}${isCursor && !isActive ? ' cursor' : ''}`}
@@ -2027,6 +2137,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                       }}>
                       <span style={{ width:7, height:7, borderRadius:'50%', background:dot.color, flexShrink:0,
                         border: dot.border ? '1px solid var(--rule-2)' : 'none' }} />
+                      <ViewportIcons viewport={item.primary_viewport} status={rawSt.status ?? 'tbd'} failsDesktop={rawSt.fails_on_desktop ?? null} failsMobile={rawSt.fails_on_mobile ?? null} size="sidebar" />
                       <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
                         color: (isActive || isCursor) ? 'var(--ink)' : 'var(--ink-4)', lineHeight:1.3, flex:1,
                         overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
@@ -2098,6 +2209,13 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                 })}
               </div>
               <div style={{ display:'flex', gap:5, flexWrap:'wrap', alignItems:'center', marginBottom:10 }}>
+                <ViewportIcons viewport={activeItem.primary_viewport} status={itemState.status} failsDesktop={itemState.fails_on_desktop} failsMobile={itemState.fails_on_mobile} onToggle={toggleViewport} size="card" />
+                {revertMsg && (
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'var(--ink-4)',
+                    letterSpacing:'0.04em' }}>
+                    Reverted to TBD — mark at least one viewport as failed.
+                  </span>
+                )}
                 <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
                   background:IMPACT_BG[activeItem.impact], color:IMPACT_COLOR[activeItem.impact],
                   letterSpacing:'0.04em', textTransform:'uppercase' }}>{activeItem.impact}</span>
@@ -2377,6 +2495,9 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
                       <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:'var(--ink-4)',
                         lineHeight:1.4 }}>{itemState.recommendation}</div>
                     )}
+                    <div style={{ marginTop:4 }}>
+                      <ViewportIcons viewport={item.primary_viewport} status={itemState.status} failsDesktop={itemState.fails_on_desktop} failsMobile={itemState.fails_on_mobile} size="findings" />
+                    </div>
                   </div>
                 </div>
                 {/* Bottom section: impact + lift + revenue. Desktop: display:contents (grid cols 3–5). Mobile: flex row indented. */}

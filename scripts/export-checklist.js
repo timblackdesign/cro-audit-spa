@@ -15,7 +15,7 @@ const supabase = createClient(
 async function exportItems() {
   const { data, error } = await supabase
     .from('checklist_items')
-    .select('id,name,section,impact,estimated_fix_time,impact_area,shopify_fix_complexity,default_finding,default_recommendation,lift_min,lift_max')
+    .select('id,name,section,impact,estimated_fix_time,impact_area,shopify_fix_complexity,default_finding,default_recommendation,lift_min,lift_max,primary_viewport')
     .order('sort_order');
 
   if (error) { console.error('Export failed:', error.message); process.exit(1); }

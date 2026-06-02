@@ -10,20 +10,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Header does not remain visible on scroll-up, making navigation difficult.",
     "default_recommendation": "Enable \"Sticky Header\" in theme settings",
     "lift_min": 0.05,
-    "lift_max": 0.12
-  },
-  {
-    "id": "search-visibility",
-    "name": "Search Visibility: Is the search bar clearly visible on mobile?",
-    "section": "General",
-    "impact": "Medium",
-    "estimated_fix_time": "< 30 min",
-    "impact_area": "Conversion Rate",
-    "shopify_fix_complexity": "Theme Setting",
-    "default_finding": "Search bar is not clearly visible on mobile, increasing friction for product discovery.",
-    "default_recommendation": "Adjust header layout to show a search bar (not just an icon) on mobile",
-    "lift_min": 0.08,
-    "lift_max": 0.18
+    "lift_max": 0.12,
+    "primary_viewport": "both"
   },
   {
     "id": "predictive-search",
@@ -36,7 +24,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Search does not suggest products or collections, slowing product discovery.",
     "default_recommendation": "Enable Shopify Predictive Search in theme settings",
     "lift_min": 0.1,
-    "lift_max": 0.22
+    "lift_max": 0.22,
+    "primary_viewport": "both"
   },
   {
     "id": "logo-link",
@@ -49,7 +38,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Clicking the logo does not return the user to the homepage.",
     "default_recommendation": "Verify link destination in header.liquid",
     "lift_min": 0.02,
-    "lift_max": 0.05
+    "lift_max": 0.05,
+    "primary_viewport": "both"
   },
   {
     "id": "typography-hierarchy",
@@ -62,7 +52,8 @@ const AUDIT_ITEMS = [
     "default_finding": "There is no clear visual difference between heading levels, reducing scannability.",
     "default_recommendation": "Adjust CSS font-weights and sizes for H1 vs H2 vs body",
     "lift_min": 0.03,
-    "lift_max": 0.08
+    "lift_max": 0.08,
+    "primary_viewport": "both"
   },
   {
     "id": "readability",
@@ -75,20 +66,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Body text is smaller than 16px, reducing readability.",
     "default_recommendation": "Update global typography settings in the theme editor",
     "lift_min": 0.02,
-    "lift_max": 0.06
-  },
-  {
-    "id": "tap-targets",
-    "name": "Tap Targets: Are all buttons and links at least 44x44px on mobile?",
-    "section": "General",
-    "impact": "Medium",
-    "estimated_fix_time": "1-2 hrs",
-    "impact_area": "Conversion Rate",
-    "shopify_fix_complexity": "Custom Code",
-    "default_finding": "Buttons or links are smaller than 44x44px, causing tap errors on mobile.",
-    "default_recommendation": "Add padding to mobile navigation and buttons via CSS",
-    "lift_min": 0.06,
-    "lift_max": 0.15
+    "lift_max": 0.06,
+    "primary_viewport": "both"
   },
   {
     "id": "footer-policies",
@@ -101,7 +80,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Legal and policy pages are difficult to find, reducing buyer trust.",
     "default_recommendation": "Add a Policies menu to the footer section",
     "lift_min": 0.03,
-    "lift_max": 0.08
+    "lift_max": 0.08,
+    "primary_viewport": "both"
   },
   {
     "id": "social-links",
@@ -114,7 +94,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Social icons do not open in a new tab, navigating users away from the store.",
     "default_recommendation": "Add target=_blank to social media icon links",
     "lift_min": 0.01,
-    "lift_max": 0.03
+    "lift_max": 0.03,
+    "primary_viewport": "both"
   },
   {
     "id": "404-page",
@@ -127,85 +108,36 @@ const AUDIT_ITEMS = [
     "default_finding": "The 404 page does not provide navigation options, causing dead ends.",
     "default_recommendation": "Edit 404.json template to include a Continue Shopping button",
     "lift_min": 0.02,
-    "lift_max": 0.06
+    "lift_max": 0.06,
+    "primary_viewport": "both"
   },
   {
-    "id": "clear-titles",
-    "name": "Clear Titles: Does the collection H1 clearly describe what is being sold?",
-    "section": "Collection Page",
-    "impact": "Low",
-    "estimated_fix_time": "< 30 min",
-    "impact_area": "SEO",
-    "shopify_fix_complexity": "Shopify Admin",
-    "default_finding": "The collection H1 does not clearly describe what is being sold.",
-    "default_recommendation": "Ensure collection titles are descriptive and SEO-friendly",
-    "lift_min": 0.03,
-    "lift_max": 0.07
-  },
-  {
-    "id": "breadcrumbs",
-    "name": "Breadcrumbs: Can users navigate back to the previous category?",
-    "section": "Collection Page",
+    "id": "search-visibility",
+    "name": "Search Visibility: Is the search bar clearly visible on mobile?",
+    "section": "General",
     "impact": "Medium",
     "estimated_fix_time": "< 30 min",
-    "impact_area": "Bounce Rate",
-    "shopify_fix_complexity": "Theme Setting",
-    "default_finding": "Users cannot easily navigate back to the previous category.",
-    "default_recommendation": "Install a breadcrumb snippet or enable breadcrumbs in theme settings",
-    "lift_min": 0.04,
-    "lift_max": 0.1
-  },
-  {
-    "id": "filter-logic",
-    "name": "Filter Logic: Are filters (Size, Color, etc.) collapsible on mobile?",
-    "section": "Collection Page",
-    "impact": "Medium",
-    "estimated_fix_time": "1-2 hrs",
     "impact_area": "Conversion Rate",
-    "shopify_fix_complexity": "App Install",
-    "default_finding": "Filters are not collapsible on mobile, crowding the screen.",
-    "default_recommendation": "Use Shopify Search and Discovery app to optimize and collapse filters on mobile",
+    "shopify_fix_complexity": "Theme Setting",
+    "default_finding": "Search bar is not clearly visible on mobile, increasing friction for product discovery.",
+    "default_recommendation": "Adjust header layout to show a search bar (not just an icon) on mobile",
     "lift_min": 0.08,
-    "lift_max": 0.18
+    "lift_max": 0.18,
+    "primary_viewport": "mobile"
   },
   {
-    "id": "active-filters",
-    "name": "Active Filters: Is it immediately clear which filters are currently applied?",
-    "section": "Collection Page",
-    "impact": "Low",
+    "id": "tap-targets",
+    "name": "Tap Targets: Are all buttons and links at least 44x44px on mobile?",
+    "section": "General",
+    "impact": "Medium",
     "estimated_fix_time": "1-2 hrs",
     "impact_area": "Conversion Rate",
     "shopify_fix_complexity": "Custom Code",
-    "default_finding": "It is not clear which filters are currently applied.",
-    "default_recommendation": "Add Active Filter tags with an X to remove individual filters",
-    "lift_min": 0.04,
-    "lift_max": 0.1
-  },
-  {
-    "id": "sorting-options",
-    "name": "Sorting Options: Are sorting controls (Price, Newest, Best Selling) available?",
-    "section": "Collection Page",
-    "impact": "Low",
-    "estimated_fix_time": "< 30 min",
-    "impact_area": "Conversion Rate",
-    "shopify_fix_complexity": "Theme Setting",
-    "default_finding": "Sorting controls are missing, making it hard for users to find the right product.",
-    "default_recommendation": "Enable the sorting dropdown in collection template settings",
-    "lift_min": 0.05,
-    "lift_max": 0.12
-  },
-  {
-    "id": "product-count",
-    "name": "Product Count: Does the page show the number of items in the collection?",
-    "section": "Collection Page",
-    "impact": "Low",
-    "estimated_fix_time": "< 30 min",
-    "impact_area": "Bounce Rate",
-    "shopify_fix_complexity": "Custom Code",
-    "default_finding": "Page does not show how many items are in the collection.",
-    "default_recommendation": "Add a Showing X products Liquid tag to the collection header",
-    "lift_min": 0.02,
-    "lift_max": 0.05
+    "default_finding": "Buttons or links are smaller than 44x44px, causing tap errors on mobile.",
+    "default_recommendation": "Add padding to mobile navigation and buttons via CSS",
+    "lift_min": 0.06,
+    "lift_max": 0.15,
+    "primary_viewport": "mobile"
   },
   {
     "id": "secondary-hover-image",
@@ -218,7 +150,78 @@ const AUDIT_ITEMS = [
     "default_finding": "Hovering over product cards does not reveal a second image.",
     "default_recommendation": "Enable Show second image on hover in product card settings",
     "lift_min": 0.07,
-    "lift_max": 0.16
+    "lift_max": 0.16,
+    "primary_viewport": "desktop"
+  },
+  {
+    "id": "clear-titles",
+    "name": "Clear Titles: Does the collection H1 clearly describe what is being sold?",
+    "section": "Collection Page",
+    "impact": "Low",
+    "estimated_fix_time": "< 30 min",
+    "impact_area": "SEO",
+    "shopify_fix_complexity": "Shopify Admin",
+    "default_finding": "The collection H1 does not clearly describe what is being sold.",
+    "default_recommendation": "Ensure collection titles are descriptive and SEO-friendly",
+    "lift_min": 0.03,
+    "lift_max": 0.07,
+    "primary_viewport": "both"
+  },
+  {
+    "id": "breadcrumbs",
+    "name": "Breadcrumbs: Can users navigate back to the previous category?",
+    "section": "Collection Page",
+    "impact": "Medium",
+    "estimated_fix_time": "< 30 min",
+    "impact_area": "Bounce Rate",
+    "shopify_fix_complexity": "Theme Setting",
+    "default_finding": "Users cannot easily navigate back to the previous category.",
+    "default_recommendation": "Install a breadcrumb snippet or enable breadcrumbs in theme settings",
+    "lift_min": 0.04,
+    "lift_max": 0.1,
+    "primary_viewport": "both"
+  },
+  {
+    "id": "active-filters",
+    "name": "Active Filters: Is it immediately clear which filters are currently applied?",
+    "section": "Collection Page",
+    "impact": "Low",
+    "estimated_fix_time": "1-2 hrs",
+    "impact_area": "Conversion Rate",
+    "shopify_fix_complexity": "Custom Code",
+    "default_finding": "It is not clear which filters are currently applied.",
+    "default_recommendation": "Add Active Filter tags with an X to remove individual filters",
+    "lift_min": 0.04,
+    "lift_max": 0.1,
+    "primary_viewport": "both"
+  },
+  {
+    "id": "sorting-options",
+    "name": "Sorting Options: Are sorting controls (Price, Newest, Best Selling) available?",
+    "section": "Collection Page",
+    "impact": "Low",
+    "estimated_fix_time": "< 30 min",
+    "impact_area": "Conversion Rate",
+    "shopify_fix_complexity": "Theme Setting",
+    "default_finding": "Sorting controls are missing, making it hard for users to find the right product.",
+    "default_recommendation": "Enable the sorting dropdown in collection template settings",
+    "lift_min": 0.05,
+    "lift_max": 0.12,
+    "primary_viewport": "both"
+  },
+  {
+    "id": "product-count",
+    "name": "Product Count: Does the page show the number of items in the collection?",
+    "section": "Collection Page",
+    "impact": "Low",
+    "estimated_fix_time": "< 30 min",
+    "impact_area": "Bounce Rate",
+    "shopify_fix_complexity": "Custom Code",
+    "default_finding": "Page does not show how many items are in the collection.",
+    "default_recommendation": "Add a Showing X products Liquid tag to the collection header",
+    "lift_min": 0.02,
+    "lift_max": 0.05,
+    "primary_viewport": "both"
   },
   {
     "id": "price-visibility",
@@ -231,7 +234,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Sale prices are not clearly distinguished from regular prices.",
     "default_recommendation": "Style compare-at prices with a strikethrough and contrasting color",
     "lift_min": 0.05,
-    "lift_max": 0.12
+    "lift_max": 0.12,
+    "primary_viewport": "both"
   },
   {
     "id": "quick-add",
@@ -244,7 +248,8 @@ const AUDIT_ITEMS = [
     "default_finding": "There is no way to add to cart without leaving the collection page.",
     "default_recommendation": "Enable Quick Add or Quick View buttons on product cards",
     "lift_min": 0.12,
-    "lift_max": 0.28
+    "lift_max": 0.28,
+    "primary_viewport": "both"
   },
   {
     "id": "grid-consistency",
@@ -257,7 +262,22 @@ const AUDIT_ITEMS = [
     "default_finding": "Product images have inconsistent aspect ratios, creating a broken grid.",
     "default_recommendation": "Enable image cropping and aspect ratio enforcement in theme settings",
     "lift_min": 0.04,
-    "lift_max": 0.1
+    "lift_max": 0.1,
+    "primary_viewport": "both"
+  },
+  {
+    "id": "filter-logic",
+    "name": "Filter Logic: Are filters (Size, Color, etc.) collapsible on mobile?",
+    "section": "Collection Page",
+    "impact": "Medium",
+    "estimated_fix_time": "1-2 hrs",
+    "impact_area": "Conversion Rate",
+    "shopify_fix_complexity": "App Install",
+    "default_finding": "Filters are not collapsible on mobile, crowding the screen.",
+    "default_recommendation": "Use Shopify Search and Discovery app to optimize and collapse filters on mobile",
+    "lift_min": 0.08,
+    "lift_max": 0.18,
+    "primary_viewport": "mobile"
   },
   {
     "id": "high-res-images",
@@ -270,7 +290,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Users cannot zoom in or view high-quality product details.",
     "default_recommendation": "Upload images at 2048x2048px and enable zoom in theme settings",
     "lift_min": 0.1,
-    "lift_max": 0.22
+    "lift_max": 0.22,
+    "primary_viewport": "both"
   },
   {
     "id": "above-fold-cta",
@@ -283,7 +304,8 @@ const AUDIT_ITEMS = [
     "default_finding": "The Add to Cart button is not visible without scrolling, reducing impulse purchases.",
     "default_recommendation": "Adjust page layout or reduce white space to pull the CTA above the fold",
     "lift_min": 0.3,
-    "lift_max": 0.6
+    "lift_max": 0.6,
+    "primary_viewport": "both"
   },
   {
     "id": "variant-clarity",
@@ -296,7 +318,8 @@ const AUDIT_ITEMS = [
     "default_finding": "It is not obvious which size or color is currently selected.",
     "default_recommendation": "Use swatches or button-style selectors instead of dropdown menus",
     "lift_min": 0.08,
-    "lift_max": 0.18
+    "lift_max": 0.18,
+    "primary_viewport": "both"
   },
   {
     "id": "stock-status",
@@ -309,7 +332,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Out-of-stock variants are not clearly grayed out, causing confusion.",
     "default_recommendation": "Update theme code to disable unavailable variant combinations",
     "lift_min": 0.05,
-    "lift_max": 0.12
+    "lift_max": 0.12,
+    "primary_viewport": "both"
   },
   {
     "id": "price-placement",
@@ -322,7 +346,8 @@ const AUDIT_ITEMS = [
     "default_finding": "The price is not positioned near the CTA, breaking the decision-making flow.",
     "default_recommendation": "Rearrange product blocks so price appears directly above Add to Cart",
     "lift_min": 0.06,
-    "lift_max": 0.14
+    "lift_max": 0.14,
+    "primary_viewport": "both"
   },
   {
     "id": "value-props",
@@ -335,7 +360,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Shipping and returns info is not displayed near the CTA, reducing buyer confidence.",
     "default_recommendation": "Add a Shipping and Returns accordion or icon block near the CTA",
     "lift_min": 0.1,
-    "lift_max": 0.22
+    "lift_max": 0.22,
+    "primary_viewport": "both"
   },
   {
     "id": "description-tabs",
@@ -348,7 +374,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Long product info is not organized into accordions, creating an overwhelming wall of text.",
     "default_recommendation": "Use theme blocks to create collapsible info sections for Details, Shipping, and Care",
     "lift_min": 0.05,
-    "lift_max": 0.12
+    "lift_max": 0.12,
+    "primary_viewport": "both"
   },
   {
     "id": "social-proof",
@@ -361,7 +388,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Star ratings are not visible near the product title, reducing social proof.",
     "default_recommendation": "Install a review app and add the star rating snippet near the product title",
     "lift_min": 0.18,
-    "lift_max": 0.4
+    "lift_max": 0.4,
+    "primary_viewport": "both"
   },
   {
     "id": "user-reviews",
@@ -374,7 +402,8 @@ const AUDIT_ITEMS = [
     "default_finding": "There is no photo review section, reducing buyer confidence.",
     "default_recommendation": "Enable photo uploads in the review app settings",
     "lift_min": 0.12,
-    "lift_max": 0.26
+    "lift_max": 0.26,
+    "primary_viewport": "both"
   },
   {
     "id": "inventory-urgency",
@@ -387,7 +416,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Low-stock messaging is not surfaced, missing an opportunity to create purchase urgency.",
     "default_recommendation": "Add a low-stock Liquid snippet near the CTA when inventory is low",
     "lift_min": 0.1,
-    "lift_max": 0.22
+    "lift_max": 0.22,
+    "primary_viewport": "both"
   },
   {
     "id": "cart-trigger",
@@ -400,7 +430,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Cart does not open automatically upon adding an item, reducing conversion momentum.",
     "default_recommendation": "Enable Drawer or Slide-out Cart in theme cart settings",
     "lift_min": 0.08,
-    "lift_max": 0.18
+    "lift_max": 0.18,
+    "primary_viewport": "both"
   },
   {
     "id": "order-summary-cart",
@@ -413,7 +444,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Product names and variants are not clearly displayed in the cart, causing confusion.",
     "default_recommendation": "Ensure line item properties (name, variant, qty) are visible in the cart template",
     "lift_min": 0.04,
-    "lift_max": 0.1
+    "lift_max": 0.1,
+    "primary_viewport": "both"
   },
   {
     "id": "quantity-adjustment",
@@ -426,7 +458,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Users cannot change quantities directly in the cart.",
     "default_recommendation": "Add plus and minus quantity buttons to cart line items",
     "lift_min": 0.03,
-    "lift_max": 0.08
+    "lift_max": 0.08,
+    "primary_viewport": "both"
   },
   {
     "id": "empty-state-cart",
@@ -439,7 +472,8 @@ const AUDIT_ITEMS = [
     "default_finding": "An empty cart does not suggest products, creating a dead end.",
     "default_recommendation": "Add a Recommended Products or Continue Shopping section to the cart-empty template",
     "lift_min": 0.04,
-    "lift_max": 0.1
+    "lift_max": 0.1,
+    "primary_viewport": "both"
   },
   {
     "id": "discount-field",
@@ -452,7 +486,8 @@ const AUDIT_ITEMS = [
     "default_finding": "It is not clear where to enter a discount code, causing customer frustration.",
     "default_recommendation": "Add a note that discount codes can be applied at checkout",
     "lift_min": 0.05,
-    "lift_max": 0.12
+    "lift_max": 0.12,
+    "primary_viewport": "both"
   },
   {
     "id": "trust-badges",
@@ -465,7 +500,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Payment icons and secure badges are not visible in the cart, reducing trust at a critical moment.",
     "default_recommendation": "Add payment provider icons (Visa, Mastercard, Shop Pay, etc.) to the cart footer",
     "lift_min": 0.06,
-    "lift_max": 0.14
+    "lift_max": 0.14,
+    "primary_viewport": "both"
   },
   {
     "id": "shipping-calculator",
@@ -478,7 +514,8 @@ const AUDIT_ITEMS = [
     "default_finding": "The cart does not estimate shipping costs, leading to abandoned checkouts from unexpected fees.",
     "default_recommendation": "Add a shipping rate calculator block to the cart page or drawer",
     "lift_min": 0.12,
-    "lift_max": 0.26
+    "lift_max": 0.26,
+    "primary_viewport": "both"
   },
   {
     "id": "free-shipping-bar",
@@ -491,7 +528,8 @@ const AUDIT_ITEMS = [
     "default_finding": "There is no free shipping progress bar, missing a high-impact AOV lever.",
     "default_recommendation": "Install a free shipping progress bar app or add custom Liquid logic",
     "lift_min": 0.2,
-    "lift_max": 0.45
+    "lift_max": 0.45,
+    "primary_viewport": "both"
   },
   {
     "id": "upsells",
@@ -504,7 +542,8 @@ const AUDIT_ITEMS = [
     "default_finding": "There are no product suggestions in the cart, missing upsell revenue.",
     "default_recommendation": "Install a cart upsell app (e.g., Candy Rack, ReConvert) or enable product recommendations",
     "lift_min": 0.15,
-    "lift_max": 0.3
+    "lift_max": 0.3,
+    "primary_viewport": "both"
   },
   {
     "id": "sticky-cta-cart",
@@ -517,7 +556,8 @@ const AUDIT_ITEMS = [
     "default_finding": "The checkout button is not sticky on mobile, requiring users to scroll back to proceed.",
     "default_recommendation": "Add a sticky checkout button to the cart drawer or page on mobile",
     "lift_min": 0.08,
-    "lift_max": 0.18
+    "lift_max": 0.18,
+    "primary_viewport": "mobile"
   },
   {
     "id": "guest-checkout",
@@ -530,7 +570,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Users are required to create an account to check out, significantly increasing drop-off.",
     "default_recommendation": "Set Customer Accounts to Optional in Shopify Admin under Settings then Checkout",
     "lift_min": 0.2,
-    "lift_max": 0.4
+    "lift_max": 0.4,
+    "primary_viewport": "both"
   },
   {
     "id": "breadcrumb-progress",
@@ -543,7 +584,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Users cannot see their current stage in checkout, increasing anxiety and drop-off.",
     "default_recommendation": "Enable the standard Shopify checkout progress indicator",
     "lift_min": 0.04,
-    "lift_max": 0.1
+    "lift_max": 0.1,
+    "primary_viewport": "both"
   },
   {
     "id": "express-checkout",
@@ -556,7 +598,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Shop Pay and Apple Pay buttons are not prominent, missing a significant one-tap checkout opportunity.",
     "default_recommendation": "Enable Accelerated Checkouts under Settings then Payments",
     "lift_min": 0.25,
-    "lift_max": 0.55
+    "lift_max": 0.55,
+    "primary_viewport": "both"
   },
   {
     "id": "auto-fill-support",
@@ -569,20 +612,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Checkout is not optimized for auto-fill, slowing down the purchase process.",
     "default_recommendation": "Standardize form field names and labels to ensure browser auto-fill functions correctly",
     "lift_min": 0.08,
-    "lift_max": 0.18
-  },
-  {
-    "id": "order-summary-toggle",
-    "name": "Order Summary Toggle (Mobile): Is the total price easy to view on mobile?",
-    "section": "Checkout",
-    "impact": "Low",
-    "estimated_fix_time": "< 30 min",
-    "impact_area": "Cart Abandonment",
-    "shopify_fix_complexity": "Shopify Admin",
-    "default_finding": "The order total is difficult to view on mobile without expanding the order summary.",
-    "default_recommendation": "Ensure the order summary is expanded or clearly tappable on mobile",
-    "lift_min": 0.03,
-    "lift_max": 0.08
+    "lift_max": 0.18,
+    "primary_viewport": "both"
   },
   {
     "id": "error-handling",
@@ -595,7 +626,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Error messages are not clearly highlighted, causing confusion during checkout.",
     "default_recommendation": "Adjust theme styling to ensure error states are high-contrast and descriptive",
     "lift_min": 0.06,
-    "lift_max": 0.14
+    "lift_max": 0.14,
+    "primary_viewport": "both"
   },
   {
     "id": "checkout-branding",
@@ -608,7 +640,8 @@ const AUDIT_ITEMS = [
     "default_finding": "The checkout page lacks brand identity, reducing trust and brand cohesion.",
     "default_recommendation": "Customize the checkout page via Settings then Checkout then Customize checkout",
     "lift_min": 0.04,
-    "lift_max": 0.1
+    "lift_max": 0.1,
+    "primary_viewport": "both"
   },
   {
     "id": "abandoned-checkout",
@@ -621,7 +654,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Abandoned checkout recovery is not enabled, leaving recoverable revenue on the table.",
     "default_recommendation": "Enable abandoned checkout emails under Settings then Notifications",
     "lift_min": 0.3,
-    "lift_max": 0.6
+    "lift_max": 0.6,
+    "primary_viewport": "both"
   },
   {
     "id": "post-purchase-page",
@@ -634,7 +668,8 @@ const AUDIT_ITEMS = [
     "default_finding": "The Thank You page does not explain next steps, leaving customers uncertain.",
     "default_recommendation": "Customize the Order Confirmation page with a thank you note, delivery timeline, and contact info",
     "lift_min": 0.04,
-    "lift_max": 0.1
+    "lift_max": 0.1,
+    "primary_viewport": "both"
   },
   {
     "id": "order-confirmation-email",
@@ -647,20 +682,22 @@ const AUDIT_ITEMS = [
     "default_finding": "The order confirmation email is missing key info including tracking, returns, and support contact.",
     "default_recommendation": "Customize the Order Confirmation email to include tracking link, return policy, and contact info",
     "lift_min": 0.05,
-    "lift_max": 0.12
+    "lift_max": 0.12,
+    "primary_viewport": "both"
   },
   {
-    "id": "page-speed",
-    "name": "Page Speed: Does the site load in under 3 seconds on mobile?",
-    "section": "Mobile/Performance",
-    "impact": "High",
-    "estimated_fix_time": "1 day",
-    "impact_area": "Bounce Rate",
-    "shopify_fix_complexity": "App Install",
-    "default_finding": "The site takes longer than 3 seconds to load on mobile, significantly increasing bounce rate.",
-    "default_recommendation": "Compress all images, defer non-critical scripts, and uninstall unused apps",
-    "lift_min": 0.2,
-    "lift_max": 0.5
+    "id": "order-summary-toggle",
+    "name": "Order Summary Toggle (Mobile): Is the total price easy to view on mobile?",
+    "section": "Checkout",
+    "impact": "Low",
+    "estimated_fix_time": "< 30 min",
+    "impact_area": "Cart Abandonment",
+    "shopify_fix_complexity": "Shopify Admin",
+    "default_finding": "The order total is difficult to view on mobile without expanding the order summary.",
+    "default_recommendation": "Ensure the order summary is expanded or clearly tappable on mobile",
+    "lift_min": 0.03,
+    "lift_max": 0.08,
+    "primary_viewport": "mobile"
   },
   {
     "id": "no-content-shifting",
@@ -673,20 +710,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Layout shifts significantly while loading, creating a jarring experience.",
     "default_recommendation": "Set explicit width and height attributes on all images and embeds",
     "lift_min": 0.08,
-    "lift_max": 0.18
-  },
-  {
-    "id": "lcp",
-    "name": "LCP: Does the hero image or main headline load within 2.5 seconds?",
-    "section": "Mobile/Performance",
-    "impact": "High",
-    "estimated_fix_time": "1-2 hrs",
-    "impact_area": "Bounce Rate",
-    "shopify_fix_complexity": "Custom Code",
-    "default_finding": "The Largest Contentful Paint exceeds 2.5 seconds, failing Core Web Vitals.",
-    "default_recommendation": "Preload the hero image and ensure it is properly sized and compressed",
-    "lift_min": 0.1,
-    "lift_max": 0.22
+    "lift_max": 0.18,
+    "primary_viewport": "both"
   },
   {
     "id": "image-format",
@@ -699,7 +724,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Images are not served in WebP format, resulting in unnecessarily large file sizes.",
     "default_recommendation": "Convert images to WebP format or use a Shopify app to auto-serve WebP",
     "lift_min": 0.05,
-    "lift_max": 0.12
+    "lift_max": 0.12,
+    "primary_viewport": "both"
   },
   {
     "id": "app-bloat",
@@ -712,7 +738,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Unused apps are still installed, injecting unnecessary scripts and slowing the store.",
     "default_recommendation": "Audit installed apps and uninstall any that are unused or duplicated",
     "lift_min": 0.06,
-    "lift_max": 0.14
+    "lift_max": 0.14,
+    "primary_viewport": "both"
   },
   {
     "id": "third-party-scripts",
@@ -725,46 +752,8 @@ const AUDIT_ITEMS = [
     "default_finding": "Third-party scripts are not deferred, blocking page render and slowing load time.",
     "default_recommendation": "Audit third-party scripts and defer or async-load non-critical ones",
     "lift_min": 0.05,
-    "lift_max": 0.12
-  },
-  {
-    "id": "mobile-navigation",
-    "name": "Mobile Navigation: Does the hamburger menu and any mega-menu collapse cleanly on mobile?",
-    "section": "Mobile/Performance",
-    "impact": "Medium",
-    "estimated_fix_time": "1-2 hrs",
-    "impact_area": "Bounce Rate",
-    "shopify_fix_complexity": "Custom Code",
-    "default_finding": "The mobile menu does not collapse cleanly, making navigation difficult on small screens.",
-    "default_recommendation": "Test all navigation states on mobile and fix any overflow or collapse issues",
-    "lift_min": 0.06,
-    "lift_max": 0.14
-  },
-  {
-    "id": "input-font-size",
-    "name": "Input Font Size: Are search and form inputs at least 16px to prevent iOS auto-zoom?",
-    "section": "Mobile/Performance",
-    "impact": "Medium",
-    "estimated_fix_time": "< 30 min",
-    "impact_area": "Cart Abandonment",
-    "shopify_fix_complexity": "Custom Code",
-    "default_finding": "Input fields are smaller than 16px, triggering iOS auto-zoom and disrupting the mobile experience.",
-    "default_recommendation": "Set all input font sizes to 16px minimum via CSS",
-    "lift_min": 0.05,
-    "lift_max": 0.12
-  },
-  {
-    "id": "thumb-zone",
-    "name": "Thumb-Zone: Are primary CTAs (Add to Cart, Checkout) reachable within the thumb zone?",
-    "section": "Mobile/Performance",
-    "impact": "Medium",
-    "estimated_fix_time": "1-2 hrs",
-    "impact_area": "Conversion Rate",
-    "shopify_fix_complexity": "Custom Code",
-    "default_finding": "Primary CTAs are outside the natural thumb reach zone on mobile, reducing tap rates.",
-    "default_recommendation": "Place primary CTAs in the lower 50% of the screen on mobile within natural thumb reach",
-    "lift_min": 0.07,
-    "lift_max": 0.16
+    "lift_max": 0.12,
+    "primary_viewport": "both"
   },
   {
     "id": "exit-intent",
@@ -777,6 +766,77 @@ const AUDIT_ITEMS = [
     "default_finding": "There is no exit intent mechanism, missing a last opportunity to capture the user before they leave.",
     "default_recommendation": "Install an exit-intent popup app (e.g., Privy, OptiMonk) with a discount or email capture offer",
     "lift_min": 0.1,
-    "lift_max": 0.22
+    "lift_max": 0.22,
+    "primary_viewport": "both"
+  },
+  {
+    "id": "page-speed",
+    "name": "Page Speed: Does the site load in under 3 seconds on mobile?",
+    "section": "Mobile/Performance",
+    "impact": "High",
+    "estimated_fix_time": "1 day",
+    "impact_area": "Bounce Rate",
+    "shopify_fix_complexity": "App Install",
+    "default_finding": "The site takes longer than 3 seconds to load on mobile, significantly increasing bounce rate.",
+    "default_recommendation": "Compress all images, defer non-critical scripts, and uninstall unused apps",
+    "lift_min": 0.2,
+    "lift_max": 0.5,
+    "primary_viewport": "mobile"
+  },
+  {
+    "id": "lcp",
+    "name": "LCP: Does the hero image or main headline load within 2.5 seconds?",
+    "section": "Mobile/Performance",
+    "impact": "High",
+    "estimated_fix_time": "1-2 hrs",
+    "impact_area": "Bounce Rate",
+    "shopify_fix_complexity": "Custom Code",
+    "default_finding": "The Largest Contentful Paint exceeds 2.5 seconds, failing Core Web Vitals.",
+    "default_recommendation": "Preload the hero image and ensure it is properly sized and compressed",
+    "lift_min": 0.1,
+    "lift_max": 0.22,
+    "primary_viewport": "mobile"
+  },
+  {
+    "id": "mobile-navigation",
+    "name": "Mobile Navigation: Does the hamburger menu and any mega-menu collapse cleanly on mobile?",
+    "section": "Mobile/Performance",
+    "impact": "Medium",
+    "estimated_fix_time": "1-2 hrs",
+    "impact_area": "Bounce Rate",
+    "shopify_fix_complexity": "Custom Code",
+    "default_finding": "The mobile menu does not collapse cleanly, making navigation difficult on small screens.",
+    "default_recommendation": "Test all navigation states on mobile and fix any overflow or collapse issues",
+    "lift_min": 0.06,
+    "lift_max": 0.14,
+    "primary_viewport": "mobile"
+  },
+  {
+    "id": "input-font-size",
+    "name": "Input Font Size: Are search and form inputs at least 16px to prevent iOS auto-zoom?",
+    "section": "Mobile/Performance",
+    "impact": "Medium",
+    "estimated_fix_time": "< 30 min",
+    "impact_area": "Cart Abandonment",
+    "shopify_fix_complexity": "Custom Code",
+    "default_finding": "Input fields are smaller than 16px, triggering iOS auto-zoom and disrupting the mobile experience.",
+    "default_recommendation": "Set all input font sizes to 16px minimum via CSS",
+    "lift_min": 0.05,
+    "lift_max": 0.12,
+    "primary_viewport": "mobile"
+  },
+  {
+    "id": "thumb-zone",
+    "name": "Thumb-Zone: Are primary CTAs (Add to Cart, Checkout) reachable within the thumb zone?",
+    "section": "Mobile/Performance",
+    "impact": "Medium",
+    "estimated_fix_time": "1-2 hrs",
+    "impact_area": "Conversion Rate",
+    "shopify_fix_complexity": "Custom Code",
+    "default_finding": "Primary CTAs are outside the natural thumb reach zone on mobile, reducing tap rates.",
+    "default_recommendation": "Place primary CTAs in the lower 50% of the screen on mobile within natural thumb reach",
+    "lift_min": 0.07,
+    "lift_max": 0.16,
+    "primary_viewport": "mobile"
   }
 ];
