@@ -22,22 +22,26 @@ exports.handler = async (event) => {
   }
 
   const payload = JSON.parse(event.body);
-  const eventName = payload.meta?.event_name;
-
-  if (eventName === 'order_created') {
-    return handleOrderCreated(payload);
+  if (payload.meta?.event_name !== 'order_created') {
+    return { statusCode: 200, body: 'Ignored' };
   }
 
-  if (eventName === 'license_key_created') {
-    return handleLicenseKeyCreated(payload);
-  }
-
-  return { statusCode: 200, body: 'Ignored' };
-};
-
-async function handleOrderCreated(payload) {
   const email = payload.data?.attributes?.user_email;
+  const orderId = payload.data?.id;
   if (!email) return { statusCode: 400, body: 'Missing email' };
+
+  // Fetch license key from LS API using the order ID
+  let licenseKey = null;
+  try {
+    const lsRes = await fetch(
+      `https://api.lemonsqueezy.com/v1/license-keys?filter[order_id]=${orderId}`,
+      { headers: { Authorization: `Bearer ${process.env.LS_API_KEY}` } }
+    );
+    const lsData = await lsRes.json();
+    licenseKey = lsData?.data?.[0]?.attributes?.key ?? null;
+  } catch (err) {
+    console.error('license key fetch error:', err);
+  }
 
   const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
     email,
@@ -61,28 +65,10 @@ async function handleOrderCreated(payload) {
       id: userId,
       email,
       audit_limit: 5,
+      license_key: licenseKey,
     });
     if (upsertError) console.error('profiles upsert error:', upsertError);
   }
 
   return { statusCode: 200, body: 'OK' };
-}
-
-async function handleLicenseKeyCreated(payload) {
-  const email = payload.data?.attributes?.user_email;
-  const licenseKey = payload.data?.attributes?.key;
-  if (!email || !licenseKey) return { statusCode: 400, body: 'Missing email or key' };
-
-  const { data: list } = await supabase.auth.admin.listUsers();
-  const userId = list?.users?.find(u => u.email === email)?.id;
-
-  if (userId) {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ license_key: licenseKey })
-      .eq('id', userId);
-    if (error) console.error('license key update error:', error);
-  }
-
-  return { statusCode: 200, body: 'OK' };
-}
+};
