@@ -4,6 +4,16 @@ Architectural facts that are not obvious from reading the code. Read this before
 
 ---
 
+## Babel standalone is pinned — do not un-pin it
+
+`index.html` loads `@babel/standalone@7.23.2` from unpkg (pinned). Do not change this to the un-versioned URL (`babel.min.js` without a version). Newer Babel standalone versions default to the automatic JSX runtime, which emits `import { jsx } from 'react/jsx-runtime'` — that `import` statement crashes in a non-module `<script>` tag. 7.23.2 uses the classic runtime by default and works correctly with this app's inline Babel setup.
+
+## Supabase free tier auto-pauses
+
+The Supabase project pauses after ~1 week of inactivity on the free tier. If the app loads the login screen but auth fails with a database error, go to the Supabase dashboard and click "Resume project". It takes ~60 seconds to come back up.
+
+---
+
 ## audit-items.js is generated — do not edit it directly
 
 `audit-items.js` is written by `scripts/export-checklist.js` at every Netlify deploy. Any manual edits will be overwritten on the next build. The file is committed to the repo only so the dev server works locally without running the export script first.
