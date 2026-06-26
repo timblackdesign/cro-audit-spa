@@ -521,7 +521,7 @@ body {
 }
 /* Viewport icons */
 .vp-icon { display:inline-flex; align-items:center; justify-content:center; border-radius:3px; transition:transform 0.15s, background 0.15s, opacity 0.15s; position:relative; }
-.vp-icon.lit { background:var(--state-fail-bg); transform:scale(1.05); }
+.vp-icon.lit { transform:scale(1.05); }
 .vp-icon.interactive { cursor:pointer; }
 .vp-icon.interactive:hover { filter:brightness(1.15); }
 /* Strikethrough overlay for non-applicable viewport icons */
@@ -939,7 +939,8 @@ const ICON_DESKTOP = (
 );
 
 // Props: viewport ('mobile'|'desktop'|'both'|undefined), status, failsDesktop, failsMobile, onToggle, size
-// Always renders both icons — non-applicable icon gets opacity + strikethrough overlay via .vp-icon-na CSS class.
+// For "both" + fail + card: renders a single 3-state cycle toggle (both → desktop → mobile → both).
+// All other contexts: static display with per-icon opacity.
 // Wrapped in React.memo with flat primitive props so sidebar items don't re-render on unrelated state changes.
 const ViewportIcons = React.memo(function ViewportIcons({ viewport, status, failsDesktop, failsMobile, onToggle, size = 'card' }) {
   const vp = viewport || 'both';
@@ -947,31 +948,67 @@ const ViewportIcons = React.memo(function ViewportIcons({ viewport, status, fail
   const isBoth = vp === 'both';
   const isCard = size === 'card';
 
-  const px  = size === 'card' ? 16 : size === 'sidebar' ? 11 : 12;
-  const pad = size === 'card' ? 3 : 2;
+  const px  = size === 'card' ? 20 : size === 'sidebar' ? 11 : 12;
+  const pad = 2;
 
   const desktopApplies = vp === 'desktop' || vp === 'both';
   const mobileApplies  = vp === 'mobile'  || vp === 'both';
 
+  // For "both" items in card view: always render the same DOM structure to prevent layout shift on status change.
+  // Pass/TBD: wrapper is transparent and non-interactive; "+" stays in DOM at opacity:0.
+  if (isBoth && isCard) {
+    const deskLit = isFail && failsDesktop !== false;
+    const mobLit  = isFail && failsMobile  !== false;
+    const bothLit = deskLit && mobLit;
+    const label   = bothLit ? 'Desktop + Mobile' : deskLit ? 'Desktop only' : 'Mobile only';
+    return (
+      <span
+        role={isFail ? 'button' : undefined}
+        tabIndex={isFail ? 0 : undefined}
+        style={{ display:'inline-flex', gap:0, alignItems:'center', flexShrink:0,
+          cursor: isFail ? 'pointer' : 'default', borderRadius:4, padding:'0 2px',
+          background: isFail ? 'var(--state-fail-bg)' : 'transparent',
+          transition:'background 0.15s' }}
+        title={isFail ? `Fails on: ${label} — click to cycle` : undefined}
+        onClick={isFail && onToggle ? () => onToggle() : undefined}>
+        <span className={'vp-icon' + (deskLit ? ' lit' : '')}
+          style={{ width:px, height:px, padding:pad, flexShrink:0,
+            color: deskLit ? 'var(--state-fail)' : 'var(--ink-5)',
+            opacity: deskLit ? 1 : 0.2 }}>
+          {ICON_DESKTOP}
+        </span>
+        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:12, fontWeight:900, lineHeight:1,
+          color:'var(--state-fail)', opacity: bothLit ? 0.9 : 0,
+          transition:'opacity 0.15s', userSelect:'none', flexShrink:0,
+          transform:'translateX(1px)' }}>+</span>
+        <span className={'vp-icon' + (mobLit ? ' lit' : '')}
+          style={{ width:px, height:px, padding:pad, flexShrink:0,
+            color: mobLit ? 'var(--state-fail)' : 'var(--ink-5)',
+            opacity: mobLit ? 1 : 0.2 }}>
+          {ICON_MOBILE}
+        </span>
+      </span>
+    );
+  }
+
   const desktopLit = isFail && (vp === 'desktop' || (isBoth && failsDesktop !== false));
   const mobileLit  = isFail && (vp === 'mobile'  || (isBoth && failsMobile  !== false));
 
-  const vpIcon = (applies, lit, interactive, icon, vpKey, label) => (
-    <span key={vpKey}
-      className={'vp-icon' + (applies ? '' : ' vp-icon-na') + (lit ? ' lit' : '') + (interactive ? ' interactive' : '')}
+  const vpIcon = (applies, lit, icon, label) => (
+    <span
+      className={'vp-icon' + (applies ? '' : ' vp-icon-na') + (lit ? ' lit' : '')}
       style={{ width:px, height:px, padding:pad, flexShrink:0,
         color: lit ? 'var(--state-fail)' : 'var(--ink-5)',
-        opacity: applies ? (lit ? 1 : 0.4) : 0.18 }}
-      title={label}
-      onClick={interactive && onToggle ? () => onToggle(vpKey) : undefined}>
+        opacity: applies ? (lit ? 1 : 0.2) : 0.12 }}
+      title={label}>
       {icon}
     </span>
   );
 
   return (
     <span style={{ display:'inline-flex', gap:2, alignItems:'center', flexShrink:0 }}>
-      {vpIcon(desktopApplies, desktopLit, isBoth && isFail && isCard, ICON_DESKTOP, 'desktop', 'Desktop')}
-      {vpIcon(mobileApplies,  mobileLit,  isBoth && isFail && isCard, ICON_MOBILE,  'mobile',  'Mobile')}
+      {vpIcon(desktopApplies, desktopLit, ICON_DESKTOP, 'Desktop')}
+      {vpIcon(mobileApplies,  mobileLit,  ICON_MOBILE,  'Mobile')}
     </span>
   );
 });
@@ -1934,36 +1971,23 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
 
   const updateItem = useCallback((field, value) => {
     if (field === 'status' && value === 'fail' && activeItem.primary_viewport === 'both') {
-      const { fails_on_desktop, fails_on_mobile } = itemStateRef.current;
-      const extra = {};
-      if (fails_on_desktop === null) extra.fails_on_desktop = true;
-      if (fails_on_mobile  === null) extra.fails_on_mobile  = true;
-      onUpdateItem(audit.id, activeItemId, { status: 'fail', ...extra });
+      onUpdateItem(audit.id, activeItemId, { status: 'fail', fails_on_desktop: true, fails_on_mobile: true });
     } else {
       onUpdateItem(audit.id, activeItemId, { [field]: value });
     }
   }, [audit.id, activeItemId, activeItem, onUpdateItem]);
 
-  const toggleViewport = useCallback((viewport) => {
+  const toggleViewport = useCallback(() => {
     const { fails_on_desktop, fails_on_mobile } = itemStateRef.current;
     const deskActive = fails_on_desktop !== false;
     const mobActive  = fails_on_mobile  !== false;
-    if (viewport === 'mobile') {
-      const next = !mobActive;
-      if (!next && !deskActive) {
-        onUpdateItem(audit.id, activeItemId, { status: 'tbd', fails_on_mobile: false });
-        setRevertMsg(true);
-      } else {
-        onUpdateItem(audit.id, activeItemId, { fails_on_mobile: next });
-      }
+    // Cycle: both → desktop only → mobile only → both
+    if (deskActive && mobActive) {
+      onUpdateItem(audit.id, activeItemId, { fails_on_desktop: true, fails_on_mobile: false });
+    } else if (deskActive) {
+      onUpdateItem(audit.id, activeItemId, { fails_on_desktop: false, fails_on_mobile: true });
     } else {
-      const next = !deskActive;
-      if (!next && !mobActive) {
-        onUpdateItem(audit.id, activeItemId, { status: 'tbd', fails_on_desktop: false });
-        setRevertMsg(true);
-      } else {
-        onUpdateItem(audit.id, activeItemId, { fails_on_desktop: next });
-      }
+      onUpdateItem(audit.id, activeItemId, { fails_on_desktop: true, fails_on_mobile: true });
     }
   }, [audit.id, activeItemId, onUpdateItem]);
 
