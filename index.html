@@ -750,20 +750,58 @@ function calcROI(audit, checkedIds) {
   const sessions = revenue > 0 ? revenue / (aov * cvr) : 0;
 
   const ids = checkedIds instanceof Set ? Array.from(checkedIds) : (checkedIds || []);
-  let totalMin = 0, totalMax = 0;
-  for (const id of ids) {
-    const item = AUDIT_ITEMS.find(i => i.id === id);
-    if (!item) continue;
-    totalMin += item.lift_min;
-    totalMax += item.lift_max;
-  }
-  const totalMid = (totalMin + totalMax) / 2;
-  const { liftCapMin: CAP_MIN, liftCapMax: CAP_MAX } = THEME.limits;
-  const cappedMin = Math.min(totalMin, CAP_MIN);
-  const cappedMax = Math.min(totalMax, CAP_MAX);
-  const cappedMid = Math.min(totalMid, (CAP_MIN + CAP_MAX) / 2);
 
-  const newCVR          = cvr + cappedMid / 100;
+  // Sort items by lift_max descending — highest-impact findings get full decay credit
+  const items = ids.map(id => AUDIT_ITEMS.find(i => i.id === id)).filter(Boolean);
+  items.sort((a, b) => b.lift_max - a.lift_max);
+
+  // ── Model tuning knobs ──────────────────────────────────────────────────────
+  // DECAY: diminishing-return factor per subsequent finding (0 = no compounding, 1 = full stack).
+  // Raise if projections feel too conservative; lower if they still stack unrealistically.
+  const DECAY = 0.60;
+
+  // CVR_PRACTICAL_MAX: absolute CVR ceiling for e-commerce (industry-agnostic default).
+  // The sliding multiplier below scales down as the baseline approaches this value,
+  // reflecting that high-performing stores have less room to improve.
+  // Future: make this per-industry (apparel ~0.03, consumables ~0.05, etc.).
+  const CVR_PRACTICAL_MAX = 0.05;
+
+  // Sliding cap multiplier: 3.0× near 0% CVR, shrinks to 1.25× at CVR_PRACTICAL_MAX.
+  // Stores with very low CVRs have more low-hanging fruit and can see larger relative gains.
+  const room       = Math.max(0, (CVR_PRACTICAL_MAX - cvr) / CVR_PRACTICAL_MAX);
+  const capMult    = 1.25 + room * 1.75;   // 1.25–3.0×
+  // ────────────────────────────────────────────────────────────────────────────
+
+  // Multiplicative compound model with diminishing-return decay.
+  // Each fix multiplies the current CVR by (1 + adjusted_lift) rather than adding percentage points,
+  // preventing linear stacking while preserving real compounding behaviour.
+  let compMin = cvr, compMax = cvr, compMid = cvr;
+  items.forEach((item, i) => {
+    const d = Math.pow(DECAY, i);
+    compMin *= (1 + item.lift_min * d);
+    compMax *= (1 + item.lift_max * d);
+    compMid *= (1 + ((item.lift_min + item.lift_max) / 2) * d);
+  });
+
+  // Sliding ceiling: projected CVR cannot exceed capMult × baseline (also capped at CVR_PRACTICAL_MAX)
+  const ceiling = Math.min(cvr * capMult, CVR_PRACTICAL_MAX);
+  compMin = Math.min(compMin, ceiling);
+  compMax = Math.min(compMax, ceiling);
+  compMid = Math.min(compMid, ceiling);
+
+  // Relative lift % for display (e.g., 28.5 means +28.5% relative improvement)
+  const cappedMin = items.length ? (compMin / cvr - 1) * 100 : 0;
+  const cappedMax = items.length ? (compMax / cvr - 1) * 100 : 0;
+  const cappedMid = items.length ? (compMid / cvr - 1) * 100 : 0;
+
+  // Absolute pp gains and ceiling flag for display
+  const cappedMinPP = (compMin - cvr) * 100;
+  const cappedMaxPP = (compMax - cvr) * 100;
+  const cappedMidPP = (compMid - cvr) * 100;
+  const atCeiling   = compMid >= ceiling * 0.999;
+
+  const newCVR          = compMid;
+  const projCVRRaw      = compMid * 100;    // percentage form, parallel to cvrRaw
   const newRevenue      = sessions * aov * newCVR;
   const monthlyRecovery = newRevenue - revenue;
   const annualRecovery  = monthlyRecovery * 12;
@@ -792,8 +830,8 @@ function calcROI(audit, checkedIds) {
 
   return {
     revenue, aov, cvrRaw, cvr, sessions,
-    cappedMin, cappedMax, cappedMid,
-    newCVR, newRevenue, monthlyRecovery, annualRecovery,
+    cappedMin, cappedMax, cappedMid, cappedMinPP, cappedMaxPP, cappedMidPP, atCeiling,
+    newCVR, projCVRRaw, newRevenue, monthlyRecovery, annualRecovery,
     auditFee, implFee, hourlyRate, estHours, totalInvestment,
     roiMultiple, paybackMonths,
     highCount, suggestedPct, suggestedFee, sanityCheck,
@@ -2548,7 +2586,7 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
                     textAlign:'right', letterSpacing:'0.04em' }}>
                     <span className="findings-lbl" style={{ fontFamily:"'DM Mono',monospace", fontSize:9,
                       color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Mo. </span>
-                    {revenue > 0 ? `+$${fmt(monthlyImpact)}` : '—'}
+                    {checked && revenue > 0 ? `+$${fmt(monthlyImpact)}` : '—'}
                   </div>
                 </div>
               </div>
@@ -2562,7 +2600,7 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
         <div style={{ marginTop:24, fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-4)',
           letterSpacing:'0.04em' }}>
           {roi.hasData
-            ? `${ids.size} findings · est. +$${fmt(roi.monthlyRecovery)}/mo · capped at ${roi.cappedMax.toFixed(1)}% CVR lift`
+            ? `${ids.size} findings · est. +$${fmt(roi.monthlyRecovery)}/mo · +${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% CVR lift (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp${roi.atCeiling ? ', ceiling' : ''})`
             : `${ids.size} findings selected`}
         </div>
       )}
@@ -2579,6 +2617,7 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
   const roi = calcROI(audit, ids);
   const pr = audit.pricing || {};
   const failCount = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail').length;
+  const completedCount = AUDIT_ITEMS.filter(i => { const s = getItemState(audit, i.id).status; return s === 'pass' || s === 'fail'; }).length;
 
   function setPricing(k, v) { onUpdatePricing(audit.id, { ...pr, [k]: parseFloat(v) || 0 }); }
 
@@ -2625,9 +2664,9 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
         const clientLabel = ci2.client_name || 'Revenue Leak Report';
         const metricRows = [
           { label: 'Current conversion rate', value: roi.hasData ? fmtPct(roi.cvrRaw) : '—', accent: false },
-          { label: 'Friction points identified', value: `${failCount} of 60`, accent: true },
+          { label: 'Selected findings', value: `${ids.size} of ${completedCount}`, accent: true },
           { label: 'Avg. order value', value: roi.hasData ? `$${fmt(roi.aov)}` : '—', accent: false },
-          { label: 'Projected CVR lift', value: roi.hasData ? `+${roi.cappedMid.toFixed(2)}%` : '—', accent: false },
+          { label: 'Projected CVR lift', value: roi.hasData ? `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp${roi.atCeiling ? ', ceiling' : ''})` : '—', accent: false },
         ];
         return (
           <div style={{ border:'1px solid var(--rule)', marginBottom:32, overflow:'hidden', borderRadius:4 }}>
@@ -2642,7 +2681,7 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
                 textTransform:'uppercase', color:'var(--ink)', flexShrink:0,
                 border:'1px solid rgba(99,102,241,0.5)', padding:'3px 10px',
                 background:'rgba(99,102,241,0.08)' }}>
-                {failCount} issues found
+                {ids.size} of {failCount} in ROI
               </span>
             </div>
             {/* Metric rows */}
@@ -2760,11 +2799,11 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
         </div>
         {[
           ['Scope',
-            `60-point CRO audit · ${failCount} finding${failCount !== 1 ? 's' : ''} · ${ids.size} prioritized`,
+            `60-point CRO audit · ${ids.size} of ${failCount} finding${failCount !== 1 ? 's' : ''} in ROI model`,
             null],
           ['Projected CVR Lift',
-            roi.hasData ? `+${roi.cappedMin.toFixed(2)}–${roi.cappedMax.toFixed(2)}%` : '—',
-            roi.hasData ? `mid-point estimate: +${roi.cappedMid.toFixed(2)}%` : 'Add store metrics to calculate'],
+            roi.hasData ? `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp${roi.atCeiling ? ', ceiling' : ''})` : '—',
+            roi.hasData ? `mid: +${Math.round(roi.cappedMid)}% (+${roi.cappedMidPP.toFixed(2)}pp)` : 'Add store metrics to calculate'],
           ['Annual Revenue Impact',
             roi.hasData ? `$${fmt(roi.annualRecovery)}` : '—',
             roi.hasData ? `$${fmt(roi.monthlyRecovery)}/month` : null],
@@ -2803,6 +2842,7 @@ function ReportStage({ audit, checkedIds }) {
   const roi = calcROI(audit, ids);
   const ci = audit.client_info || {};
   const failItems = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail' && ids.has(i.id));
+  const completedCount = AUDIT_ITEMS.filter(i => { const s = getItemState(audit, i.id).status; return s === 'pass' || s === 'fail'; }).length;
 
   // Group fail items by section for report layout
   const failsBySec = SECTION_ORDER
@@ -2903,8 +2943,8 @@ function ReportStage({ audit, checkedIds }) {
               {[
                 ['Monthly Sessions', roi.hasData ? fmt(roi.sessions)         : '—', 'estimated'],
                 ['Current CVR',      roi.hasData ? fmtPct(roi.cvrRaw)        : '—', 'baseline'],
-                ['Projected CVR',    roi.hasData ? fmtPct(roi.cvrRaw + roi.cappedMid) : '—',
-                  roi.hasData ? `+${roi.cappedMin.toFixed(1)}–${roi.cappedMax.toFixed(1)}% lift` : '—'],
+                ['Projected CVR',    roi.hasData ? fmtPct(roi.projCVRRaw) : '—',
+                  roi.hasData ? (roi.atCeiling ? `≤80% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp)` : `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp)`) : '—'],
                 ['Monthly Recovery', roi.hasData ? `$${fmt(roi.monthlyRecovery)}` : '—', 'per month'],
                 ['Annual at Risk',   roi.hasData ? `$${fmt(roi.annualRecovery)}`  : '—', 'if findings persist'],
                 ['Findings',         failItems.length, `across ${sectionCount} section${sectionCount !== 1 ? 's' : ''}`],
@@ -2929,8 +2969,8 @@ function ReportStage({ audit, checkedIds }) {
                   color:r.ink3 }}>Engagement Summary</span>
               </div>
               {[
-                ['Scope',         `60-point audit · ${failItems.length} findings · ${ids.size} prioritized`],
-                ['CVR Lift',      `+${roi.cappedMin.toFixed(2)}–${roi.cappedMax.toFixed(2)}% (${roi.cappedMid.toFixed(2)}% mid)`],
+                ['Scope',         `${ids.size} finding${ids.size !== 1 ? 's' : ''}`],
+                ['CVR Lift',      roi.atCeiling ? `≤80% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp, at ceiling)` : `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp)`],
                 ['Annual Impact', `$${fmt(roi.annualRecovery)}`],
                 ['Investment',    roi.totalInvestment > 0 ? `$${fmt(roi.totalInvestment)}` : 'TBD'],
                 ['Client ROI',    roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}× · payback ${roi.paybackMonths.toFixed(1)} mo` : '—'],
@@ -3031,13 +3071,26 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
   const [clientInfoOpen, setClientInfoOpen] = useState(false);
   const [clientInfoSkipTarget, setClientInfoSkipTarget] = useState(null);
   const [stageIndex, setStageIndex] = useState(0);
-  const [checkedIds, setCheckedIds] = useState(null);
+  const findingsKey = `liftkit-findings-${auditId}`;
+  const [checkedIds, setCheckedIds] = useState(() => {
+    if (demoMode) return null;
+    try {
+      const saved = localStorage.getItem(findingsKey);
+      return saved ? new Set(JSON.parse(saved)) : null;
+    } catch { return null; }
+  });
   const [checklistCtx, setChecklistCtx] = useState({ short: SECTIONS[0].short, idx: 1, len: SECTIONS[0].items.length });
   const [nameEditing, setNameEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [cardGlowTrigger, setCardGlowTrigger] = useState(0);
   const nameInputRef = useRef(null);
   const nameCancelRef = useRef(false);
+
+  useEffect(() => {
+    if (!demoMode && checkedIds !== null) {
+      try { localStorage.setItem(findingsKey, JSON.stringify([...checkedIds])); } catch {}
+    }
+  }, [checkedIds]);
 
   useEffect(() => {
     if (nameEditing && nameInputRef.current) nameInputRef.current.focus();
