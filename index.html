@@ -398,7 +398,140 @@ body {
   .modal-footer .btn { flex: 1; justify-content: center; padding: 14px; font-size: 11px; }
 }
 
-/* ── STAGE NAV BAR (bottom, all breakpoints) ── */
+/* ── STEP STRIP (5-tab nav under audit top bar) ── */
+.step-strip {
+  height: 48px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.step-strip::-webkit-scrollbar { display: none; }
+.step-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mute);
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.12s, border-color 0.12s;
+  flex-shrink: 0;
+}
+.step-tab:hover { color: var(--ink); }
+.step-tab.active {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom-color: var(--btn-bg);
+}
+.step-tab.done .step-check { color: var(--gain); }
+
+/* ── AUDIT TOP BAR ── */
+.audit-topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  z-index: 90;
+}
+.audit-topbar__wordmark {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  color: var(--ink);
+  text-decoration: none;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.audit-topbar__wordmark::after {
+  content: "";
+  display: inline-block;
+  width: .42em;
+  height: .74em;
+  background: var(--accent);
+  margin-left: .06em;
+  transform: translateY(.06em);
+}
+.audit-topbar__sep {
+  color: var(--rule);
+  margin: 0 10px;
+  font-weight: 300;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.audit-topbar__crumb {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--mute);
+  text-decoration: none;
+  flex-shrink: 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: color 0.12s;
+}
+.audit-topbar__crumb:hover { color: var(--ink); }
+.audit-topbar__title {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.audit-topbar__save {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mute);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.audit-topbar__save.saved { color: var(--gain); }
+
+/* ── FOOTER ACTION BAR ── */
+.footer-bar {
+  background: var(--surface);
+  border-top: 1px solid var(--rule);
+  padding: 0 24px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+@media (max-width: 700px) {
+  .footer-bar {
+    height: 80px;
+    padding: 0 16px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* ── STAGE NAV BAR (bottom, all breakpoints) — legacy, kept for transition ── */
 .mobile-bottom-bar {
   background: var(--surface);
   border-top: 1px solid var(--rule);
@@ -1228,23 +1361,21 @@ function HelpModal({ onClose }) {
   );
 }
 
-function SiteHeader({ onBack, auditName, theme, onToggleTheme, onHelp }) {
+function SiteHeader({ theme, onToggleTheme, onHelp, user, onSignOut }) {
   return (
     <header className="site-header">
-      {onBack
-        ? <button className="site-header__back" onClick={onBack}>← Audits</button>
-        : <span className="site-header__name">{THEME.product.name}</span>
-      }
-      {onBack && <span style={{fontFamily:'var(--font-sans)',fontWeight:500,fontSize:14,color:'var(--ink-3)',letterSpacing:'-0.02em'}}>{auditName || 'Audit'}</span>}
-      {!onBack && <span className="site-header__tag desktop-only">{THEME.product.tagline}</span>}
-      <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:8 }}>
-        <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.08em',
-          textTransform:'uppercase', border:'1px solid var(--rule)', padding:'4px 10px', color:'var(--ink-5)' }}
-          className="desktop-only">{THEME.product.version}</span>
+      <span className="site-header__name">{THEME.product.name}</span>
+      <span className="site-header__tag desktop-only">{THEME.product.tagline}</span>
+      <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:10 }}>
+        {user && !demoMode && (
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+            letterSpacing:'0.04em', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+            maxWidth:200 }} className="desktop-only">{user.email}</span>
+        )}
         {onHelp && (
-          <button onClick={onHelp} style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-5)',
-            fontFamily:"var(--font-mono)", fontSize:12, letterSpacing:'0.04em', padding:'4px 10px',
-            cursor:'pointer', lineHeight:1 }}>?</button>
+          <button onClick={onHelp} style={{ background:'none', border:'1px solid var(--rule)', color:'var(--mute)',
+            fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:'0.06em', textTransform:'uppercase',
+            padding:'5px 12px', cursor:'pointer' }}>Help</button>
         )}
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
       </div>
@@ -3476,13 +3607,279 @@ function ScriptsStage({ audit }) {
   );
 }
 
+// ─── SETUP STAGE (stub — full implementation coming) ─────────────────────────
+
+function SetupStage({ audit, lastAuditorName, onSave, onBack }) {
+  const ci = audit.client_info || {};
+  const pr = audit.pricing || {};
+
+  const [form, setForm] = useState({
+    audit_title:      ci.audit_title      || '',
+    client_name:      ci.client_name      || '',
+    auditor_name:     ci.auditor_name     || lastAuditorName || '',
+    store_url:        ci.store_url        || '',
+    shopify_theme:    ci.shopify_theme    || '',
+    audit_date:       ci.audit_date       || new Date().toISOString().slice(0,10),
+    monthly_revenue:  ci.monthly_revenue  || '',
+    aov:              ci.aov              || '',
+    cvr:              ci.cvr              || '',
+  });
+  const [auditFee, setAuditFee] = useState(pr.audit_fee ? String(pr.audit_fee) : '');
+
+  function set(k, v) { setForm(f => ({ ...f, [k]: v })); }
+
+  const sessions = (() => {
+    const rev = parseFloat(form.monthly_revenue);
+    const aov = parseFloat(form.aov);
+    const cvr = parseFloat(form.cvr);
+    if (rev > 0 && aov > 0 && cvr > 0) return Math.round(rev / (aov * (cvr / 100)));
+    return null;
+  })();
+
+  const canSubmit = !!(form.audit_title || form.client_name) && !!form.auditor_name;
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onSave({
+      client_info: { ...ci, ...form },
+      pricing: { ...pr, audit_fee: parseFloat(auditFee) || 0 },
+    });
+  }
+
+  const fieldStyle = {
+    width:'100%', border:'1px solid var(--rule)', background:'var(--bg)',
+    padding:'11px 14px', fontFamily:'var(--font-mono)', fontSize:14,
+    color:'var(--ink)', outline:'none', borderRadius:0,
+  };
+  const labelStyle = {
+    display:'block', fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
+    letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--mute)', marginBottom:6,
+  };
+  const cardStyle = {
+    border:'1px solid var(--rule)', background:'var(--surface)', marginBottom:20,
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ maxWidth:880, margin:'0 auto', padding:'48px 24px 80px' }}>
+      <h1 style={{ fontFamily:'var(--font-sans)', fontSize:32, fontWeight:600, letterSpacing:'-0.04em',
+        color:'var(--ink)', marginBottom:8, lineHeight:1.05 }}>New audit</h1>
+      <p style={{ fontFamily:'var(--font-sans)', fontSize:15, color:'var(--mute)', marginBottom:40, lineHeight:1.55 }}>
+        Store metrics drive every dollar figure in the revenue step. Use the client's last 30 days.
+      </p>
+
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 340px', gap:24, alignItems:'start' }}>
+        <div>
+          {/* Card: Client */}
+          <div style={cardStyle}>
+            <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--rule)', padding:'10px 20px',
+              display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontFamily:'var(--font-sans)', fontSize:14, fontWeight:600, color:'var(--ink)' }}>Client</span>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.08em',
+                border:'1px solid var(--rule)', padding:'2px 8px', color:'var(--mute)' }}>IN REPORT</span>
+            </div>
+            <div style={{ padding:'20px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
+                <div>
+                  <label style={labelStyle}>Client name</label>
+                  <input style={fieldStyle} value={form.client_name} onChange={e => set('client_name', e.target.value)}
+                    onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'}
+                    placeholder="Better Brewer" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Audit title <span style={{ fontWeight:400, textTransform:'none' }}>(optional)</span></label>
+                  <input style={fieldStyle} value={form.audit_title} onChange={e => set('audit_title', e.target.value)}
+                    onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'}
+                    placeholder="Better Brewer Q4 2026" />
+                </div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'auto 1fr', gap:0, marginBottom:16 }}>
+                <div>
+                  <label style={labelStyle}>Store URL</label>
+                  <div style={{ display:'flex' }}>
+                    <span style={{ ...fieldStyle, width:'auto', color:'var(--mute)', borderRight:'none',
+                      flexShrink:0, cursor:'default', userSelect:'none' }}>https://</span>
+                    <input style={{ ...fieldStyle, borderLeft:'none' }} value={form.store_url.replace(/^https?:\/\//,'')}
+                      onChange={e => set('store_url', e.target.value)}
+                      onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'}
+                      placeholder="betterbrewer.com.au" />
+                  </div>
+                </div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16 }}>
+                <div>
+                  <label style={labelStyle}>Shopify theme</label>
+                  <input style={fieldStyle} value={form.shopify_theme} onChange={e => set('shopify_theme', e.target.value)}
+                    onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'}
+                    placeholder="Cello" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Audit date</label>
+                  <input type="date" style={fieldStyle} value={form.audit_date} onChange={e => set('audit_date', e.target.value)}
+                    onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Auditor</label>
+                  <input style={fieldStyle} value={form.auditor_name} onChange={e => set('auditor_name', e.target.value)}
+                    onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'}
+                    placeholder="Tim Black" />
+                  {lastAuditorName && !ci.auditor_name && (
+                    <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)', marginTop:4 }}>
+                      Pre-filled from your last audit
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card: Store metrics */}
+          <div style={cardStyle}>
+            <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--rule)', padding:'10px 20px',
+              display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <span style={{ fontFamily:'var(--font-sans)', fontSize:14, fontWeight:600, color:'var(--ink)' }}>Store metrics</span>
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)' }}>Last 30 days</span>
+              </div>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.08em',
+                border:'1px solid var(--rule)', padding:'2px 8px', color:'var(--mute)' }}>IN REPORT</span>
+            </div>
+            <div style={{ padding:'20px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16, marginBottom:16 }}>
+                <div>
+                  <label style={labelStyle}>Monthly revenue</label>
+                  <div style={{ display:'flex' }}>
+                    <span style={{ ...fieldStyle, width:'auto', color:'var(--mute)', borderRight:'none',
+                      flexShrink:0, cursor:'default' }}>$</span>
+                    <input type="number" style={{ ...fieldStyle, ...{fontSize:18}, borderLeft:'none' }}
+                      value={form.monthly_revenue} onChange={e => set('monthly_revenue', e.target.value)}
+                      onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'}
+                      placeholder="48,000" />
+                  </div>
+                </div>
+                <div>
+                  <label style={labelStyle}>Avg. order value</label>
+                  <div style={{ display:'flex' }}>
+                    <span style={{ ...fieldStyle, width:'auto', color:'var(--mute)', borderRight:'none',
+                      flexShrink:0, cursor:'default' }}>$</span>
+                    <input type="number" style={{ ...fieldStyle, ...{fontSize:18}, borderLeft:'none' }}
+                      value={form.aov} onChange={e => set('aov', e.target.value)}
+                      onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'}
+                      placeholder="94" />
+                  </div>
+                </div>
+                <div>
+                  <label style={labelStyle}>Conversion rate</label>
+                  <div style={{ display:'flex' }}>
+                    <input type="number" step="0.01" style={{ ...fieldStyle, ...{fontSize:18}, borderRight:'none' }}
+                      value={form.cvr} onChange={e => set('cvr', e.target.value)}
+                      onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'}
+                      placeholder="0.93" />
+                    <span style={{ ...fieldStyle, width:'auto', color:'var(--mute)', borderLeft:'none',
+                      flexShrink:0, cursor:'default' }}>%</span>
+                  </div>
+                </div>
+              </div>
+              {sessions !== null && (
+                <div style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--mute)',
+                  letterSpacing:'0.04em', borderTop:'1px solid var(--rule)', paddingTop:12 }}>
+                  ≈ sessions/mo{' '}
+                  <strong style={{ color:'var(--ink)' }}>{sessions.toLocaleString()}</strong>
+                  {form.aov && form.cvr && (
+                    <>
+                      {' · '}≈ orders/mo{' '}
+                      <strong style={{ color:'var(--ink)' }}>
+                        {Math.round(sessions * (parseFloat(form.cvr)/100)).toLocaleString()}
+                      </strong>
+                      {' · '}rev/session{' '}
+                      <strong style={{ color:'var(--ink)' }}>
+                        ${(parseFloat(form.monthly_revenue)/sessions).toFixed(2)}
+                      </strong>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card: Private */}
+          <div style={{ border:'1px solid var(--ink)' }}>
+            <div style={{ background:'var(--ink)', padding:'10px 20px', display:'flex', alignItems:'center', gap:10 }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600, letterSpacing:'0.1em',
+                color:'var(--accent)', textTransform:'uppercase' }}>Private</span>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--bg)', letterSpacing:'0.04em' }}>
+                Only you see this. Never printed.
+              </span>
+            </div>
+            <div style={{ padding:'20px', background:'var(--bg)' }}>
+              <label style={labelStyle}>Audit fee</label>
+              <div style={{ display:'flex', maxWidth:200 }}>
+                <span style={{ ...fieldStyle, width:'auto', color:'var(--mute)', borderRight:'none',
+                  flexShrink:0, cursor:'default' }}>$</span>
+                <input type="number" style={{ ...fieldStyle, ...{fontSize:18}, borderLeft:'none' }}
+                  value={auditFee} onChange={e => setAuditFee(e.target.value)}
+                  onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'}
+                  placeholder="750" />
+              </div>
+              <div style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--mute)', marginTop:8, lineHeight:1.5 }}>
+                Feeds the client ROI multiple. Set the implementation fee later, in Revenue.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: report cover preview */}
+        <div style={{ position:'sticky', top:20 }}>
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.1em',
+            textTransform:'uppercase', color:'var(--mute)', marginBottom:12 }}>Report cover</div>
+          <div style={{ border:'1px solid var(--rule)', background:'var(--bg)', padding:'24px' }}>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.12em',
+              textTransform:'uppercase', color:'var(--mute)', marginBottom:14 }}>Shopify CRO audit</div>
+            <div style={{ fontFamily:'var(--font-sans)', fontSize:24, fontWeight:600, letterSpacing:'-0.04em',
+              color:'var(--ink)', lineHeight:1.1, marginBottom:16 }}>
+              {form.audit_title || form.client_name || <span style={{ color:'var(--mute)' }}>Client name</span>}
+            </div>
+            {[
+              ['Auditor',  form.auditor_name],
+              ['Date',     form.audit_date],
+              ['Theme',    form.shopify_theme],
+            ].map(([l, v]) => v ? (
+              <div key={l} style={{ display:'flex', gap:12, marginBottom:6 }}>
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--mute)', width:60, flexShrink:0 }}>{l}</span>
+                <span style={{ fontFamily:'var(--font-sans)', fontSize:13, color:'var(--ink)' }}>{v}</span>
+              </div>
+            ) : null)}
+          </div>
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--mute)', marginTop:12, lineHeight:1.5 }}>
+            Edit any of this later from the audit header.
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: submit button */}
+      <div className="mobile-only" style={{ marginTop:32 }}>
+        <button type="submit" disabled={!canSubmit} className="btn btn-primary btn-full btn-lg">
+          Start checklist →
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // ─── COMPONENTS C: AuditWorkspace, App ───────────────────────────────────────
 
-function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveClientInfo, onBack, theme, onToggleTheme }) {
+function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveClientInfo, onBack, theme, onToggleTheme, saveStatus }) {
   const audit = store.audits[auditId];
   const [clientInfoOpen, setClientInfoOpen] = useState(false);
   const [clientInfoSkipTarget, setClientInfoSkipTarget] = useState(null);
-  const [stageIndex, setStageIndex] = useState(0);
+
+  // Stage layout:
+  // 0=Setup  1=Checklist  2=Findings(Revenue)  3=Calculator(Revenue)  4=Report  5=Scripts
+  const isNewAudit = (() => {
+    const ci2 = audit?.client_info || {};
+    return !ci2.audit_title && !ci2.client_name && !ci2.monthly_revenue;
+  })();
+  const [stageIndex, setStageIndex] = useState(isNewAudit ? 0 : 1);
+
   const findingsKey = `liftkit-findings-${auditId}`;
   const [checkedIds, setCheckedIds] = useState(() => {
     if (demoMode) return null;
@@ -3492,11 +3889,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
     } catch { return null; }
   });
   const [checklistCtx, setChecklistCtx] = useState({ short: SECTIONS[0].short, idx: 1, len: SECTIONS[0].items.length });
-  const [nameEditing, setNameEditing] = useState(false);
-  const [nameDraft, setNameDraft] = useState('');
   const [cardGlowTrigger, setCardGlowTrigger] = useState(0);
-  const nameInputRef = useRef(null);
-  const nameCancelRef = useRef(false);
 
   useEffect(() => {
     if (!demoMode && checkedIds !== null) {
@@ -3504,42 +3897,65 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
     }
   }, [checkedIds]);
 
-  useEffect(() => {
-    if (nameEditing && nameInputRef.current) nameInputRef.current.focus();
-  }, [nameEditing]);
-
   if (!audit) return null;
 
   const ci = audit.client_info || {};
   const auditDisplayTitle = ci.audit_title || ci.client_name || 'New Audit';
-  const isSetupIncomplete = (!ci.audit_title && !ci.client_name) || !ci.monthly_revenue || !ci.aov || !ci.cvr;
+  const metricsIncomplete = !ci.monthly_revenue || !ci.aov || !ci.cvr;
+  const setupDone = !!(ci.audit_title || ci.client_name) && !!ci.auditor_name;
 
-  function commitName() {
-    const trimmed = nameDraft.trim();
-    if (trimmed) {
-      onSaveClientInfo(audit.id, {
-        client_info: { ...ci, audit_title: trimmed },
-        pricing: audit.pricing,
-      });
-      setCardGlowTrigger(n => n + 1);
+  // Step strip config: each tab maps to a stage index (Revenue covers stages 2–3)
+  const STEPS = [
+    { label: '01 Setup',     stage: 0,  activeOn: [0] },
+    { label: '02 Checklist', stage: 1,  activeOn: [1] },
+    { label: '03 Revenue',   stage: 2,  activeOn: [2, 3] },
+    { label: '04 Report',    stage: 4,  activeOn: [4] },
+    { label: '05 Scripts',   stage: 5,  activeOn: [5] },
+  ];
+
+  // Next-step config per stage
+  const NEXT_CONFIG = {
+    0: { label: 'Start checklist →', nextStage: 1 },
+    1: { label: 'Size the revenue →', nextStage: 2, guard: () => metricsIncomplete },
+    2: { label: 'See the numbers →', nextStage: 3 },
+    3: { label: 'View report →', nextStage: 4 },
+    4: { label: 'See scripts →', nextStage: 5 },
+    5: null,
+  };
+
+  function goNext() {
+    const cfg = NEXT_CONFIG[stageIndex];
+    if (!cfg) return;
+    if (cfg.guard && cfg.guard()) {
+      setClientInfoSkipTarget(cfg.nextStage);
+      setClientInfoOpen(true);
+    } else {
+      setStageIndex(cfg.nextStage);
     }
-    setNameEditing(false);
   }
 
-  const STAGE_LABELS = ['01 — Checklist', '02 — Revenue', '02 — Revenue', '03 — Report', '04 — Scripts'];
-  const NEXT_LABELS  = ['Size the Revenue', 'See the numbers', 'View Report', 'See Scripts', null];
+  function goPrev() {
+    if (stageIndex === 0) { onBack(); return; }
+    // Revenue Calculator (3) goes back to Revenue Findings (2)
+    setStageIndex(stageIndex - 1);
+  }
 
-  const SLIDE = 'transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94)';
-  const stageStyle = (n) => ({
+  const stageVisible = (n) => ({
     position:'absolute', inset:0,
-    transition: SLIDE,
-    transform: `translateY(calc((${n} - ${stageIndex}) * 100%))`,
-    willChange: 'transform',
+    opacity: n === stageIndex ? 1 : 0,
+    pointerEvents: n === stageIndex ? 'auto' : 'none',
+    transition: 'opacity 0.12s ease',
   });
 
+  const saveLabel = saveStatus === 'saved' ? '✓ Saved · just now'
+    : saveStatus === 'saving' ? 'Saving…'
+    : 'Draft · saved locally';
+  const saveDone = saveStatus === 'saved';
+
   return (
-    <div style={{ position:'fixed', inset:0, display:'flex', flexDirection:'column', background:'var(--paper)' }}>
-      {/* Demo banner (inside fixed layout so it isn't obscured) */}
+    <div style={{ position:'fixed', inset:0, display:'flex', flexDirection:'column', background:'var(--bg)' }}>
+
+      {/* Demo banner */}
       {demoMode && (
         <div className="demo-banner no-print">
           <span className="demo-banner__chip">DEMO</span>
@@ -3548,148 +3964,115 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
         </div>
       )}
 
-      {/* Audit header */}
-      <div className="no-print" style={{ background:'var(--paper-2)', borderBottom:'1px solid var(--rule)', padding:'0 32px',
-        height:52, display:'flex', alignItems:'center', justifyContent:'space-between', gap:16,
-        flexShrink:0, zIndex:90 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:16, minWidth:0 }}>
-          <button onClick={onBack} className="site-header__back" title="Back to audits">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
-          </button>
-          <div style={{ display:'flex', alignItems:'center', gap:8, minWidth:0 }}>
-            {nameEditing ? (
-              <React.Fragment>
-                <input
-                  ref={nameInputRef}
-                  value={nameDraft}
-                  onChange={e => setNameDraft(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') { commitName(); } if (e.key === 'Escape') { nameCancelRef.current = true; setNameEditing(false); } }}
-                  onBlur={() => { if (!nameCancelRef.current) commitName(); nameCancelRef.current = false; }}
-                  placeholder="Audit title..."
-                  style={{ fontFamily:"var(--font-sans)", fontSize:16, color:'var(--ink)',
-                    letterSpacing:'-0.2px', background:'transparent', border:'none',
-                    borderBottom:'1px solid var(--accent)', outline:'none', minWidth:80, width:180 }}
-                />
-                <button
-                  onMouseDown={e => e.preventDefault()}
-                  onClick={commitName}
-                  style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.06em',
-                    background:'var(--btn-bg)', border:'none', color:'var(--btn-ink)', padding:'3px 8px',
-                    cursor:'pointer', flexShrink:0 }}>
-                  GO →
-                </button>
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                <span
-                  onClick={() => { setNameDraft(ci.audit_title || ''); setNameEditing(true); }}
-                  style={{ fontFamily:"var(--font-sans)", fontSize:16, color:'var(--ink)',
-                    letterSpacing:'-0.2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
-                    cursor:'text' }}>
-                  {auditDisplayTitle}
-                </span>
-                {isSetupIncomplete && (
-                  <button
-                    onClick={() => setClientInfoOpen(true)}
-                    style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
-                      textTransform:'uppercase', color:'var(--amber)', background:'rgba(200,131,74,0.1)',
-                      border:'1px solid rgba(200,131,74,0.25)', padding:'2px 7px', whiteSpace:'nowrap',
-                      flexShrink:0, cursor:'pointer' }}
-                    className="desktop-only">
-                    Setup incomplete
-                  </button>
-                )}
-              </React.Fragment>
-            )}
-          </div>
-        </div>
-        <div style={{ display:'flex', gap:8, flexShrink:0 }}>
-          <button onClick={() => setClientInfoOpen(true)}
-            style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
-              fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
-              cursor:'pointer' }}>
-            {isSetupIncomplete ? '+ Audit Info' : 'Edit Info'}
+      {/* ── Audit top bar ── */}
+      <div className="audit-topbar no-print">
+        <button className="audit-topbar__wordmark" onClick={onBack} title="Back to audits"
+          style={{ cursor:'pointer', background:'none', border:'none', padding:0 }}>
+          {THEME.product.name}
+        </button>
+        <span className="audit-topbar__sep">/</span>
+        <button className="audit-topbar__crumb" onClick={onBack}>Audits</button>
+        <span className="audit-topbar__sep">/</span>
+        <span className="audit-topbar__title">{auditDisplayTitle}</span>
+        <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:10 }}>
+          <span className={`audit-topbar__save desktop-only${saveDone ? ' saved' : ''}`}>{saveLabel}</span>
+          <button onClick={() => setClientInfoOpen(true)} className="btn btn-secondary btn-sm">
+            Edit info
           </button>
           {!demoMode && (
             <button onClick={() => {
               const name = (ci.audit_title || ci.client_name || 'audit').toLowerCase().replace(/\s+/g,'-');
-              downloadJSON(audit, `cro-audit-${name}-${audit.id}.json`);
-            }} style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
-              fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
-              cursor:'pointer' }} className="desktop-only">
-              Export Audit
+              downloadJSON(audit, `triage-audit-${name}-${audit.id}.json`);
+            }} className="btn btn-secondary btn-sm desktop-only">
+              Export .json
             </button>
           )}
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         </div>
       </div>
 
-      {/* Stage container — overflow hidden blocks manual scrolling; navigation is CTA-only */}
+      {/* ── Step strip ── */}
+      <div className="step-strip no-print">
+        {STEPS.map(step => {
+          const isActive = step.activeOn.includes(stageIndex);
+          const isDone   = step.activeOn.every(s => s < stageIndex) && !isActive;
+          return (
+            <button
+              key={step.label}
+              className={`step-tab${isActive ? ' active' : ''}${isDone ? ' done' : ''}`}
+              onClick={() => setStageIndex(step.stage)}>
+              {isDone && <span className="step-check">✓ </span>}
+              {step.label}
+            </button>
+          );
+        })}
+        {/* Right-side summary in strip */}
+        <div className="desktop-only" style={{ marginLeft:'auto', display:'flex', alignItems:'center',
+          paddingRight:20, fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+          letterSpacing:'0.06em', gap:14, flexShrink:0 }}>
+          {stageIndex >= 1 && (
+            <span>{AUDIT_ITEMS.filter(i => getItemState(audit,i.id).status !== 'tbd').length}/60 reviewed</span>
+          )}
+          {stageIndex >= 2 && (
+            <span style={{ color:'var(--loss)' }}>
+              {AUDIT_ITEMS.filter(i => getItemState(audit,i.id).status === 'fail').length} fails
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* ── Stage container ── */}
       <div style={{ flex:1, overflow:'hidden', position:'relative' }}>
 
-        {/* Checklist — flex column so sidebar/card scroll independently */}
-        <div data-stage="checklist" style={{ ...stageStyle(0), display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        {/* Setup */}
+        <div data-stage="setup" style={{ ...stageVisible(0), overflowY:'auto' }}>
+          <SetupStage audit={audit} lastAuditorName={store.last_auditor_name}
+            onSave={(data) => { onSaveClientInfo(audit.id, data); setStageIndex(1); setCardGlowTrigger(n => n+1); }}
+            onBack={onBack} />
+        </div>
+
+        {/* Checklist */}
+        <div data-stage="checklist" style={{ ...stageVisible(1), display:'flex', flexDirection:'column', overflow:'hidden' }}>
           <ChecklistStage audit={audit} onUpdateItem={onUpdateItem}
-            onScrollToFindings={() => setStageIndex(1)}
+            onScrollToFindings={() => setStageIndex(2)}
             onContextChange={setChecklistCtx}
             cardGlowTrigger={cardGlowTrigger} />
         </div>
 
-        {/* Findings */}
-        <div data-stage="findings" style={{ ...stageStyle(1), overflowY:'auto' }}>
-          <FindingsStage audit={audit} checkedIds={checkedIds} setCheckedIds={setCheckedIds} onUpdateItem={(itemId, updates) => onUpdateItem(audit.id, itemId, updates)} />
+        {/* Revenue — Findings */}
+        <div data-stage="findings" style={{ ...stageVisible(2), overflowY:'auto' }}>
+          <FindingsStage audit={audit} checkedIds={checkedIds} setCheckedIds={setCheckedIds}
+            onUpdateItem={(itemId, updates) => onUpdateItem(audit.id, itemId, updates)} />
         </div>
 
-        {/* Calculator */}
-        <div data-stage="calculator" style={{ ...stageStyle(2), overflowY:'auto' }}>
+        {/* Revenue — Calculator */}
+        <div data-stage="calculator" style={{ ...stageVisible(3), overflowY:'auto' }}>
           <CalculatorStage audit={audit} checkedIds={checkedIds} onUpdatePricing={onUpdatePricing} />
         </div>
 
         {/* Report */}
-        <div data-stage="report" style={{ ...stageStyle(3), overflowY:'auto' }}>
-          <ReportStage audit={audit} checkedIds={checkedIds} onGoToScripts={() => setStageIndex(4)} />
+        <div data-stage="report" style={{ ...stageVisible(4), overflowY:'auto' }}>
+          <ReportStage audit={audit} checkedIds={checkedIds} onGoToScripts={() => setStageIndex(5)} />
         </div>
 
         {/* Scripts */}
-        <div data-stage="scripts" style={{ ...stageStyle(4), overflowY:'auto' }}>
+        <div data-stage="scripts" style={{ ...stageVisible(5), overflowY:'auto' }}>
           <ScriptsStage audit={audit} />
         </div>
 
       </div>
 
-      {/* Stage nav bar — visible on all breakpoints */}
-      <div className="mobile-bottom-bar no-print">
-        <button onClick={stageIndex > 0 ? () => setStageIndex(stageIndex - 1) : onBack}
-          style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-3)', padding:'10px 18px',
-            fontFamily:"var(--font-sans)", fontSize:12, fontWeight:600, letterSpacing:'0.06em',
-            textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
-          ← Back
+      {/* ── Footer action bar ── */}
+      <div className="footer-bar no-print">
+        <button onClick={goPrev} className="btn btn-secondary">
+          ← {stageIndex === 0 ? 'Audits' : 'Previous step'}
         </button>
-        <div style={{ flex:1, display:'flex', justifyContent:'flex-start' }}>
-          <span className="desktop-only" style={{ fontFamily:"var(--font-mono)", fontSize:10,
-            color:'var(--ink-5)', letterSpacing:'0.04em' }}>
-            {STAGE_LABELS[stageIndex]}
-          </span>
-        </div>
-        {NEXT_LABELS[stageIndex] ? (
-          <button onClick={() => {
-            const nextIdx = stageIndex + 1;
-            const metricsIncomplete = !ci.monthly_revenue || !ci.aov || !ci.cvr;
-            if (stageIndex === 1 && metricsIncomplete) {
-              setClientInfoSkipTarget(nextIdx);
-              setClientInfoOpen(true);
-            } else {
-              setStageIndex(nextIdx);
-            }
-          }}
-            style={{ background:'var(--btn-bg)', border:'none', color:'var(--btn-ink)', padding:'10px 22px',
-              fontFamily:"var(--font-mono)", fontSize:12, fontWeight:600, letterSpacing:'0.08em',
-              textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
-            {NEXT_LABELS[stageIndex]} →
+        <div />
+        {NEXT_CONFIG[stageIndex] && (
+          <button onClick={goNext} className="btn btn-primary btn-lg">
+            {NEXT_CONFIG[stageIndex].label}
           </button>
-        ) : <div />}
+        )}
       </div>
 
       {/* Client info overlay */}
@@ -3987,6 +4370,11 @@ function App() {
           onBack={() => setAppScreen('list')}
           theme={theme}
           onToggleTheme={toggleTheme}
+          saveStatus={demoMode ? 'local' : (
+            store.audits[activeAuditId] &&
+            savedAt.current[activeAuditId] === store.audits[activeAuditId]?.updated_at
+              ? 'saved' : 'saving'
+          )}
         />
         <ConfirmDialog dialog={confirmDialog} onClose={() => setConfirmDialog(null)} />
       </>
@@ -4002,7 +4390,7 @@ function App() {
           <a href="https://croauditsystem.lemonsqueezy.com/checkout/buy/9da78faa-4513-40c6-9469-621292edd053" className="demo-banner__cta">Get the full kit →</a>
         </div>
       )}
-      <SiteHeader theme={theme} onToggleTheme={toggleTheme} onHelp={() => setShowHelpModal(true)} />
+      <SiteHeader theme={theme} onToggleTheme={toggleTheme} onHelp={() => setShowHelpModal(true)} user={user} onSignOut={handleSignOut} />
       <AuditList
         store={store}
         onNew={handleNew}
