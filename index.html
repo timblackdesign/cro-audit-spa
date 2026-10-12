@@ -3,78 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRO Audit System</title>
-<link rel="icon" href="/favicon.png" type="image/png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+<title>triage</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A0B09'/%3E%3Crect x='10' y='5' width='12' height='22' fill='%23C6F432'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink:   #e2e8f0;
-  --ink-2: #c8d0e0;
-  --ink-3: #94a3b8;
-  --ink-4: #8496af;
-  --ink-5: #64748b;
-  --paper:   #0e1018;
-  --paper-2: #161925;
-  --paper-3: #1e2235;
-  --rule:   #252840;
-  --rule-2: #363a55;
-  --accent:    #6366f1;
-  --accent-dk: #4338ca;
-  --accent-positive:    #818cf8;
-  --accent-positive-bg: rgba(129,140,248,0.12);
-  --impact-high:        #f87171;
-  --impact-high-bg:     rgba(248,113,113,0.12);
-  --impact-medium:      #a78bfa;
-  --impact-medium-bg:   rgba(167,139,250,0.12);
-  --state-pass:    #86efac;
-  --state-pass-bg: rgba(34,197,94,0.08);
-  --state-fail:    #fca5a5;
-  --state-fail-bg: rgba(248,113,113,0.08);
-  --amber: #c8834a;
-  --row-checked-bg: rgba(99,102,241,0.10);
+  /* triage light theme (default) */
+  --ink:   #0B0C0A;
+  --ink-2: #2A2C28;
+  --ink-3: #5A5D56;
+  --ink-4: #7A7D74;
+  --ink-5: #9A9D94;
+  --paper:   #EEEFEA;
+  --paper-2: #E3E5DD;
+  --paper-3: #D6D8D0;
+  --rule:   #CBCEC4;
+  --rule-2: #B8BBB0;
+  --accent:    #C6F432;
+  --accent-dk: #4A6400;
+  --accent-positive:    #3E7A00;
+  --accent-positive-bg: rgba(62,122,0,0.10);
+  --impact-high:        #C2381C;
+  --impact-high-bg:     rgba(194,56,28,0.10);
+  --impact-medium:      #B85C00;
+  --impact-medium-bg:   rgba(184,92,0,0.10);
+  --state-pass:    #3E7A00;
+  --state-pass-bg: rgba(62,122,0,0.09);
+  --state-fail:    #C2381C;
+  --state-fail-bg: rgba(194,56,28,0.09);
+  --amber: #B85C00;
+  --btn-bg: #0B0C0A;
+  --btn-ink: #C6F432;
+  --row-checked-bg: rgba(198,244,50,0.12);
+  --shadow:    0 0 0 1px rgba(0,0,0,0.06);
+  --shadow-lg: 0 0 0 1px rgba(0,0,0,0.06), 0 4px 14px rgba(0,0,0,0.05);
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+[data-theme="dark"] {
+  --ink:   #E8EBE2;
+  --ink-2: #C4C8BC;
+  --ink-3: #8A8E84;
+  --ink-4: #6A6E64;
+  --ink-5: #4A4E44;
+  --paper:   #0A0B09;
+  --paper-2: #13150F;
+  --paper-3: #1C1E18;
+  --rule:   #272A21;
+  --rule-2: #363930;
+  --accent:    #C6F432;
+  --accent-dk: #C6F432;
+  --accent-positive:    #C6F432;
+  --accent-positive-bg: rgba(198,244,50,0.12);
+  --impact-high:        #FF6A4D;
+  --impact-high-bg:     rgba(255,106,77,0.12);
+  --impact-medium:      #F0A050;
+  --impact-medium-bg:   rgba(240,160,80,0.12);
+  --state-pass:    #C6F432;
+  --state-pass-bg: rgba(198,244,50,0.08);
+  --state-fail:    #FF6A4D;
+  --state-fail-bg: rgba(255,106,77,0.08);
+  --amber: #F0A050;
+  --btn-bg: #C6F432;
+  --btn-ink: #0A0B09;
+  --row-checked-bg: rgba(198,244,50,0.10);
   --shadow:    0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
 }
 
-[data-theme="light"] {
-  --paper:   #ffffff;
-  --paper-2: #ffffff;
-  --paper-3: #f4f4f6;
-  --row-checked-bg: rgba(99,102,241,0.05);
-  --ink:   #0f0c2e;
-  --ink-2: #1e1b4b;
-  --ink-3: #312e81;
-  --ink-4: #4c4a8e;
-  --ink-5: #706ea0;
-  --rule:   #e0e0e8;
-  --rule-2: #c8c8d4;
-  --accent-positive:    #4f46e5;
-  --accent-positive-bg: rgba(99,102,241,0.10);
-  --impact-high:        #dc2626;
-  --impact-high-bg:     rgba(220,38,38,0.09);
-  --impact-medium:      #6d28d9;
-  --impact-medium-bg:   rgba(109,40,217,0.09);
-  --state-pass:    #16a34a;
-  --state-pass-bg: rgba(22,163,74,0.09);
-  --state-fail:    #dc2626;
-  --state-fail-bg: rgba(220,38,38,0.09);
-  --shadow:    0 0 0 1px rgba(0,0,0,0.08);
-  --shadow-lg: 0 0 0 1px rgba(0,0,0,0.08), 0 4px 14px rgba(0,0,0,0.07);
-}
-
-[data-theme="light"] body {
-  font-weight: 500;
-}
-[data-theme="light"] .site-header__name,
-[data-theme="light"] body *[style*="DM Serif"] {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
-  font-weight: 800 !important;
-}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   background: var(--paper);
   color: var(--ink);
   min-height: 100vh;
@@ -97,13 +99,22 @@ body {
   z-index: 100;
 }
 .site-header__name {
-  font-family: 'DM Serif Display', serif;
-  font-size: 18px;
-  font-weight: 400;
-  letter-spacing: -0.2px;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+}
+.site-header__name::after {
+  content: "";
+  display: inline-block;
+  width: .42em;
+  height: .74em;
+  background: var(--accent);
+  margin-left: .06em;
+  transform: translateY(.06em);
 }
 .site-header__tag {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   color: var(--ink-4);
   letter-spacing: 0.08em;
@@ -112,7 +123,7 @@ body {
 .site-header__back {
   background: none;
   border: none;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -143,7 +154,7 @@ body {
   background: rgba(200,131,74,0.1);
   border-bottom: 1px solid rgba(200,131,74,0.3);
   padding: 8px 32px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--amber);
   letter-spacing: 0.04em;
@@ -155,10 +166,10 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   padding: 9px 18px;
   border: none;
@@ -168,10 +179,14 @@ body {
 }
 .btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .btn:not(:disabled):hover { opacity: 0.82; }
-.btn-primary   { background: var(--accent); color: #fff; }
+.btn-primary   { background: var(--btn-bg); color: var(--btn-ink); }
 .btn-secondary { background: var(--paper-3); color: var(--ink-2); border: 1px solid var(--rule); }
 .btn-ghost     { background: none; color: var(--ink-3); border: 1px solid var(--rule); }
-.btn-danger    { background: var(--state-fail-bg); color: var(--state-fail); border: 1px solid rgba(252,165,165,0.2); }
+.btn-danger    { background: var(--state-fail-bg); color: var(--state-fail); border: 1px solid var(--state-fail); }
+/* utility type classes */
+.label { font-family:var(--font-mono); font-weight:500; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+.display { font-family:var(--font-sans); font-weight:600; line-height:1.12; letter-spacing:-0.045em; margin:0; text-wrap:balance; }
+.hl { font-style:normal; background:var(--accent); color:var(--on-accent,#0B0C0A); padding:0 .08em; }
 .btn-lg  { padding: 13px 26px; font-size: 14px; }
 .btn-sm  { padding: 6px 12px; font-size: 12px; }
 .btn-full { width: 100%; justify-content: center; }
@@ -181,7 +196,7 @@ body {
 .field:last-child { margin-bottom: 0; }
 .field label {
   display: block;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -194,7 +209,7 @@ body {
   border: 1px solid var(--rule);
   background: var(--paper);
   padding: 9px 13px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   color: var(--ink);
   outline: none;
@@ -205,7 +220,7 @@ body {
 }
 .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
 .field textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
-.field .hint { font-size: 11px; color: var(--ink-4); margin-top: 4px; font-family: 'DM Mono', monospace; }
+.field .hint { font-size: 11px; color: var(--ink-4); margin-top: 4px; font-family: var(--font-mono); }
 .field-private label::after { content: ' — private'; font-weight: 400; color: var(--ink-5); text-transform: none; letter-spacing: 0; }
 
 .fg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
@@ -508,7 +523,7 @@ body {
 }
 @keyframes cardGlow {
   0%   { border-color: var(--rule);   box-shadow: none; }
-  25%  { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.18); }
+  25%  { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(198,244,50,0.25); }
   100% { border-color: var(--rule);   box-shadow: none; }
 }
 .card-glow { animation: cardGlow 900ms ease-out forwards; }
@@ -533,7 +548,7 @@ body {
   opacity:0.5; pointer-events:none; border-radius:2px;
 }
 </style>
-<script>(function(){var t=localStorage.getItem('cro-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+<script>(function(){var t=localStorage.getItem('triage-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
 </head>
 <body>
 <div id="root"></div>
@@ -553,12 +568,12 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── THEME CONFIG ──
 const THEME = {
-  product: { name: 'CRO Audit System', tagline: 'for Shopify Stores', version: 'v1' },
+  product: { name: 'triage', tagline: 'for Shopify', version: 'v1' },
   storage: { key: 'liftkit-audits-v1' },
   limits: { maxActiveAudits: 5, maxPreChecked: 10, liftCapMin: 3.0, liftCapMax: 6.0 },
   copy: {
-    status:       { pass: 'Pass', fail: 'Fail', tbd: 'TBD', na: 'N/A' },
-    statusReport: { pass: 'Passed', fail: 'Issue Found', tbd: 'Not Assessed', na: 'Not Applicable' },
+    status:       { pass: 'Pass', fail: 'Flag', tbd: 'TBD', na: 'N/A' },
+    statusReport: { pass: 'Passed', fail: 'Flagged', tbd: 'Not Assessed', na: 'Not Applicable' },
     demoNotice:   'Demo mode — nothing is saved. Refresh to start over.',
     workspaceFull: 'Active audit limit reached. Archive a completed audit to open a slot.',
   },
@@ -578,7 +593,8 @@ const SECTIONS = SECTION_ORDER.map(s => ({
 }));
 
 // ── SORT UTILITIES ──
-const IMPACT_RANK = { High: 0, Medium: 1, Low: 2 };
+const IMPACT_RANK  = { High: 0, Medium: 1, Low: 2 };
+const IMPACT_LABEL = { High: 'P0', Medium: 'P1', Low: 'P2' };
 const FIX_TIME_RANK = { '< 30 min': 0, '1-2 hrs': 1, '1 day': 2, '3 days': 3, '1 week': 4, '2 weeks': 5, '1 month+': 6 };
 const FIX_TIME_OPTIONS = ['< 30 min', '1-2 hrs', '1 day', '3 days', '1 week', '2 weeks', '1 month+'];
 
@@ -677,6 +693,10 @@ function newAudit(lastAuditorName) {
   };
 }
 
+function defaultPhase(item) {
+  return item?.estimated_fix_time === '< 30 min' || item?.estimated_fix_time === '1-2 hrs' ? 'quick-win' : 'test';
+}
+
 function getItemState(audit, itemId) {
   const item = AUDIT_ITEMS.find(i => i.id === itemId);
   const saved = audit?.items?.[itemId] || {};
@@ -689,6 +709,7 @@ function getItemState(audit, itemId) {
     estimated_fix_time: saved.estimated_fix_time ?? item?.estimated_fix_time ?? '< 30 min',
     fails_on_desktop:   saved.fails_on_desktop   ?? null,
     fails_on_mobile:    saved.fails_on_mobile    ?? null,
+    phase:              saved.phase              ?? defaultPhase(item),
   };
 }
 
@@ -867,12 +888,9 @@ function LoginScreen() {
     <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center',
       justifyContent:'center', padding:'32px 24px', background:'var(--paper)' }}>
       <div style={{ maxWidth:400, width:'100%' }}>
-        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.14em',
-          textTransform:'uppercase', color:'var(--ink-5)', marginBottom:12 }}>
-          CRO Audit System
-        </div>
-        <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:32, fontWeight:400,
-          color:'var(--ink)', letterSpacing:'-0.5px', lineHeight:1.1, marginBottom:8 }}>
+        <div className="site-header__name" style={{ fontSize:22, marginBottom:16 }}>triage</div>
+        <h1 style={{ fontFamily:"var(--font-sans)", fontSize:32, fontWeight:600,
+          color:'var(--ink)', letterSpacing:'-0.05em', lineHeight:1.1, marginBottom:8 }}>
           Sign in
         </h1>
         <p style={{ color:'var(--ink-4)', fontSize:14, marginBottom:32 }}>
@@ -893,15 +911,15 @@ function LoginScreen() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               style={{ display:'block', width:'100%', padding:'12px 14px', fontSize:15,
-                fontFamily:"'DM Sans',sans-serif", background:'var(--paper-2)',
+                fontFamily:"var(--font-sans)", background:'var(--paper-2)',
                 border:'1px solid var(--rule)', borderRadius:0, color:'var(--ink)',
                 outline:'none', marginBottom:12 }}
             />
             <button type="submit" disabled={status === 'sending'}
               style={{ display:'block', width:'100%', padding:'12px 24px',
-                background: status === 'sending' ? 'var(--paper-3)' : 'var(--accent)',
-                color: status === 'sending' ? 'var(--ink-5)' : '#fff',
-                border:'none', borderRadius:0, fontFamily:"'DM Sans',sans-serif",
+                background: status === 'sending' ? 'var(--paper-3)' : 'var(--btn-bg)',
+                color: status === 'sending' ? 'var(--ink-5)' : 'var(--btn-ink)',
+                border:'none', borderRadius:0, fontFamily:"var(--font-sans)",
                 fontSize:13, fontWeight:600, letterSpacing:'0.06em',
                 textTransform:'uppercase', cursor: status === 'sending' ? 'default' : 'pointer' }}>
               {status === 'sending' ? 'Sending…' : 'Send magic link'}
@@ -911,7 +929,7 @@ function LoginScreen() {
                 No account found for that email.{' '}
                 <a href="https://croauditsystem.lemonsqueezy.com/checkout/buy/9da78faa-4513-40c6-9469-621292edd053"
                   style={{ color:'var(--state-fail)', textUnderlineOffset:2 }}>
-                  Purchase the CRO Audit Kit
+                  Get access to triage
                 </a>
                 {' '}to get access.
               </p>
@@ -931,7 +949,7 @@ function AuditTextarea({ value, placeholder, onChange, rows = 3 }) {
     <textarea value={value || ''} onChange={e => onChange(e.target.value)}
       placeholder={placeholder} rows={rows}
       style={{ width:'100%', background:'var(--paper)', border:'1px solid var(--rule)', padding:'10px 12px',
-        fontFamily:"'DM Sans', sans-serif", fontSize:13, color:'var(--ink-2)', lineHeight:1.6,
+        fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-2)', lineHeight:1.6,
         resize:'vertical', outline:'none', transition:'border-color 0.15s', borderRadius:0 }}
       onFocus={e => e.target.style.borderColor='var(--accent)'}
       onBlur={e => e.target.style.borderColor='var(--rule)'} />
@@ -943,7 +961,7 @@ function AuditUrlInput({ value, onChange }) {
     <input type="url" value={value || ''} onChange={e => onChange(e.target.value)}
       placeholder="https://…"
       style={{ width:'100%', background:'var(--paper)', border:'1px solid var(--rule)', padding:'9px 12px',
-        fontFamily:"'DM Mono', monospace", fontSize:12, color:'var(--ink-2)', outline:'none', borderRadius:0 }}
+        fontFamily:"var(--font-mono)", fontSize:12, color:'var(--ink-2)', outline:'none', borderRadius:0 }}
       onFocus={e => e.target.style.borderColor='var(--accent)'}
       onBlur={e => e.target.style.borderColor='var(--rule)'} />
   );
@@ -954,7 +972,7 @@ function CIInput({ type = 'text', value, onChange, placeholder, step, min, autoF
     <input type={type} value={value} onChange={e => onChange(e.target.value)}
       placeholder={placeholder} step={step} min={min} autoFocus={autoFocus}
       style={{ width:'100%', border:'1px solid var(--rule)', background:'var(--paper)', padding:'9px 13px',
-        fontFamily:"'DM Mono', monospace", fontSize:13, color:'var(--ink)', outline:'none',
+        fontFamily:"var(--font-mono)", fontSize:13, color:'var(--ink)', outline:'none',
         transition:'border-color 0.15s', borderRadius:0 }}
       onFocus={e => e.target.style.borderColor='var(--accent)'}
       onBlur={e => e.target.style.borderColor='var(--rule)'} />
@@ -1015,7 +1033,7 @@ const ViewportIcons = React.memo(function ViewportIcons({ viewport, status, fail
             opacity: deskLit ? 1 : 0.2 }}>
           {ICON_DESKTOP}
         </span>
-        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:12, fontWeight:900, lineHeight:1,
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:12, fontWeight:900, lineHeight:1,
           color:'var(--state-fail)', opacity: bothLit ? 0.9 : 0,
           transition:'opacity 0.15s', userSelect:'none', flexShrink:0,
           transform:'translateX(1px)' }}>+</span>
@@ -1081,7 +1099,7 @@ function ScreenshotTooltip() {
         onFocus={() => setVisible(true)}
         onBlur={() => setVisible(false)}
         style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-5)',
-          fontFamily:"'DM Mono',monospace", fontSize:9, lineHeight:1, width:14, height:14,
+          fontFamily:"var(--font-mono)", fontSize:9, lineHeight:1, width:14, height:14,
           cursor:'pointer', padding:0, display:'inline-flex', alignItems:'center', justifyContent:'center',
           borderRadius:2, flexShrink:0 }}>
         ?
@@ -1091,10 +1109,10 @@ function ScreenshotTooltip() {
           background:'var(--paper-4, var(--paper-3))', border:'1px solid var(--rule-2, var(--rule))',
           padding:'10px 12px', width:230, zIndex:100, pointerEvents:'none',
           boxShadow:'0 4px 16px rgba(0,0,0,0.3)' }}>
-          <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:'var(--ink-3)', lineHeight:1.6, display:'block' }}>
+          <span style={{ fontFamily:"var(--font-sans)", fontSize:12, color:'var(--ink-3)', lineHeight:1.6, display:'block' }}>
             Paste a shareable URL from a screenshot or recording tool.
           </span>
-          <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:'var(--ink-4)', lineHeight:1.7, display:'block', marginTop:6 }}>
+          <span style={{ fontFamily:"var(--font-sans)", fontSize:12, color:'var(--ink-4)', lineHeight:1.7, display:'block', marginTop:6 }}>
             <strong style={{ fontWeight:600, color:'var(--ink-3)' }}>Screenshots:</strong> CleanShot X (Mac) or Gyazo (free){'\n'}
             <strong style={{ fontWeight:600, color:'var(--ink-3)' }}>Recordings:</strong> Loom
           </span>
@@ -1109,11 +1127,11 @@ function HelpModal({ onClose }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-panel" onClick={e => e.stopPropagation()} style={{ maxWidth:520 }}>
         <div className="modal-header">
-          <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
+          <span style={{ fontFamily:"var(--font-sans)", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
             How it works
           </span>
           <button onClick={onClose} style={{ background:'none', border:'none', color:'var(--ink-4)',
-            fontFamily:"'DM Mono',monospace", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
+            fontFamily:"var(--font-mono)", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
             ×
           </button>
         </div>
@@ -1121,7 +1139,7 @@ function HelpModal({ onClose }) {
 
           {/* 3-step workflow */}
           <div>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.12em',
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.12em',
               textTransform:'uppercase', color:'var(--ink-5)', marginBottom:16 }}>The workflow</div>
             {[
               { n:'01', label:'Browse the store', body:'Mobile and desktop. 5 minutes of first impressions before you open the checklist.' },
@@ -1129,12 +1147,12 @@ function HelpModal({ onClose }) {
               { n:'03', label:'Generate the pitch', body:'The ROI calculator turns your findings into a client-ready business case — monthly revenue at risk, projected CVR lift, and a ready-to-paste closing paragraph.' },
             ].map(({ n, label, body }) => (
               <div key={n} style={{ display:'flex', gap:16, marginBottom:16 }}>
-                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.1em',
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:'0.1em',
                   color:'var(--accent)', paddingTop:2, flexShrink:0 }}>{n}</div>
                 <div>
-                  <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600,
+                  <div style={{ fontFamily:"var(--font-sans)", fontSize:13, fontWeight:600,
                     color:'var(--ink-2)', marginBottom:4 }}>{label}</div>
-                  <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-4)', lineHeight:1.6 }}>{body}</div>
+                  <div style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-4)', lineHeight:1.6 }}>{body}</div>
                 </div>
               </div>
             ))}
@@ -1144,12 +1162,12 @@ function HelpModal({ onClose }) {
 
           {/* Capturing evidence */}
           <div>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.12em',
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.12em',
               textTransform:'uppercase', color:'var(--ink-5)', marginBottom:12 }}>Capturing evidence</div>
-            <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-3)', lineHeight:1.6, margin:'0 0 8px' }}>
+            <p style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-3)', lineHeight:1.6, margin:'0 0 8px' }}>
               The app stores URLs, not files. To attach a screenshot or recording to a finding, you need a tool that gives you a shareable link.
             </p>
-            <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-3)', lineHeight:1.6, margin:0 }}>
+            <p style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-3)', lineHeight:1.6, margin:0 }}>
               <strong style={{ fontWeight:600 }}>CleanShot X</strong> (Mac) or <strong style={{ fontWeight:600 }}>Gyazo</strong> (free) for screenshots.{' '}
               <strong style={{ fontWeight:600 }}>Loom</strong> for screen recordings. All three produce a shareable URL immediately after capture.
             </p>
@@ -1159,12 +1177,12 @@ function HelpModal({ onClose }) {
 
           {/* Import / Export */}
           <div>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.12em',
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.12em',
               textTransform:'uppercase', color:'var(--ink-5)', marginBottom:12 }}>Importing and exporting</div>
-            <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-3)', lineHeight:1.6, margin:'0 0 8px' }}>
+            <p style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-3)', lineHeight:1.6, margin:'0 0 8px' }}>
               Each audit can be exported as a <strong style={{ fontWeight:600 }}>.json</strong> file. Use this to archive a completed audit, back it up, or free up a slot when you hit the 5-audit limit.
             </p>
-            <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-3)', lineHeight:1.6, margin:0 }}>
+            <p style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-3)', lineHeight:1.6, margin:0 }}>
               To restore an audit, use the <strong style={{ fontWeight:600 }}>Import Audit</strong> button on the dashboard and select the .json file. The audit loads back in exactly as it was exported.
             </p>
           </div>
@@ -1182,15 +1200,15 @@ function SiteHeader({ onBack, auditName, theme, onToggleTheme, onHelp }) {
         ? <button className="site-header__back" onClick={onBack}>← Audits</button>
         : <span className="site-header__name">{THEME.product.name}</span>
       }
-      {onBack && <span className="site-header__name" style={{fontSize:15,color:'var(--ink-3)'}}>{auditName || 'Audit'}</span>}
+      {onBack && <span style={{fontFamily:'var(--font-sans)',fontWeight:500,fontSize:14,color:'var(--ink-3)',letterSpacing:'-0.02em'}}>{auditName || 'Audit'}</span>}
       {!onBack && <span className="site-header__tag desktop-only">{THEME.product.tagline}</span>}
       <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:8 }}>
-        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em',
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.08em',
           textTransform:'uppercase', border:'1px solid var(--rule)', padding:'4px 10px', color:'var(--ink-5)' }}
           className="desktop-only">{THEME.product.version}</span>
         {onHelp && (
           <button onClick={onHelp} style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-5)',
-            fontFamily:"'DM Mono',monospace", fontSize:12, letterSpacing:'0.04em', padding:'4px 10px',
+            fontFamily:"var(--font-mono)", fontSize:12, letterSpacing:'0.04em', padding:'4px 10px',
             cursor:'pointer', lineHeight:1 }}>?</button>
         )}
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
@@ -1205,16 +1223,16 @@ function ConfirmDialog({ dialog, onClose }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-panel" style={{ maxWidth:420 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
+          <span style={{ fontFamily:"var(--font-sans)", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
             {dialog.title}
           </span>
           <button onClick={onClose} style={{ background:'none', border:'none', color:'var(--ink-4)',
-            fontFamily:"'DM Mono',monospace", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
+            fontFamily:"var(--font-mono)", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
             ×
           </button>
         </div>
         <div className="modal-body">
-          <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:'var(--ink-3)', lineHeight:1.6, margin:0 }}>
+          <p style={{ fontFamily:"var(--font-sans)", fontSize:14, color:'var(--ink-3)', lineHeight:1.6, margin:0 }}>
             {dialog.message}
           </p>
         </div>
@@ -1222,8 +1240,9 @@ function ConfirmDialog({ dialog, onClose }) {
           <button onClick={onClose} className="btn btn-secondary">Cancel</button>
           <button onClick={() => { dialog.onConfirm(); onClose(); }}
             className="btn"
-            style={{ background: dialog.danger ? 'var(--impact-high)' : 'var(--accent)', color:'#fff',
-              borderColor: dialog.danger ? 'var(--impact-high)' : 'var(--accent)' }}>
+            style={{ background: dialog.danger ? 'var(--impact-high)' : 'var(--btn-bg)',
+              color: dialog.danger ? '#fff' : 'var(--btn-ink)',
+              borderColor: dialog.danger ? 'var(--impact-high)' : 'var(--btn-bg)' }}>
             {dialog.confirmLabel}
           </button>
         </div>
@@ -1241,7 +1260,7 @@ function DonutChart({ pct, color, size = 52 }) {
     pct > 0 && React.createElement('circle', { cx:size/2, cy:size/2, r, fill:'none', stroke:color, strokeWidth:3,
       strokeDasharray:`${dash} ${circ}`, strokeLinecap:'round', transform:`rotate(-90 ${size/2} ${size/2})` }),
     pct > 0 && React.createElement('text', { x:size/2, y:size/2+4, textAnchor:'middle',
-      fontFamily:"'DM Mono',monospace", fontSize:9, fill:color }, `${pct}%`)
+      fontFamily:"var(--font-mono)", fontSize:9, fill:color }, `${pct}%`)
   );
 }
 
@@ -1288,7 +1307,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
       if (v.status === 'fail') { meta?.impact === 'High' ? highFails++ : otherFails++; }
       else if (v.status === 'pass' || v.status === 'na') passes++;
     }
-    if (highFails > 0)  return { color:'var(--impact-high)', label:`${highFails} high-impact finding${highFails > 1 ? 's' : ''}` };
+    if (highFails > 0)  return { color:'var(--impact-high)', label:`${highFails} P0 finding${highFails > 1 ? 's' : ''}` };
     if (otherFails > 0) return { color:'var(--amber)',       label:`${otherFails} finding${otherFails > 1 ? 's' : ''}` };
     if (passes > 5)     return { color:'var(--state-pass)',  label:'Not much to flag yet.' };
     return                     { color:'var(--ink-5)',       label:'Not started' };
@@ -1309,7 +1328,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
         const data = JSON.parse(ev.target.result);
         if (!data.client_info) throw new Error();
         onImport(data);
-      } catch { alert('Could not import. Make sure this is a valid CRO Audit JSON export.'); }
+      } catch { alert('Could not import. Make sure this is a valid triage JSON export.'); }
       e.target.value = '';
     };
     reader.readAsText(file);
@@ -1322,11 +1341,11 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
       {dbError && (
         <div style={{ marginBottom:20, padding:'12px 18px', background:'rgba(220,38,38,0.1)',
           border:'1px solid rgba(220,38,38,0.3)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--impact-high)', letterSpacing:'0.04em', lineHeight:1.5 }}>
+          <span style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--impact-high)', letterSpacing:'0.04em', lineHeight:1.5 }}>
             {dbError}
           </span>
           <button onClick={onDismissError} style={{ background:'none', border:'none', color:'var(--ink-4)',
-            fontFamily:"'DM Mono',monospace", fontSize:16, cursor:'pointer', lineHeight:1, padding:'0 4px', flexShrink:0 }}>
+            fontFamily:"var(--font-mono)", fontSize:16, cursor:'pointer', lineHeight:1, padding:'0 4px', flexShrink:0 }}>
             ×
           </button>
         </div>
@@ -1334,21 +1353,21 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
 
       {/* Mobile header — stacked layout with + button top-right */}
       <div className="mobile-only" style={{ position:'relative', marginBottom:20 }}>
-        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
+        <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
           color:'var(--ink-5)', marginBottom:8 }}>
           {demoMode ? 'Demo Mode' : `Active audits: ${audits.length} of ${THEME.limits.maxActiveAudits}`}
         </div>
-        <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:32, fontWeight:400, color:'var(--ink)',
+        <h1 style={{ fontFamily:"var(--font-sans)", fontSize:32, fontWeight:400, color:'var(--ink)',
           letterSpacing:'-0.5px', lineHeight:1.05, marginBottom:8 }}>Your audits</h1>
         {user && !demoMode && (
           <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-5)',
+            <span style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-5)',
               letterSpacing:'0.04em', overflow:'hidden', maxWidth:200, textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
               {user.email}
             </span>
             <span style={{ color:'var(--rule-2)' }}>·</span>
             <button onClick={onSignOut}
-              style={{ background:'none', border:'none', padding:0, fontFamily:"'DM Sans',sans-serif",
+              style={{ background:'none', border:'none', padding:0, fontFamily:"var(--font-sans)",
                 fontSize:12, color:'var(--ink-5)', cursor:'pointer', textDecoration:'underline',
                 textUnderlineOffset:2 }}>
               Sign out
@@ -1357,9 +1376,9 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
         )}
         <button onClick={onNew} disabled={!demoMode && atCap}
           style={{ position:'absolute', top:0, right:0, width:44, height:44,
-            background:(!demoMode && atCap) ? 'var(--paper-3)' : 'var(--accent)',
-            color:(!demoMode && atCap) ? 'var(--ink-5)' : '#fff', border:'none',
-            fontFamily:"'DM Sans',sans-serif", fontSize:22, fontWeight:400, lineHeight:1,
+            background:(!demoMode && atCap) ? 'var(--paper-3)' : 'var(--btn-bg)',
+            color:(!demoMode && atCap) ? 'var(--ink-5)' : 'var(--btn-ink)', border:'none',
+            fontFamily:"var(--font-sans)", fontSize:22, fontWeight:400, lineHeight:1,
             cursor:(!demoMode && atCap) ? 'not-allowed' : 'pointer',
             display:'flex', alignItems:'center', justifyContent:'center' }}>
           +
@@ -1369,23 +1388,23 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
       {/* Desktop header row */}
       <div className="desktop-only" style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:40, gap:16, flexWrap:'wrap' }}>
         <div>
-          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
+          <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
             color:'var(--ink-5)', marginBottom:10 }}>
             {demoMode ? 'Demo Mode' : `Active audits: ${audits.length} of ${THEME.limits.maxActiveAudits}`}
           </div>
-          <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:32, fontWeight:400, color:'var(--ink)',
+          <h1 style={{ fontFamily:"var(--font-sans)", fontSize:32, fontWeight:400, color:'var(--ink)',
             letterSpacing:'-0.5px', lineHeight:1.05 }}>Your audits</h1>
         </div>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:8, flexShrink:0 }}>
           {user && !demoMode && (
             <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-5)',
+              <span style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-5)',
                 letterSpacing:'0.04em', overflow:'hidden', maxWidth:200, textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                 {user.email}
               </span>
               <span style={{ color:'var(--rule-2)' }}>·</span>
               <button onClick={onSignOut}
-                style={{ background:'none', border:'none', padding:0, fontFamily:"'DM Sans',sans-serif",
+                style={{ background:'none', border:'none', padding:0, fontFamily:"var(--font-sans)",
                   fontSize:12, color:'var(--ink-5)', cursor:'pointer', textDecoration:'underline',
                   textUnderlineOffset:2 }}>
                 Sign out
@@ -1393,9 +1412,9 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
             </div>
           )}
           <button onClick={onNew} disabled={!demoMode && atCap}
-            style={{ background:(!demoMode && atCap) ? 'var(--paper-3)' : 'var(--accent)',
-              color:(!demoMode && atCap) ? 'var(--ink-5)' : '#fff', border:'none', padding:'12px 24px',
-              fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
+            style={{ background:(!demoMode && atCap) ? 'var(--paper-3)' : 'var(--btn-bg)',
+              color:(!demoMode && atCap) ? 'var(--ink-5)' : 'var(--btn-ink)', border:'none', padding:'12px 24px',
+              fontFamily:"var(--font-sans)", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
               textTransform:'uppercase', cursor:(!demoMode && atCap) ? 'not-allowed' : 'pointer',
               display:'flex', alignItems:'center', gap:8 }}>
             + Start New Audit
@@ -1410,7 +1429,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
             <div style={{ position:'absolute', left:0, top:0, height:'100%', background:'var(--accent)',
               width:`${(audits.length / THEME.limits.maxActiveAudits) * 100}%`, transition:'width 0.3s' }} />
           </div>
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em', textTransform:'uppercase',
+          <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.08em', textTransform:'uppercase',
             color: audits.length >= THEME.limits.maxActiveAudits ? 'var(--impact-high)' : 'var(--ink-4)', whiteSpace:'nowrap' }}>
             {audits.length}/{THEME.limits.maxActiveAudits} active audits
           </span>
@@ -1441,10 +1460,10 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
       {/* Empty state */}
       {!auditsLoading && audits.length === 0 && (
         <div style={{ border:'1px solid var(--rule)', padding:'56px 32px 48px', background:'var(--paper-2)' }}>
-          <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:'var(--ink-3)', marginBottom:8, letterSpacing:'-0.3px', textAlign:'center' }}>
+          <div style={{ fontFamily:"var(--font-sans)", fontSize:22, color:'var(--ink-3)', marginBottom:8, letterSpacing:'-0.3px', textAlign:'center' }}>
             Your first audit starts here.
           </div>
-          <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:'var(--ink-5)', lineHeight:1.6,
+          <p style={{ fontFamily:"var(--font-sans)", fontSize:14, color:'var(--ink-5)', lineHeight:1.6,
             margin:'0 auto 40px', maxWidth:400, textAlign:'center' }}>
             Three steps. One client-ready deliverable.
           </p>
@@ -1457,17 +1476,17 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
               { n:'03', label:'Generate the pitch', body:'The ROI calculator turns your findings into a client-ready business case.' },
             ].map(({ n, label, body }) => (
               <div key={n}>
-                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.12em', textTransform:'uppercase',
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.12em', textTransform:'uppercase',
                   color:'var(--accent)', marginBottom:8 }}>{n}</div>
-                <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, color:'var(--ink-2)', marginBottom:6 }}>{label}</div>
-                <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-4)', lineHeight:1.6 }}>{body}</div>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:13, fontWeight:600, color:'var(--ink-2)', marginBottom:6 }}>{label}</div>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-4)', lineHeight:1.6 }}>{body}</div>
               </div>
             ))}
           </div>
 
           <div style={{ textAlign:'center' }}>
-            <button onClick={onNew} style={{ background:'var(--accent)', color:'#fff', border:'none', padding:'12px 28px',
-              fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
+            <button onClick={onNew} style={{ background:'var(--btn-bg)', color:'var(--btn-ink)', border:'none', padding:'12px 28px',
+              fontFamily:"var(--font-sans)", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
               textTransform:'uppercase', cursor:'pointer' }}>
               Start your first audit →
             </button>
@@ -1493,11 +1512,11 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                   <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                        <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:17, color:'var(--ink)',
+                        <div style={{ fontFamily:"var(--font-sans)", fontWeight:600, fontSize:17, color:'var(--ink)',
                           lineHeight:1.2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                           {audit.client_info?.audit_title || audit.client_info?.client_name || 'New Audit'}
                           {audit.client_info?.audit_title && audit.client_info?.client_name && (
-                            <span style={{ fontFamily:"'DM Mono',monospace", fontWeight:400,
+                            <span style={{ fontFamily:"var(--font-mono)", fontWeight:400,
                               fontSize:11, color:'var(--ink-5)', marginLeft:6 }}>
                               | {audit.client_info.client_name}
                             </span>
@@ -1505,7 +1524,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                         </div>
                         {isSetupIncomplete(audit) && (
                           <button onClick={e => { e.stopPropagation(); setListClientInfoId(audit.id); }}
-                            style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+                            style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
                               textTransform:'uppercase', color:'var(--amber)', background:'rgba(200,131,74,0.1)',
                               border:'1px solid rgba(200,131,74,0.25)', padding:'2px 7px', whiteSpace:'nowrap',
                               flexShrink:0, cursor:'pointer' }}>
@@ -1514,7 +1533,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                         )}
                       </div>
                       {audit.client_info?.store_url && (
-                        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', marginTop:3,
+                        <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)', marginTop:3,
                           overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                           {audit.client_info.store_url}
                         </div>
@@ -1524,7 +1543,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                       <div style={{ position:'relative', flexShrink:0 }}>
                         <button onClick={e => { e.stopPropagation(); setMenuOpen(isMenuOpen ? null : audit.id); }}
                           style={{ background:'var(--paper-3)', border:'1px solid var(--rule)', color:'var(--ink-3)',
-                            padding:'6px 10px', cursor:'pointer', fontFamily:"'DM Mono',monospace", fontSize:12,
+                            padding:'6px 10px', cursor:'pointer', fontFamily:"var(--font-mono)", fontSize:12,
                             lineHeight:1, borderRadius:4 }}>
                           ···
                         </button>
@@ -1541,7 +1560,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                               <button key={item.label} onClick={item.action}
                                 style={{ display:'block', width:'100%', textAlign:'left', padding:'10px 14px',
                                   background:'none', border:'none', borderBottom:'1px solid var(--rule)',
-                                  fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.04em',
+                                  fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:'0.04em',
                                   textTransform:'uppercase', color: item.danger ? 'var(--impact-high)' : 'var(--ink-3)',
                                   cursor:'pointer' }}
                                 onMouseEnter={e => e.currentTarget.style.background='var(--paper-2)'}
@@ -1558,25 +1577,25 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                   <div style={{ display:'flex', alignItems:'center', gap:12, flex:1 }}>
                     <DonutChart pct={pct} color={color} />
                     <div>
-                      <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color, letterSpacing:'0.04em', lineHeight:1.4 }}>
+                      <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color, letterSpacing:'0.04em', lineHeight:1.4 }}>
                         {label}
                       </div>
-                      <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', letterSpacing:'0.04em', marginTop:3 }}>
+                      <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)', letterSpacing:'0.04em', marginTop:3 }}>
                         {done}/{total} items reviewed
                       </div>
                     </div>
                   </div>
                   {/* Bottom row: updated date + Open button */}
                   <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                    <div className="desktop-only" style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)',
+                    <div className="desktop-only" style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)',
                       letterSpacing:'0.04em' }}>
                       <div style={{ textTransform:'uppercase' }}>Updated</div>
                       <div style={{ color:'var(--ink-4)', marginTop:1 }}>{formatDate(audit.updated_at)}</div>
                     </div>
                     <div style={{ flex:1 }} />
                     <button onClick={() => onOpen(audit.id)}
-                      style={{ background:'var(--accent)', color:'#fff', border:'none', padding:'8px 18px',
-                        fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:'0.05em',
+                      style={{ background:'var(--btn-bg)', color:'var(--btn-ink)', border:'none', padding:'8px 18px',
+                        fontFamily:"var(--font-sans)", fontSize:12, fontWeight:600, letterSpacing:'0.05em',
                         textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
                       Open
                     </button>
@@ -1602,7 +1621,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
           {/* Rotating tips — fills the grid cell adjacent to the last empty slot */}
           {!demoMode && !atCap && (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'24px 18px', minHeight:160 }}>
-              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-5)',
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-5)',
                 letterSpacing:'0.04em', textAlign:'center', lineHeight:1.7,
                 opacity: tipVisible ? 1 : 0, transition:'opacity 0.45s ease' }}>
                 {TIPS[tipIdx]}
@@ -1615,7 +1634,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
       {/* Cap message */}
       {!demoMode && atCap && (
         <div style={{ marginTop:20, padding:'14px 18px', background:'var(--paper-3)', border:'1px solid var(--rule)',
-          fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-4)', letterSpacing:'0.04em', lineHeight:1.6 }}>
+          fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)', letterSpacing:'0.04em', lineHeight:1.6 }}>
           {THEME.copy.workspaceFull}
         </div>
       )}
@@ -1628,11 +1647,11 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
             <button onClick={() => !atCap && importRef.current?.click()} disabled={atCap}
               style={{ background:'none', border:'1px solid var(--rule)', flexShrink:0,
                 color: atCap ? 'var(--ink-5)' : 'var(--ink-4)', padding:'8px 16px',
-                fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.06em', textTransform:'uppercase',
+                fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:'0.06em', textTransform:'uppercase',
                 cursor: atCap ? 'not-allowed' : 'pointer', opacity: atCap ? 0.5 : 1 }}>
               Import Audit
             </button>
-            <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:'var(--ink-5)', lineHeight:1.5 }}>
+            <span style={{ fontFamily:"var(--font-sans)", fontSize:12, color:'var(--ink-5)', lineHeight:1.5 }}>
               Restore a previously exported audit from a <strong style={{ fontWeight:600, color:'var(--ink-4)' }}>.json</strong> file.
             </span>
           </div>
@@ -1690,22 +1709,22 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-panel" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
+          <span style={{ fontFamily:"var(--font-sans)", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
             Audit Info
           </span>
           <button onClick={onClose} style={{ background:'none', border:'none', color:'var(--ink-4)',
-            fontFamily:"'DM Mono',monospace", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
+            fontFamily:"var(--font-mono)", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
             ×
           </button>
         </div>
         {onSkip && (
           <div style={{ background:'rgba(200,131,74,0.1)', borderBottom:'1px solid rgba(200,131,74,0.25)',
             padding:'10px 24px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
-            <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--amber)', lineHeight:1.4 }}>
+            <span style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--amber)', lineHeight:1.4 }}>
               Revenue data is needed to calculate projected uplift. Fill it in now, or skip to see lift percentages only.
             </span>
             <button type="button" onClick={onSkip}
-              style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
+              style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
                 background:'none', border:'1px solid rgba(200,131,74,0.4)', color:'var(--amber)',
                 padding:'4px 10px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
               Skip for now →
@@ -1715,7 +1734,7 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
         <form onSubmit={handleSave}>
           <div className="modal-body">
             <div style={{ marginBottom:18 }}>
-              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
                 color:'var(--ink-5)', marginBottom:12 }}>Audit Details</div>
               <div className="field" style={{ marginBottom:10 }}>
                 <label>Audit Title</label>
@@ -1747,7 +1766,7 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
               </div>
             </div>
             <div>
-              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
                 color:'var(--ink-5)', marginBottom:12 }}>Store Metrics</div>
               <div className="fg4">
                 <div className="field">
@@ -1803,11 +1822,11 @@ function NewAuditModal({ lastAuditorName, onSubmit, onClose }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
         <div className="modal-header">
-          <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
+          <span style={{ fontFamily:"var(--font-sans)", fontSize:20, fontWeight:400, letterSpacing:'-0.3px' }}>
             New Audit
           </span>
           <button onClick={onClose} style={{ background:'none', border:'none', color:'var(--ink-4)',
-            fontFamily:"'DM Mono',monospace", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
+            fontFamily:"var(--font-mono)", fontSize:18, cursor:'pointer', lineHeight:1, padding:'0 4px' }}>
             ×
           </button>
         </div>
@@ -1821,9 +1840,9 @@ function NewAuditModal({ lastAuditorName, onSubmit, onClose }) {
                 placeholder="e.g. Acme Boards Q3 2026" />
             </div>
             <button type="button" onClick={handleSubmit} disabled={!canSubmit}
-              style={{ width:'100%', background: canSubmit ? 'var(--accent)' : 'var(--paper-3)',
-                color: canSubmit ? '#fff' : 'var(--ink-5)', border:'none', padding:'11px 20px',
-                fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
+              style={{ width:'100%', background: canSubmit ? 'var(--btn-bg)' : 'var(--paper-3)',
+                color: canSubmit ? 'var(--btn-ink)' : 'var(--ink-5)', border:'none', padding:'11px 20px',
+                fontFamily:"var(--font-sans)", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
                 textTransform:'uppercase', cursor: canSubmit ? 'pointer' : 'not-allowed', transition:'background 0.15s' }}>
               Let's Go — I'll add the rest later →
             </button>
@@ -1832,7 +1851,7 @@ function NewAuditModal({ lastAuditorName, onSubmit, onClose }) {
           {/* Divider */}
           <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
             <div style={{ flex:1, height:1, background:'var(--rule)' }} />
-            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em',
+            <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.1em',
               textTransform:'uppercase', color:'var(--ink-5)', whiteSpace:'nowrap' }}>
               or complete setup now
             </span>
@@ -1841,7 +1860,7 @@ function NewAuditModal({ lastAuditorName, onSubmit, onClose }) {
 
           {/* Full form */}
           <div style={{ marginBottom:18 }}>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
               color:'var(--ink-5)', marginBottom:12 }}>Client &amp; Auditor</div>
             <div className="fg2">
               <div className="field">
@@ -1869,7 +1888,7 @@ function NewAuditModal({ lastAuditorName, onSubmit, onClose }) {
             </div>
           </div>
           <div>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
               color:'var(--ink-5)', marginBottom:12 }}>Store Metrics</div>
             <div className="fg4">
               <div className="field">
@@ -1913,11 +1932,11 @@ function SortControl({ value, onChange, options }) {
         return (
           <button key={opt.value} onClick={() => onChange(opt.value)}
             style={{
-              fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+              fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
               textTransform:'uppercase', padding:'4px 8px', cursor:'pointer',
-              border: active ? '1px solid var(--accent)' : '1px solid var(--rule-2)',
-              background: active ? 'var(--accent)' : 'transparent',
-              color: active ? '#fff' : 'var(--ink-4)',
+              border: active ? '1px solid var(--btn-bg)' : '1px solid var(--rule-2)',
+              background: active ? 'var(--btn-bg)' : 'transparent',
+              color: active ? 'var(--btn-ink)' : 'var(--ink-4)',
               transition:'all 0.12s',
               whiteSpace:'nowrap',
             }}>
@@ -2103,8 +2122,8 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
   const IMPACT_BG    = { High:'var(--impact-high-bg)', Medium:'var(--impact-medium-bg)', Low:'var(--paper-3)' };
 
   const STATUS_OPTS = [
-    { id:'pass', label:'Pass', color:'var(--state-pass)',  bg:'var(--state-pass-bg)',  border:'#86efac' },
-    { id:'fail', label:'Fail', color:'var(--state-fail)',  bg:'var(--state-fail-bg)',  border:'#fca5a5' },
+    { id:'pass', label:'Pass', color:'var(--state-pass)',  bg:'var(--state-pass-bg)',  border:'var(--state-pass)' },
+    { id:'fail', label:'Flag', color:'var(--state-fail)',  bg:'var(--state-fail-bg)',  border:'var(--state-fail)' },
     { id:'tbd',  label:'TBD',  color:'var(--ink-3)',       bg:'var(--paper-3)',         border:'var(--rule-2)' },
     { id:'na',   label:'N/A',  color:'var(--ink-5)',       bg:'var(--paper)',            border:'var(--rule)' },
   ];
@@ -2119,14 +2138,14 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
           <button onClick={() => setSidebarOpen(v => !v)}
             style={{ background:'none', border:'1px solid var(--rule)',
               color: sidebarOpen ? 'var(--accent)' : 'var(--ink-4)',
-              fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+              fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
               textTransform:'uppercase', padding:'5px 10px', cursor:'pointer',
               display:'flex', alignItems:'center', gap:5 }}>
             <span>≡</span><span>{sidebarOpen ? 'Hide' : 'Sections'}</span>
           </button>
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-            color:'#fff', background:'var(--accent)', padding:'2px 8px' }}>01 — Checklist</span>
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-4)', letterSpacing:'0.04em' }}>
+          <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+            color:'var(--btn-ink)', background:'var(--btn-bg)', padding:'2px 8px' }}>01 — Checklist</span>
+          <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-4)', letterSpacing:'0.04em' }}>
             {totalDone}/60 assessed
           </span>
           <div style={{ width:80, height:2, background:'var(--rule)', position:'relative', marginLeft:4 }} className="desktop-only">
@@ -2150,7 +2169,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
         <div ref={sidebarRef} className={`checklist-sidebar${sidebarOpen ? ' open' : ''}`}>
           {/* Sort control */}
           <div style={{ padding:'10px 12px 8px', borderBottom:'1px solid var(--rule)', background:'var(--paper)' }}>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:8, letterSpacing:'0.1em', textTransform:'uppercase',
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:8, letterSpacing:'0.1em', textTransform:'uppercase',
               color:'var(--ink-5)', marginBottom:6 }}>Sort by</div>
             <SortControl
               value={checklistSort}
@@ -2171,16 +2190,16 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
               <div key={group.key}>
                 <button className={`sidebar-acc-btn${isOpen ? ' open' : ''}`}
                   onClick={() => setOpenSections(prev => { const n = new Set(prev); n.has(group.key) ? n.delete(group.key) : n.add(group.key); return n; })}>
-                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em',
+                  <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.08em',
                     textTransform:'uppercase', color: isOpen ? 'var(--ink-2)' : 'var(--ink-5)' }}>
                     {group.label}
                   </span>
                   <span style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
-                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10,
+                    <span style={{ fontFamily:"var(--font-mono)", fontSize:10,
                       color: done === group.items.length ? 'var(--state-pass)' : 'var(--ink-5)' }}>
                       {done}/{group.items.length}
                     </span>
-                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:'var(--ink-5)',
+                    <span style={{ fontFamily:"var(--font-mono)", fontSize:8, color:'var(--ink-5)',
                       transform: isOpen ? 'rotate(180deg)' : 'none', transition:'transform 0.15s', display:'inline-block' }}>▼</span>
                   </span>
                 </button>
@@ -2200,12 +2219,12 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                       <span style={{ width:7, height:7, borderRadius:'50%', background:dot.color, flexShrink:0,
                         border: dot.border ? '1px solid var(--rule-2)' : 'none' }} />
                       <ViewportIcons viewport={item.primary_viewport} status={rawSt.status ?? 'tbd'} failsDesktop={rawSt.fails_on_desktop ?? null} failsMobile={rawSt.fails_on_mobile ?? null} size="sidebar" />
-                      <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+                      <span style={{ fontFamily:"var(--font-sans)", fontSize:11,
                         color: (isActive || isCursor) ? 'var(--ink)' : 'var(--ink-4)', lineHeight:1.3, flex:1,
                         overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
                         {item.name}
                       </span>
-                      <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'var(--ink-5)', flexShrink:0 }}>
+                      <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)', flexShrink:0 }}>
                         {idx + 1}
                       </span>
                     </button>
@@ -2235,7 +2254,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
               {(() => {
                 const colonIdx = activeItem.name.indexOf(':');
                 if (colonIdx === -1) return (
-                  <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:19, fontWeight:400, color:'var(--ink)',
+                  <h2 style={{ fontFamily:"var(--font-sans)", fontSize:19, fontWeight:400, color:'var(--ink)',
                     letterSpacing:'-0.3px', lineHeight:1.25, marginBottom:10 }}>
                     {activeItem.name}
                   </h2>
@@ -2244,11 +2263,11 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                 const after = activeItem.name.slice(colonIdx + 1).trim();
                 return (
                   <>
-                    <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:19, fontWeight:400, color:'var(--ink)',
+                    <h2 style={{ fontFamily:"var(--font-sans)", fontSize:19, fontWeight:400, color:'var(--ink)',
                       letterSpacing:'-0.3px', lineHeight:1.25, marginBottom:4 }}>
                       {before}:
                     </h2>
-                    <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:'var(--ink-3)',
+                    <p style={{ fontFamily:"var(--font-sans)", fontSize:14, color:'var(--ink-3)',
                       lineHeight:1.35, marginBottom:10 }}>
                       {after}
                     </p>
@@ -2263,7 +2282,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                       style={{ padding:'12px 6px', background: active ? opt.bg : 'var(--paper-3)',
                         border:`1px solid ${active ? opt.border : 'var(--rule)'}`,
                         color: active ? opt.color : 'var(--ink-5)',
-                        fontFamily:"'DM Mono',monospace", fontSize:12, fontWeight: active ? 600 : 400,
+                        fontFamily:"var(--font-mono)", fontSize:12, fontWeight: active ? 600 : 400,
                         letterSpacing:'0.06em', textTransform:'uppercase', cursor:'pointer', transition:'all 0.12s' }}>
                       {opt.label}
                     </button>
@@ -2273,29 +2292,29 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
               <div style={{ display:'flex', gap:5, flexWrap:'wrap', alignItems:'center', marginBottom:10 }}>
                 <ViewportIcons viewport={activeItem.primary_viewport} status={itemState.status} failsDesktop={itemState.fails_on_desktop} failsMobile={itemState.fails_on_mobile} onToggle={toggleViewport} size="card" />
                 {revertMsg && (
-                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'var(--ink-4)',
+                  <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-4)',
                     letterSpacing:'0.04em' }}>
                     Reverted to TBD — mark at least one viewport as failed.
                   </span>
                 )}
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, padding:'2px 8px',
                   background:IMPACT_BG[activeItem.impact], color:IMPACT_COLOR[activeItem.impact],
-                  letterSpacing:'0.04em', textTransform:'uppercase' }}>{activeItem.impact}</span>
+                  letterSpacing:'0.04em', textTransform:'uppercase' }}>{IMPACT_LABEL[activeItem.impact] || activeItem.impact}</span>
                 <select value={itemState.estimated_fix_time}
                   onChange={e => updateItem('estimated_fix_time', e.target.value)}
-                  style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
+                  style={{ fontFamily:"var(--font-mono)", fontSize:10, padding:'2px 8px',
                     background:'var(--paper-3)', color:'var(--ink-4)', letterSpacing:'0.04em',
                     textTransform:'uppercase', border:'none', cursor:'pointer', appearance:'none',
                     WebkitAppearance:'none' }}>
                   {FIX_TIME_OPTIONS.map(v => React.createElement('option', { key:v, value:v }, v))}
                 </select>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 8px',
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, padding:'2px 8px',
                   background:'var(--paper-3)', color:'var(--accent-positive)', letterSpacing:'0.04em' }}>
                   +{activeItem.lift_min}–{activeItem.lift_max}% CVR
                 </span>
               </div>
               <button onClick={() => setShowDetails(v => !v)}
-                style={{ background:'none', border:'none', color:'var(--ink-5)', fontFamily:"'DM Mono',monospace",
+                style={{ background:'none', border:'none', color:'var(--ink-5)', fontFamily:"var(--font-mono)",
                   fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase', cursor:'pointer', padding:0,
                   display:'flex', alignItems:'center', gap:5 }}>
                 <span style={{ transform:showDetails ? 'rotate(180deg)' : 'none', display:'inline-block',
@@ -2306,9 +2325,9 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                 <div style={{ marginTop:10, display:'grid', gridTemplateColumns:'1fr 1fr', gap:6 }}>
                   {[['Impact Area', activeItem.impact_area], ['Shopify Complexity', activeItem.shopify_fix_complexity]].map(([lbl, val]) => (
                     <div key={lbl} style={{ background:'var(--paper-3)', padding:'8px 10px' }}>
-                      <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.1em',
+                      <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em',
                         textTransform:'uppercase', color:'var(--ink-5)', marginBottom:3 }}>{lbl}</div>
-                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:'var(--ink-3)' }}>{val}</div>
+                      <div style={{ fontFamily:"var(--font-sans)", fontSize:12, color:'var(--ink-3)' }}>{val}</div>
                     </div>
                   ))}
                 </div>
@@ -2321,9 +2340,9 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
               transition:'opacity 0.15s' }}>
               <div style={{ padding:'10px 18px', borderBottom:'1px solid var(--rule)',
                 display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, fontWeight:600,
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600,
                   letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--state-fail)' }}>Finding</span>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'var(--ink-5)',
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)',
                   letterSpacing:'0.04em' }}>in client report</span>
               </div>
               <div style={{ padding:'10px 18px' }}>
@@ -2338,9 +2357,9 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
               transition:'opacity 0.15s' }}>
               <div style={{ padding:'10px 18px', borderBottom:'1px solid var(--rule)',
                 display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, fontWeight:600,
-                  letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--ink-3)' }}>Recommendation</span>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:'var(--ink-5)',
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600,
+                  letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--ink-3)' }}>Finding</span>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)',
                   letterSpacing:'0.04em' }}>in client report</span>
               </div>
               <div style={{ padding:'10px 18px' }}>
@@ -2354,12 +2373,12 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
               <button onClick={() => setShowNotes(v => !v)}
                 style={{ width:'100%', background:'none', border:'none', padding:'10px 18px',
                   display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer' }}>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, fontWeight:600,
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600,
                   letterSpacing:'0.1em', textTransform:'uppercase',
                   color:(itemState.notes || itemState.screenshot_url) ? 'var(--ink-3)' : 'var(--ink-5)' }}>
                   Notes {itemState.screenshot_url ? '· screenshot' : ''}
                 </span>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:'var(--ink-5)',
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:8, color:'var(--ink-5)',
                   transform:showNotes ? 'rotate(180deg)' : 'none', display:'inline-block', transition:'transform 0.15s' }}>▼</span>
               </button>
               {showNotes && (
@@ -2368,7 +2387,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                     onChange={v => updateItem('notes', v)} rows={2} />
                   <div>
                     <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
-                      <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)',
+                      <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)',
                         letterSpacing:'0.06em', textTransform:'uppercase' }}>Screenshot URL</span>
                       <ScreenshotTooltip />
                     </div>
@@ -2385,15 +2404,15 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                   color: prevItem ? 'var(--ink-3)' : 'var(--ink-5)', padding:'11px 14px',
                   cursor: prevItem ? 'pointer' : 'default', opacity: prevItem ? 1 : 0.3,
                   textAlign:'left', display:'flex', flexDirection:'column', gap:2 }}>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
                   textTransform:'uppercase', color:'var(--ink-5)' }}>← Prev</span>
-                {prevItem && <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+                {prevItem && <span style={{ fontFamily:"var(--font-sans)", fontSize:11,
                   color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(prevItem.name)}</span>}
               </button>
               {!nextItem ? (
                 <button onClick={onScrollToFindings}
-                  style={{ background:'var(--accent)', border:'none', color:'#fff', padding:'11px 14px',
-                    cursor:'pointer', fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600,
+                  style={{ background:'var(--btn-bg)', border:'none', color:'var(--btn-ink)', padding:'11px 14px',
+                    cursor:'pointer', fontFamily:"var(--font-sans)", fontSize:12, fontWeight:600,
                     letterSpacing:'0.06em', textTransform:'uppercase', textAlign:'right' }}>
                   Review Findings →
                 </button>
@@ -2402,9 +2421,9 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                   style={{ background:'var(--paper-2)', border:'1px solid var(--rule)',
                     color:'var(--ink-3)', padding:'11px 14px', cursor:'pointer',
                     textAlign:'right', display:'flex', flexDirection:'column', gap:2, alignItems:'flex-end' }}>
-                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+                  <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
                     textTransform:'uppercase', color:'var(--ink-5)' }}>Next →</span>
-                  <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+                  <span style={{ fontFamily:"var(--font-sans)", fontSize:11,
                     color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(nextItem.name)}</span>
                 </button>
               )}
@@ -2422,15 +2441,15 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
             color: prevItem ? 'var(--ink-3)' : 'var(--ink-5)', padding:'12px 14px',
             cursor: prevItem ? 'pointer' : 'default', opacity: prevItem ? 1 : 0.35,
             textAlign:'left', display:'flex', flexDirection:'column', gap:2 }}>
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+          <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
             textTransform:'uppercase', color:'var(--ink-5)' }}>← Prev</span>
-          {prevItem && <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+          {prevItem && <span style={{ fontFamily:"var(--font-sans)", fontSize:11,
             color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(prevItem.name)}</span>}
         </button>
         {!nextItem ? (
           <button onClick={onScrollToFindings}
-            style={{ background:'var(--accent)', border:'none', color:'#fff', padding:'12px 14px',
-              cursor:'pointer', fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600,
+            style={{ background:'var(--btn-bg)', border:'none', color:'var(--btn-ink)', padding:'12px 14px',
+              cursor:'pointer', fontFamily:"var(--font-sans)", fontSize:12, fontWeight:600,
               letterSpacing:'0.06em', textTransform:'uppercase', textAlign:'right' }}>
             Review Findings →
           </button>
@@ -2439,9 +2458,9 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
             style={{ background:'var(--paper-2)', border:'none',
               color:'var(--ink-3)', padding:'12px 14px', cursor:'pointer',
               textAlign:'right', display:'flex', flexDirection:'column', gap:2, alignItems:'flex-end' }}>
-            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+            <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
               textTransform:'uppercase', color:'var(--ink-5)' }}>Next →</span>
-            <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+            <span style={{ fontFamily:"var(--font-sans)", fontSize:11,
               color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(nextItem.name)}</span>
           </button>
         )}
@@ -2452,7 +2471,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
   );
 }
 
-function FindingsStage({ audit, checkedIds, setCheckedIds }) {
+function FindingsStage({ audit, checkedIds, setCheckedIds, onUpdateItem }) {
   const failItems = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail');
   const [findingsSort, setFindingsSort] = useState('impact');
 
@@ -2475,15 +2494,41 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
   const roi = calcROI(audit, ids);
   const sortedFailItems = sortItems(failItems, findingsSort);
 
+  // Phase grouping for 'phase' sort mode
+  const quickWins = sortedFailItems.filter(i => getItemState(audit, i.id).phase === 'quick-win');
+  const tests     = sortedFailItems.filter(i => getItemState(audit, i.id).phase !== 'quick-win');
+
+  function togglePhase(itemId) {
+    if (!onUpdateItem) return;
+    const current = getItemState(audit, itemId).phase;
+    onUpdateItem(itemId, { phase: current === 'quick-win' ? 'test' : 'quick-win' });
+  }
+
+  function PhaseToggle({ item }) {
+    const phase = getItemState(audit, item.id).phase;
+    const isQW = phase === 'quick-win';
+    return (
+      <button
+        onClick={e => { e.stopPropagation(); togglePhase(item.id); }}
+        style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em', textTransform:'uppercase',
+          padding:'2px 7px', border:'1px solid', cursor:'pointer', flexShrink:0,
+          background: isQW ? 'var(--accent-positive-bg)' : 'var(--paper-3)',
+          color:       isQW ? 'var(--accent-positive)' : 'var(--ink-5)',
+          borderColor: isQW ? 'var(--accent-positive)' : 'var(--rule-2)' }}>
+        {isQW ? 'Quick win' : 'Test'}
+      </button>
+    );
+  }
+
   return (
     <div data-stage="findings">
       {/* Sticky stage header bar */}
       <div style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
         borderBottom:'1px solid var(--rule)', padding:'10px 20px',
         display:'flex', alignItems:'center', gap:12, flexWrap:'wrap' }}>
-        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-          color:'#fff', background:'var(--accent)', padding:'2px 8px', flexShrink:0 }}>02 — Findings</span>
-        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', letterSpacing:'0.04em', flexShrink:0 }}>
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+          color:'var(--btn-ink)', background:'var(--btn-bg)', padding:'2px 8px', flexShrink:0 }}>02 — Findings</span>
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)', letterSpacing:'0.04em', flexShrink:0 }}>
           {failItems.length} finding{failItems.length !== 1 ? 's' : ''} · {ids.size} selected for ROI
         </span>
         <div style={{ marginLeft:'auto' }}>
@@ -2491,6 +2536,7 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
             value={findingsSort}
             onChange={setFindingsSort}
             options={[
+              { value:'phase',     label:'Phase' },
               { value:'impact',    label:'Impact' },
               { value:'fix_time',  label:'Fix Time' },
               { value:'quickwins', label:'Quick Wins' },
@@ -2501,28 +2547,37 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
       </div>
 
       <div style={{ maxWidth:840, margin:'0 auto', padding:'32px 24px 60px' }}>
-      <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:26, fontWeight:400, color:'var(--ink)',
+      <h2 style={{ fontFamily:"var(--font-sans)", fontSize:26, fontWeight:400, color:'var(--ink)',
         letterSpacing:'-0.4px', marginBottom:6 }}>Findings</h2>
-      <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-4)', lineHeight:1.6,
+      <p style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-4)', lineHeight:1.6,
         marginBottom:28 }}>
         Select which findings to include in the ROI calculation. High-impact items are checked by default.
       </p>
 
       {failItems.length === 0 ? (
         <div style={{ border:'1px solid var(--rule)', padding:'40px 24px', textAlign:'center', background:'var(--paper-2)',
-          fontFamily:"'DM Sans',sans-serif", fontSize:14, color:'var(--ink-4)' }}>
+          fontFamily:"var(--font-sans)", fontSize:14, color:'var(--ink-4)' }}>
           No failures marked yet — go back to the checklist and mark items as Fail.
         </div>
       ) : (
         <div style={{ border:'1px solid var(--rule)', borderRadius:4, overflow:'hidden' }}>
           {/* Table header — hidden on mobile via .findings-header CSS */}
           <div className="findings-header">
-            {['', 'Finding', 'Impact', 'Fix Time', 'CVR Lift', 'Monthly +'].map((h, i) => (
-              <div key={i} style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.1em',
+            {['', 'Finding', 'Priority', 'Fix Time', 'CVR Lift', 'Monthly +'].map((h, i) => (
+              <div key={i} style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em',
                 textTransform:'uppercase', color:'var(--ink-5)', textAlign: i >= 4 ? 'right' : 'left' }}>{h}</div>
             ))}
           </div>
-          {sortedFailItems.map(item => {
+
+          {findingsSort === 'phase' && quickWins.length > 0 && (
+            <div style={{ padding:'8px 16px', background:'var(--paper-3)', borderBottom:'1px solid var(--rule)',
+              fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase',
+              color:'var(--accent-positive)' }}>
+              Phase 1 · Quick wins · ship this week · {quickWins.length} finding{quickWins.length !== 1 ? 's' : ''}
+            </div>
+          )}
+
+          {(findingsSort === 'phase' ? quickWins : sortedFailItems).map(item => {
             const checked = ids.has(item.id);
             const itemState = getItemState(audit, item.id);
             const ci = audit.client_info || {};
@@ -2542,19 +2597,19 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
                 {/* Top section: checkbox + issue name. Desktop: display:contents (grid cols 1–2). Mobile: flex row. */}
                 <div className="findings-row-top">
                   <div style={{ paddingTop:2, flexShrink:0 }}>
-                    <div className="findings-cb" style={{ width:16, height:16, border:`2px solid ${checked ? 'var(--accent)' : 'var(--rule-2)'}`,
-                      background: checked ? 'var(--accent)' : 'transparent', display:'flex',
+                    <div className="findings-cb" style={{ width:16, height:16, border:`2px solid ${checked ? 'var(--btn-bg)' : 'var(--rule-2)'}`,
+                      background: checked ? 'var(--btn-bg)' : 'transparent', display:'flex',
                       alignItems:'center', justifyContent:'center', transition:'all 0.12s' }}>
-                      {checked && <span className="findings-cb-check" style={{ color:'#fff', fontSize:10, lineHeight:1 }}>✓</span>}
+                      {checked && <span className="findings-cb-check" style={{ color:'var(--btn-ink)', fontSize:10, lineHeight:1 }}>✓</span>}
                     </div>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--ink-2)',
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-2)',
                       lineHeight:1.3, marginBottom:3 }}>
                       {item.name.split(':')[0]}{itemState.finding ? `: ${itemState.finding}` : ''}
                     </div>
                     {itemState.recommendation && (
-                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:'var(--ink-4)',
+                      <div style={{ fontFamily:"var(--font-sans)", fontSize:11, color:'var(--ink-4)',
                         lineHeight:1.4 }}>{itemState.recommendation}</div>
                     )}
                     <div style={{ marginTop:4 }}>
@@ -2564,27 +2619,28 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
                 </div>
                 {/* Bottom section: impact + lift + revenue. Desktop: display:contents (grid cols 3–5). Mobile: flex row indented. */}
                 <div className="findings-row-btm">
-                  <div>
-                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, padding:'2px 7px',
+                  <div style={{ display:'flex', gap:5, alignItems:'center' }}>
+                    <span style={{ fontFamily:"var(--font-mono)", fontSize:10, padding:'2px 7px',
                       background:IMPACT_BG[item.impact], color:IMPACT_COLOR[item.impact],
-                      letterSpacing:'0.04em', textTransform:'uppercase' }}>{item.impact}</span>
+                      letterSpacing:'0.04em', textTransform:'uppercase' }}>{IMPACT_LABEL[item.impact] || item.impact}</span>
+                    <PhaseToggle item={item} />
                   </div>
-                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-4)',
+                  <div style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)',
                     letterSpacing:'0.04em' }}>
-                    <span className="findings-lbl" style={{ fontFamily:"'DM Mono',monospace", fontSize:9,
+                    <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9,
                       color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Fix </span>
                     {itemState.estimated_fix_time}
                   </div>
-                  <div className="findings-col-lift" style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--accent-positive)',
+                  <div className="findings-col-lift" style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--accent-positive)',
                     textAlign:'right', letterSpacing:'0.04em' }}>
-                    <span className="findings-lbl" style={{ fontFamily:"'DM Mono',monospace", fontSize:9,
+                    <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9,
                       color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>CVR </span>
                     +{item.lift_min}–{item.lift_max}%
                   </div>
-                  <div className="findings-col-rev" style={{ fontFamily:"'DM Mono',monospace", fontSize:11,
+                  <div className="findings-col-rev" style={{ fontFamily:"var(--font-mono)", fontSize:11,
                     color: revenue > 0 ? 'var(--state-pass)' : 'var(--ink-5)',
                     textAlign:'right', letterSpacing:'0.04em' }}>
-                    <span className="findings-lbl" style={{ fontFamily:"'DM Mono',monospace", fontSize:9,
+                    <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9,
                       color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Mo. </span>
                     {checked && revenue > 0 ? `+$${fmt(monthlyImpact)}` : '—'}
                   </div>
@@ -2592,12 +2648,84 @@ function FindingsStage({ audit, checkedIds, setCheckedIds }) {
               </div>
             );
           })}
+
+          {findingsSort === 'phase' && tests.length > 0 && (
+            <>
+              <div style={{ padding:'8px 16px', background:'var(--paper-3)', borderBottom:'1px solid var(--rule)',
+                borderTop:'2px solid var(--rule-2)', fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em',
+                textTransform:'uppercase', color:'var(--ink-4)' }}>
+                Phase 2 · Testing roadmap · {tests.length} test{tests.length !== 1 ? 's' : ''}
+              </div>
+              {tests.map(item => {
+                const checked = ids.has(item.id);
+                const itemState = getItemState(audit, item.id);
+                const ci = audit.client_info || {};
+                const revenue = parseFloat(ci.monthly_revenue) || 0;
+                const aov = parseFloat(ci.aov) || 85;
+                const cvrRaw = parseFloat(ci.cvr) || 1.8;
+                const sessions = revenue > 0 ? revenue / (aov * (cvrRaw / 100)) : 0;
+                const midLift = (item.lift_min + item.lift_max) / 2 / 100;
+                const monthlyImpact = sessions * aov * midLift;
+                return (
+                  <div key={item.id}
+                    className="findings-row"
+                    style={{ background: checked ? 'var(--row-checked-bg)' : 'var(--paper-2)' }}
+                    onClick={() => toggle(item.id)}
+                    onMouseEnter={e => { if (!checked) e.currentTarget.style.background='var(--paper-3)'; }}
+                    onMouseLeave={e => { if (!checked) e.currentTarget.style.background='var(--paper-2)'; }}>
+                    <div className="findings-row-top">
+                      <div style={{ paddingTop:2, flexShrink:0 }}>
+                        <div className="findings-cb" style={{ width:16, height:16, border:`2px solid ${checked ? 'var(--accent)' : 'var(--rule-2)'}`,
+                          background: checked ? 'var(--btn-bg)' : 'transparent', display:'flex',
+                          alignItems:'center', justifyContent:'center', transition:'all 0.12s' }}>
+                          {checked && <span className="findings-cb-check" style={{ color:'var(--btn-ink)', fontSize:10, lineHeight:1 }}>✓</span>}
+                        </div>
+                      </div>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-2)', lineHeight:1.3, marginBottom:3 }}>
+                          {item.name.split(':')[0]}{itemState.finding ? `: ${itemState.finding}` : ''}
+                        </div>
+                        {itemState.recommendation && (
+                          <div style={{ fontFamily:"var(--font-sans)", fontSize:11, color:'var(--ink-4)', lineHeight:1.4 }}>{itemState.recommendation}</div>
+                        )}
+                        <div style={{ marginTop:4 }}>
+                          <ViewportIcons viewport={item.primary_viewport} status={itemState.status} failsDesktop={itemState.fails_on_desktop} failsMobile={itemState.fails_on_mobile} size="findings" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="findings-row-btm">
+                      <div style={{ display:'flex', gap:5, alignItems:'center' }}>
+                        <span style={{ fontFamily:"var(--font-mono)", fontSize:10, padding:'2px 7px',
+                          background:IMPACT_BG[item.impact], color:IMPACT_COLOR[item.impact],
+                          letterSpacing:'0.04em', textTransform:'uppercase' }}>{IMPACT_LABEL[item.impact] || item.impact}</span>
+                        <PhaseToggle item={item} />
+                      </div>
+                      <div style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)', letterSpacing:'0.04em' }}>
+                        <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Fix </span>
+                        {itemState.estimated_fix_time}
+                      </div>
+                      <div className="findings-col-lift" style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--accent-positive)', textAlign:'right', letterSpacing:'0.04em' }}>
+                        <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>CVR </span>
+                        +{item.lift_min}–{item.lift_max}%
+                      </div>
+                      <div className="findings-col-rev" style={{ fontFamily:"var(--font-mono)", fontSize:11,
+                        color: revenue > 0 ? 'var(--state-pass)' : 'var(--ink-5)', textAlign:'right', letterSpacing:'0.04em' }}>
+                        <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Mo. </span>
+                        {checked && revenue > 0 ? `+$${fmt(monthlyImpact)}` : '—'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+
         </div>
       )}
 
       {/* Quick summary */}
       {failItems.length > 0 && ids.size > 0 && (
-        <div style={{ marginTop:24, fontFamily:"'DM Mono',monospace", fontSize:11, color:'var(--ink-4)',
+        <div style={{ marginTop:24, fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)',
           letterSpacing:'0.04em' }}>
           {roi.hasData
             ? `${ids.size} findings · est. +$${fmt(roi.monthlyRecovery)}/mo · +${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% CVR lift (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp${roi.atCeiling ? ', ceiling' : ''})`
@@ -2619,15 +2747,19 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
   const failCount = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail').length;
   const completedCount = AUDIT_ITEMS.filter(i => { const s = getItemState(audit, i.id).status; return s === 'pass' || s === 'fail'; }).length;
 
+  const selectedItems = AUDIT_ITEMS.filter(i => ids.has(i.id));
+  const qwCount   = selectedItems.filter(i => getItemState(audit, i.id).phase === 'quick-win').length;
+  const testCount = selectedItems.filter(i => getItemState(audit, i.id).phase !== 'quick-win').length;
+
   function setPricing(k, v) { onUpdatePricing(audit.id, { ...pr, [k]: parseFloat(v) || 0 }); }
 
   const metricCell = (label, value, sub) => (
     <div style={{ background:'var(--paper-3)', border:'1px solid var(--rule)', padding:'16px 20px' }}>
-      <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+      <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
         color:'var(--ink-5)', marginBottom:6 }}>{label}</div>
-      <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:26, color:'var(--ink)',
+      <div style={{ fontFamily:"var(--font-sans)", fontSize:26, color:'var(--ink)',
         letterSpacing:'-0.5px', lineHeight:1 }}>{value}</div>
-      {sub && <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-4)', marginTop:4 }}>{sub}</div>}
+      {sub && <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-4)', marginTop:4 }}>{sub}</div>}
     </div>
   );
 
@@ -2639,18 +2771,18 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
       <div style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
         borderBottom:'1px solid var(--rule)', padding:'10px 20px',
         display:'flex', alignItems:'center', gap:12 }}>
-        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-          color:'#fff', background:'var(--accent)', padding:'2px 8px' }}>03 — Calculator</span>
+        <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+          color:'var(--btn-ink)', background:'var(--btn-bg)', padding:'2px 8px' }}>02 — Revenue</span>
         {!roi.hasData && (
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--amber)', letterSpacing:'0.04em' }}>
+          <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--amber)', letterSpacing:'0.04em' }}>
             Add store metrics in Audit Info to unlock
           </span>
         )}
       </div>
 
       <div style={{ maxWidth:840, margin:'0 auto', padding:'32px 24px 60px' }}>
-      <h2 style={{ fontFamily:"'DM Serif Display',serif", fontSize:26, fontWeight:400, color:'var(--ink)',
-        letterSpacing:'-0.4px', marginBottom:32 }}>Revenue impact</h2>
+      <h2 style={{ fontFamily:"var(--font-sans)", fontSize:26, fontWeight:600, color:'var(--ink)',
+        letterSpacing:'-0.045em', marginBottom:32 }}>Revenue at stake</h2>
 
       {/* Revenue Impact Card */}
       {(() => {
@@ -2661,7 +2793,7 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
           : revenue >= 1000
             ? `$${Math.round(revenue/1000)}K/MO STORE`
             : revenue > 0 ? `$${revenue}/MO STORE` : 'STORE';
-        const clientLabel = ci2.client_name || 'Revenue Leak Report';
+        const clientLabel = ci2.client_name || 'Client Store';
         const metricRows = [
           { label: 'Current conversion rate', value: roi.hasData ? fmtPct(roi.cvrRaw) : '—', accent: false },
           { label: 'Selected findings', value: `${ids.size} of ${completedCount}`, accent: true },
@@ -2673,14 +2805,14 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
             {/* Card header */}
             <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)',
               padding:'10px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
-              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em',
+              <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em',
                 textTransform:'uppercase', color:'var(--ink-5)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                CRO AUDIT · {clientLabel} · {storeLabel}
+                Audit · {clientLabel} · {storeLabel}
               </span>
-              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.1em',
+              <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em',
                 textTransform:'uppercase', color:'var(--ink)', flexShrink:0,
-                border:'1px solid rgba(99,102,241,0.5)', padding:'3px 10px',
-                background:'rgba(99,102,241,0.08)' }}>
+                border:'1px solid var(--rule)', padding:'3px 10px',
+                background:'var(--paper-3)' }}>
                 {ids.size} of {failCount} in ROI
               </span>
             </div>
@@ -2689,30 +2821,30 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
               <div key={label} style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
                 padding:'16px 20px', borderBottom: i < metricRows.length - 1 ? '1px solid var(--rule)' : 'none',
                 background:'var(--paper-2)', gap:16 }}>
-                <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:'var(--ink-3)' }}>{label}</span>
-                <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, fontWeight:400,
+                <span style={{ fontFamily:"var(--font-sans)", fontSize:14, color:'var(--ink-3)' }}>{label}</span>
+                <span style={{ fontFamily:"var(--font-sans)", fontSize:22, fontWeight:400,
                   color: accent ? 'var(--amber)' : 'var(--ink)', letterSpacing:'-0.3px' }}>{value}</span>
               </div>
             ))}
             {/* Bottom split: Annual Recovery + ROI */}
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', borderTop:'1px solid var(--rule)' }}>
               <div style={{ padding:'20px 24px', borderRight:'1px solid var(--rule)', background:'var(--paper-2)' }}>
-                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em',
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em',
                   textTransform:'uppercase', color:'var(--ink-5)', marginBottom:10 }}>Annual revenue recovered</div>
-                <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:40, color:'var(--accent)',
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:40, color:'var(--accent)',
                   letterSpacing:'-1px', lineHeight:1, marginBottom:roi.hasData && roi.totalInvestment > 0 ? 12 : 0 }}>
                   {roi.hasData && roi.annualRecovery > 0 ? `$${fmt(roi.annualRecovery)}` : '—'}
                 </div>
                 {roi.hasData && roi.annualRecovery > 0 && roi.totalInvestment > 0 && (
-                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', lineHeight:1.6, fontStyle:'italic' }}>
+                  <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)', lineHeight:1.6, fontStyle:'italic' }}>
                     Client pays ${fmt(roi.auditFee)} audit + ${fmt(roi.implFee)} to fix. Store recovers ${fmt(roi.annualRecovery)}+/yr.
                   </div>
                 )}
               </div>
               <div style={{ padding:'20px 24px', background:'var(--paper-2)' }}>
-                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em',
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em',
                   textTransform:'uppercase', color:'var(--ink-5)', marginBottom:10 }}>Return on audit</div>
-                <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:40,
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:40,
                   color:'var(--ink)', letterSpacing:'-1px', lineHeight:1 }}>
                   {roi.hasData && roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}×` : '—'}
                 </div>
@@ -2726,10 +2858,10 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
       <div className="no-print" style={{ border:'1px solid var(--rule)', marginBottom:32, borderRadius:4, overflow:'hidden' }}>
         <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)', padding:'10px 20px',
           display:'flex', alignItems:'center', gap:8 }}>
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.12em',
+          <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em',
             textTransform:'uppercase', color:'var(--ink-5)', background:'rgba(255,255,255,0.06)',
             border:'1px solid var(--rule)', padding:'2px 7px' }}>Private</span>
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em',
+          <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.08em',
             textTransform:'uppercase', color:'var(--ink-4)' }}>Your Pricing</span>
         </div>
         <div style={{ padding:'20px' }}>
@@ -2739,15 +2871,15 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
               border:'1px solid var(--rule)', display:'flex', justifyContent:'space-between',
               alignItems:'baseline', flexWrap:'wrap', gap:8 }}>
               <div>
-                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.1em',
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em',
                   textTransform:'uppercase', color:'var(--ink-5)', marginBottom:4 }}>Suggested fee</div>
-                <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:28, color:'var(--accent-positive)',
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:28, color:'var(--accent-positive)',
                   letterSpacing:'-0.5px' }}>${fmt(roi.suggestedFee)}</div>
-                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-4)', marginTop:3 }}>
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-4)', marginTop:3 }}>
                   {roi.suggestedPct}% of annual recovery · based on {roi.highCount} high-impact finding{roi.highCount !== 1 ? 's' : ''}
                 </div>
               </div>
-              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)',
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)',
                 textAlign:'right', lineHeight:1.6 }}>
                 Range: ${fmt(roi.annualRecovery * 0.10)} (10%) –<br />${fmt(roi.annualRecovery * 0.20)} (20%)
               </div>
@@ -2781,8 +2913,8 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
           </div>
           {roi.hourlyRate > 0 && roi.estHours > 0 && (
             <div style={{ marginTop:8, padding:'8px 12px', background:'var(--paper-3)',
-              border:`1px solid ${roi.sanityCheck === 'pass' ? '#86efac' : roi.sanityCheck === 'warn' ? 'rgba(200,131,74,0.4)' : 'rgba(248,113,113,0.3)'}`,
-              fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.04em',
+              border:`1px solid ${roi.sanityCheck === 'pass' ? 'var(--state-pass)' : roi.sanityCheck === 'warn' ? 'var(--amber)' : 'var(--state-fail)'}`,
+              fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.04em',
               color: sanityColor[roi.sanityCheck] }}>
               Hourly sanity: ${fmt(roi.implFee)} ÷ {roi.estHours}h = ${(roi.implFee / roi.estHours).toFixed(0)}/hr
               {roi.sanityCheck === 'pass' ? ' · on target' : roi.sanityCheck === 'warn' ? ' · below rate' : ' · well below rate'}
@@ -2794,20 +2926,20 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
       {/* Proposal block — goes in report */}
       <div style={{ border:'1px solid var(--rule)', marginBottom:32, borderRadius:4, overflow:'hidden' }}>
         <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)', padding:'10px 20px' }}>
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em',
+          <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.08em',
             textTransform:'uppercase', color:'var(--ink-4)' }}>Proposal Summary</span>
         </div>
         {[
           ['Scope',
-            `60-point CRO audit · ${ids.size} of ${failCount} finding${failCount !== 1 ? 's' : ''} in ROI model`,
-            null],
-          ['Projected CVR Lift',
+            `${ids.size} of ${failCount} finding${failCount !== 1 ? 's' : ''} in scope`,
+            ids.size > 0 ? `${qwCount} quick win${qwCount !== 1 ? 's' : ''} · ${testCount} test${testCount !== 1 ? 's' : ''}` : null],
+          ['Estimated CVR lift from scope',
             roi.hasData ? `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp${roi.atCeiling ? ', ceiling' : ''})` : '—',
             roi.hasData ? `mid: +${Math.round(roi.cappedMid)}% (+${roi.cappedMidPP.toFixed(2)}pp)` : 'Add store metrics to calculate'],
-          ['Annual Revenue Impact',
+          ['Revenue at stake · per year',
             roi.hasData ? `$${fmt(roi.annualRecovery)}` : '—',
             roi.hasData ? `$${fmt(roi.monthlyRecovery)}/month` : null],
-          ['Investment',
+          ['Suggested fee for the scope',
             roi.totalInvestment > 0 ? `$${fmt(roi.totalInvestment)}` : '—',
             roi.auditFee > 0 || roi.implFee > 0
               ? `Audit $${fmt(roi.auditFee)} · Implementation $${fmt(roi.implFee)}`
@@ -2821,12 +2953,12 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
             style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', padding:'14px 20px',
               borderBottom: i < arr.length - 1 ? '1px solid var(--rule)' : 'none',
               background:'var(--paper-2)', gap:16, flexWrap:'wrap' }}>
-            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:'0.06em',
+            <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:'0.06em',
               textTransform:'uppercase', color:'var(--ink-4)', flexShrink:0 }}>{label}</span>
             <div className="proposal-val" style={{ textAlign:'right' }}>
-              <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:18, color:'var(--ink)',
+              <div style={{ fontFamily:"var(--font-sans)", fontSize:18, color:'var(--ink)',
                 letterSpacing:'-0.3px' }}>{value}</div>
-              {sub && <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--ink-5)', marginTop:2 }}>{sub}</div>}
+              {sub && <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)', marginTop:2 }}>{sub}</div>}
             </div>
           </div>
         ))}
@@ -2837,39 +2969,45 @@ function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
   );
 }
 
-function ReportStage({ audit, checkedIds }) {
+function ReportStage({ audit, checkedIds, onGoToScripts }) {
   const ids = checkedIds || new Set();
   const roi = calcROI(audit, ids);
   const ci = audit.client_info || {};
   const failItems = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail' && ids.has(i.id));
   const completedCount = AUDIT_ITEMS.filter(i => { const s = getItemState(audit, i.id).status; return s === 'pass' || s === 'fail'; }).length;
 
-  // Group fail items by section for report layout
+  // Group fail items by phase for Phase 1 / Phase 2 sections
+  const phase1Items = [...failItems].sort((a, b) => IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact])
+    .filter(i => getItemState(audit, i.id).phase === 'quick-win');
+  const phase2Items = [...failItems].sort((a, b) => IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact])
+    .filter(i => getItemState(audit, i.id).phase !== 'quick-win');
+
+  // Also group by section for legacy section layout (kept for fallback)
   const failsBySec = SECTION_ORDER
     .map(sec => ({ label: sec, items: failItems.filter(i => i.section === sec) }))
     .filter(s => s.items.length > 0);
 
   const sectionCount = failsBySec.length;
 
-  // Light report palette — independent of the dark app theme
+  // Neutral print palette — white bg, black ink, no triage branding
   const r = {
-    ink:    '#0f1117',
-    ink2:   '#374151',
-    ink3:   '#6b7280',
-    ink4:   '#9ca3af',
-    rule:   '#e5e7eb',
-    rule2:  '#d1d5db',
+    ink:    '#0B0C0A',
+    ink2:   '#2A2C28',
+    ink3:   '#5A5D56',
+    ink4:   '#9A9D94',
+    rule:   '#CBCEC4',
+    rule2:  '#B8BBB0',
     bg:     '#ffffff',
-    bg2:    '#f9fafb',
-    accent: '#6366f1',
-    high:   '#dc2626', highBg: '#fef2f2',
-    med:    '#7c3aed', medBg:  '#f5f3ff',
-    low:    '#6b7280', lowBg:  '#f3f4f6',
+    bg2:    '#f5f5f3',
+    accent: '#0B0C0A',
+    high:   '#C2381C', highBg: '#fdf0ed',
+    med:    '#B85C00', medBg:  '#fdf4ec',
+    low:    '#5A5D56', lowBg:  '#f3f4f1',
   };
 
-  const mono  = "'DM Mono', monospace";
-  const serif = "'DM Serif Display', serif";
-  const sans  = "'DM Sans', sans-serif";
+  const mono  = "'Geist Mono', monospace";
+  const serif = "'Geist', sans-serif";
+  const sans  = "'Geist', sans-serif";
 
   const impactColor = { High: r.high, Medium: r.med, Low: r.low };
   const impactBg    = { High: r.highBg, Medium: r.medBg, Low: r.lowBg };
@@ -2888,19 +3026,20 @@ function ReportStage({ audit, checkedIds }) {
         borderBottom:'1px solid var(--rule)', padding:'10px 20px',
         display:'flex', alignItems:'center', gap:12 }}>
         <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-          color:'#fff', background:'var(--accent)', padding:'2px 8px' }}>04 — Report</span>
+          color:'var(--on-accent,#0B0C0A)', background:'var(--accent)', padding:'2px 8px' }}>03 — Report</span>
         <button onClick={() => window.print()} className="no-print"
           style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
             fontFamily:mono, fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase', cursor:'pointer' }}>
           Print / Export PDF
         </button>
-        <a href={`swipe-file.html?store=${encodeURIComponent(ci.client_name||'')}&auditor=${encodeURIComponent(ci.auditor_name||'')}&rev=${encodeURIComponent(ci.monthly_revenue||'')}&roi=${encodeURIComponent(roi.hasData ? String(Math.round(roi.monthlyRecovery)) : '')}`}
-          target="_blank" className="no-print"
-          style={{ marginLeft:'auto', background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)',
-            padding:'6px 14px', fontFamily:mono, fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
-            textDecoration:'none', display:'inline-block' }}>
-          Get closing scripts →
-        </a>
+        {onGoToScripts && (
+          <button onClick={onGoToScripts} className="no-print"
+            style={{ marginLeft:'auto', background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)',
+              padding:'6px 14px', fontFamily:mono, fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
+              cursor:'pointer' }}>
+            04 — Scripts →
+          </button>
+        )}
       </div>
 
       {/* White paper body */}
@@ -2911,10 +3050,10 @@ function ReportStage({ audit, checkedIds }) {
           <div style={{ marginBottom:40 }}>
             <div style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
               color:r.ink3, marginBottom:20 }}>
-              CRO Audit Report · For Shopify
+              Shopify CRO Audit
             </div>
-            <h1 style={{ fontFamily:serif, fontSize:52, fontWeight:400, color:r.ink,
-              letterSpacing:'-1.2px', lineHeight:1, marginBottom:20 }}>
+            <h1 style={{ fontFamily:serif, fontSize:52, fontWeight:600, color:r.ink,
+              letterSpacing:'-0.05em', lineHeight:1, marginBottom:20 }}>
               {ci.audit_title || ci.client_name || 'Client'}
             </h1>
             <div style={{ display:'flex', gap:32, flexWrap:'wrap', marginBottom:24 }}>
@@ -2969,11 +3108,11 @@ function ReportStage({ audit, checkedIds }) {
                   color:r.ink3 }}>Engagement Summary</span>
               </div>
               {[
-                ['Scope',         `${ids.size} finding${ids.size !== 1 ? 's' : ''}`],
-                ['CVR Lift',      roi.atCeiling ? `≤80% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp, at ceiling)` : `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp)`],
-                ['Annual Impact', `$${fmt(roi.annualRecovery)}`],
-                ['Investment',    roi.totalInvestment > 0 ? `$${fmt(roi.totalInvestment)}` : 'TBD'],
-                ['Client ROI',    roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}× · payback ${roi.paybackMonths.toFixed(1)} mo` : '—'],
+                ['Scope',                   `${ids.size} finding${ids.size !== 1 ? 's' : ''}`],
+                ['Estimated CVR lift',      roi.atCeiling ? `≤80% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp, at ceiling)` : `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp)`],
+                ['Revenue at stake · /yr', `$${fmt(roi.annualRecovery)}`],
+                ['Suggested fee',           roi.totalInvestment > 0 ? `$${fmt(roi.totalInvestment)}` : 'TBD'],
+                ['Return on audit',         roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}× · payback ${roi.paybackMonths.toFixed(1)} mo` : '—'],
               ].map(([l, v], i, arr) => (
                 <div key={l} style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline',
                   padding:'12px 18px', borderBottom: i < arr.length - 1 ? `1px solid ${r.rule}` : 'none', gap:16 }}>
@@ -2986,77 +3125,97 @@ function ReportStage({ audit, checkedIds }) {
             </div>
           )}
 
-          {/* ── FINDINGS grouped by section ── */}
-          {failsBySec.length > 0 && (
-            <div>
-              <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-                color:r.ink4, marginBottom:24 }}>Findings</div>
+          {/* ── ESTIMATES NOTE ── */}
+          <div style={{ borderTop:`1px solid ${r.rule}`, paddingTop:20, marginBottom:40 }}>
+            <p style={{ fontFamily:sans, fontSize:12, color:r.ink3, lineHeight:1.7, margin:0 }}>
+              Figures are estimates built on benchmarked CVR lift ranges — not guarantees. Traffic, season, offer and audience all move conversion rate. The testing roadmap in phase 2 is how these numbers get confirmed: each test proves what a fix is worth.
+            </p>
+          </div>
 
-              {failsBySec.map(({ label, items }) => (
-                <div key={label} style={{ marginBottom:40 }}>
-                  {/* Section header */}
-                  <div style={{ fontFamily:mono, fontSize:11, letterSpacing:'0.08em', textTransform:'uppercase',
-                    color:r.ink2, paddingBottom:8, borderBottom:`2px solid ${r.ink}`, marginBottom:20 }}>
-                    {label}
-                  </div>
-
-                  {/* Finding cards */}
-                  {items.map((item) => {
-                    const state = getItemState(audit, item.id);
-                    return (
-                      <div key={item.id} style={{ marginBottom:24, paddingBottom:24,
-                        borderBottom:`1px solid ${r.rule}` }} className="print-section">
-                        {/* Item title + badges */}
-                        <div style={{ marginBottom:14 }}>
-                          <h3 style={{ fontFamily:serif, fontSize:20, fontWeight:400, color:r.ink,
-                            letterSpacing:'-0.3px', lineHeight:1.25, marginBottom:10 }}>
-                            {item.name}
-                          </h3>
-                          <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
-                            {pill(`${item.impact} Impact`, impactColor[item.impact], impactBg[item.impact])}
-                            {pill(`+${item.lift_min}–${item.lift_max}% CVR Lift`, r.accent, '#eef2ff')}
-                          </div>
-                        </div>
-                        {/* Finding */}
-                        <div style={{ marginBottom:12 }}>
-                          <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em',
-                            textTransform:'uppercase', color:r.high, marginBottom:5 }}>Finding</div>
-                          <p style={{ fontFamily:sans, fontSize:14, color:r.ink2, lineHeight:1.65, margin:0 }}>
-                            {state.finding || item.default_finding}
-                          </p>
-                        </div>
-                        {/* Recommendation */}
-                        <div style={{ paddingLeft:14, borderLeft:`3px solid ${r.accent}` }}>
-                          <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em',
-                            textTransform:'uppercase', color:r.ink3, marginBottom:5 }}>Recommendation</div>
-                          <p style={{ fontFamily:sans, fontSize:14, color:r.ink2, lineHeight:1.65, margin:0 }}>
-                            {state.recommendation || item.default_recommendation}
-                          </p>
-                        </div>
-                        {/* Screenshot link */}
-                        {state.screenshot_url && (
-                          <div style={{ marginTop:10 }}>
-                            <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em',
-                              textTransform:'uppercase', color:r.ink4, marginBottom:4 }}>Screenshot</div>
-                            <a href={state.screenshot_url} target="_blank" rel="noopener noreferrer"
-                              style={{ fontFamily:mono, fontSize:10, color:r.accent, wordBreak:'break-all' }}>
-                              {state.screenshot_url}
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+          {/* ── PHASE 1: QUICK WINS ── */}
+          {phase1Items.length > 0 && (
+            <div style={{ marginBottom:48 }}>
+              <div style={{ display:'flex', alignItems:'baseline', gap:12, marginBottom:24,
+                paddingBottom:10, borderBottom:`2px solid ${r.ink}` }}>
+                <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase', color:r.ink3 }}>
+                  Phase 1
                 </div>
-              ))}
+                <div style={{ fontFamily:serif, fontSize:18, fontWeight:600, color:r.ink, letterSpacing:'-0.03em' }}>
+                  Quick wins
+                </div>
+                <div style={{ fontFamily:mono, fontSize:10, color:r.ink4, marginLeft:'auto' }}>
+                  {phase1Items.length} finding{phase1Items.length !== 1 ? 's' : ''} · ship this week
+                </div>
+              </div>
+              {phase1Items.map(item => {
+                const state = getItemState(audit, item.id);
+                return (
+                  <div key={item.id} style={{ marginBottom:24, paddingBottom:24, borderBottom:`1px solid ${r.rule}` }} className="print-section">
+                    <div style={{ marginBottom:12 }}>
+                      <h3 style={{ fontFamily:serif, fontSize:18, fontWeight:600, color:r.ink, letterSpacing:'-0.03em', lineHeight:1.25, marginBottom:8 }}>{item.name}</h3>
+                      <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                        {pill(IMPACT_LABEL[item.impact] || item.impact, impactColor[item.impact], impactBg[item.impact])}
+                        {pill(item.section, r.ink3, r.bg2)}
+                      </div>
+                    </div>
+                    <div style={{ marginBottom:10 }}>
+                      <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase', color:r.high, marginBottom:4 }}>Finding</div>
+                      <p style={{ fontFamily:sans, fontSize:14, color:r.ink2, lineHeight:1.65, margin:0 }}>{state.finding || item.default_finding}</p>
+                    </div>
+                    <div style={{ paddingLeft:14, borderLeft:`3px solid ${r.rule}` }}>
+                      <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase', color:r.ink3, marginBottom:4 }}>Fix</div>
+                      <p style={{ fontFamily:sans, fontSize:14, color:r.ink2, lineHeight:1.65, margin:0 }}>{state.recommendation || item.default_recommendation}</p>
+                    </div>
+                    {state.screenshot_url && (
+                      <div style={{ marginTop:8 }}>
+                        <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase', color:r.ink4, marginBottom:3 }}>Screenshot</div>
+                        <a href={state.screenshot_url} target="_blank" rel="noopener noreferrer"
+                          style={{ fontFamily:mono, fontSize:10, color:r.ink2, wordBreak:'break-all', textDecoration:'underline', textUnderlineOffset:2 }}>{state.screenshot_url}</a>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── PHASE 2: TESTING ROADMAP ── */}
+          {phase2Items.length > 0 && (
+            <div style={{ marginBottom:48 }}>
+              <div style={{ display:'flex', alignItems:'baseline', gap:12, marginBottom:24,
+                paddingBottom:10, borderBottom:`2px solid ${r.rule2}` }}>
+                <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase', color:r.ink3 }}>
+                  Phase 2
+                </div>
+                <div style={{ fontFamily:serif, fontSize:18, fontWeight:600, color:r.ink, letterSpacing:'-0.03em' }}>
+                  Testing roadmap
+                </div>
+                <div style={{ fontFamily:mono, fontSize:10, color:r.ink4, marginLeft:'auto' }}>
+                  {phase2Items.length} test{phase2Items.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+              {phase2Items.map(item => {
+                const state = getItemState(audit, item.id);
+                return (
+                  <div key={item.id} style={{ marginBottom:20, paddingBottom:20, borderBottom:`1px solid ${r.rule}` }} className="print-section">
+                    <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, marginBottom:6 }}>
+                      <div style={{ fontFamily:serif, fontSize:15, fontWeight:600, color:r.ink, letterSpacing:'-0.02em', lineHeight:1.3 }}>{item.name}</div>
+                      <div style={{ display:'flex', gap:4, flexShrink:0 }}>
+                        {pill(IMPACT_LABEL[item.impact] || item.impact, impactColor[item.impact], impactBg[item.impact])}
+                      </div>
+                    </div>
+                    <p style={{ fontFamily:sans, fontSize:13, color:r.ink3, lineHeight:1.6, margin:0 }}>{state.finding || item.default_finding}</p>
+                  </div>
+                );
+              })}
             </div>
           )}
 
           {/* Empty state */}
-          {failsBySec.length === 0 && (
+          {failItems.length === 0 && (
             <div style={{ padding:'48px 24px', textAlign:'center', border:`1px solid ${r.rule}`,
               fontFamily:mono, fontSize:12, color:r.ink4 }}>
-              No findings yet — go back to the checklist and mark items as Fail.
+              No findings yet — go back to the checklist and mark items as Flagged.
             </div>
           )}
 
@@ -3065,6 +3224,224 @@ function ReportStage({ audit, checkedIds }) {
     </div>
   );
 }
+
+// ─── SCRIPTS STAGE ───────────────────────────────────────────────────────────
+
+const SCRIPT_TEMPLATES = [
+  {
+    id: 't1',
+    num: '01',
+    name: 'The Foot-in-the-Door',
+    tagline: 'Cold outreach — open with a free quick win',
+    subject: "Quick question about %store%'s checkout",
+    body: `Hi %client%,
+
+I was browsing %store% on my phone and spotted a quick win on [specific page] — [what's wrong].
+
+I see this pattern a lot on Shopify stores at your traffic level. It typically costs brands 5–10% in lost conversions on mobile, and it's a one-day fix.
+
+I can send you a short screen recording of what I found — no strings attached, just useful. Do you have 2 minutes?
+
+%you%`,
+  },
+  {
+    id: 't2',
+    num: '02',
+    name: 'The Strategy-First Pivot',
+    tagline: 'They asked for a redesign or hourly work',
+    subject: 'A more strategic approach to %store%',
+    body: `Hi %client%,
+
+I'd love to help with [what they requested] for %store%.
+
+Before we move into design or implementation, the most successful projects I've run start with a Revenue-First Audit. Rather than changing the look of the site, I want to make sure we're fixing the friction points that are actually costing you sales.
+
+I've developed a 60-point audit that identifies where visitors are dropping off and puts a number on the revenue at stake. Every hour we spend in implementation is aimed at moving that number — not guessing at what looks good.
+
+Would you be open to starting with the audit so we have a clear roadmap before we touch anything?
+
+%you%`,
+  },
+  {
+    id: 't3',
+    num: '03',
+    name: 'Sending the Audit',
+    tagline: 'Delivering the completed audit — anchor to revenue first',
+    subject: 'Your CRO Audit for %store%',
+    body: `Hi %client%,
+
+Here's the audit.
+
+I focused on the areas that directly affect your conversion rate and checkout completion. Based on your current monthly revenue of $%rev%, even a 0.5% CVR lift from phase 1 recovers an additional $%roi% per month.
+
+The top 3 findings:
+1. %finding1%
+2. %finding2%
+3. %finding3%
+
+I've attached the full report. I'd like to walk through phase 1 (quick wins — things I can ship this week) and phase 2 (the testing roadmap) on a quick 10-minute call. Do you have time on [day] at [time]?
+
+%you%`,
+    extraFields: true,
+  },
+  {
+    id: 't4',
+    num: '04',
+    name: 'The Retainer Bridge',
+    tagline: 'After phase 1 ships — pitching the testing roadmap',
+    subject: '90-day testing roadmap for %store%',
+    body: `Hi %client%,
+
+The phase 1 fixes are live. As we discussed, those were the quick wins — copy, layout and setting changes I could ship without A/B testing.
+
+Phase 2 is different. The remaining [N] findings in the audit are best run as A/B tests so we have data, not guesswork, on what each fix is actually worth.
+
+I've mapped out a 90-day roadmap based on those findings, ranked by revenue potential:
+
+• Month 1: [Month 1 focus]
+• Month 2: [Month 2 focus]
+• Month 3: [Month 3 focus]
+
+My retainer for managing this end-to-end — strategy, build, analysis, monthly reporting — is $[amount]/month.
+
+If that works, I can send the agreement today.
+
+%you%`,
+  },
+  {
+    id: 't5',
+    num: '05',
+    name: 'The Follow-Up',
+    tagline: 'No response 3–5 days after sending the audit',
+    subject: 'Re: %store% CRO Audit',
+    body: `Hi %client%,
+
+Wanted to follow up on the audit I sent over.
+
+Based on the numbers in the report, every week these findings stay live is revenue the store isn't recovering. I don't want that to get lost in the inbox.
+
+Ready to move forward on the phase 1 quick wins? Or has the timing shifted? Either way, happy to adjust the plan.
+
+%you%`,
+  },
+];
+
+function ScriptsStage({ audit }) {
+  const ci = audit.client_info || {};
+  const roi = calcROI(audit, new Set(Object.keys(audit.item_states || {}).filter(id => audit.item_states[id]?.status === 'fail')));
+
+  const [extra, setExtra] = useState({ finding1:'', finding2:'', finding3:'' });
+
+  function fill(str) {
+    const vars = {
+      '%client%':   ci.client_name   || '[client name]',
+      '%store%':    ci.store_url     || ci.client_name || '[store]',
+      '%you%':      ci.auditor_name  || '[your name]',
+      '%rev%':      ci.monthly_revenue ? Number(ci.monthly_revenue).toLocaleString() : '[monthly revenue]',
+      '%roi%':      roi.hasData ? Math.round(roi.monthlyRecovery).toLocaleString() : '[recovery estimate]',
+      '%finding1%': extra.finding1 || '[top finding #1]',
+      '%finding2%': extra.finding2 || '[top finding #2]',
+      '%finding3%': extra.finding3 || '[top finding #3]',
+    };
+    return Object.entries(vars).reduce((s, [k, v]) => s.split(k).join(v), str);
+  }
+
+  async function copyText(text, id) {
+    try { await navigator.clipboard.writeText(text); } catch(e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;'; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); } catch(e2) {} document.body.removeChild(ta);
+    }
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = 'Copied ✓'; btn.style.color = 'var(--state-pass)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1800);
+  }
+
+  return (
+    <div style={{ maxWidth:780, margin:'0 auto', padding:'32px 24px 80px' }}>
+      <h2 style={{ fontFamily:"var(--font-sans)", fontSize:26, fontWeight:600, letterSpacing:'-0.045em',
+        color:'var(--ink)', marginBottom:8 }}>Scripts</h2>
+      <p style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)', letterSpacing:'0.04em',
+        marginBottom:32 }}>
+        Use the structure. Add one specific detail about their store — a product, a recent launch, something from their About page.
+      </p>
+
+      {SCRIPT_TEMPLATES.map(t => (
+        <div key={t.id} style={{ border:'1px solid var(--rule)', borderRadius:4, overflow:'hidden', marginBottom:24 }}>
+          {/* Card header */}
+          <div style={{ background:'var(--paper-2)', borderBottom:'1px solid var(--rule)', padding:'12px 18px',
+            display:'flex', alignItems:'baseline', gap:10, flexWrap:'wrap' }}>
+            <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
+              background:'var(--btn-bg)', color:'var(--btn-ink)', padding:'2px 7px', flexShrink:0 }}>{t.num}</span>
+            <span style={{ fontFamily:"var(--font-sans)", fontSize:16, fontWeight:600, letterSpacing:'-0.03em',
+              color:'var(--ink)' }}>{t.name}</span>
+            <span style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)', marginLeft:'auto' }}
+              className="desktop-only">{t.tagline}</span>
+          </div>
+
+          {/* Extra fields for T3 */}
+          {t.extraFields && (
+            <div style={{ padding:'14px 18px', borderBottom:'1px solid var(--rule)', background:'var(--paper-3)' }}>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase',
+                color:'var(--ink-5)', marginBottom:10 }}>Audit details — pull from the Revenue step</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+                {['finding1','finding2','finding3'].map((f, i) => (
+                  <div key={f}>
+                    <label style={{ display:'block', fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
+                      textTransform:'uppercase', color:'var(--ink-4)', marginBottom:5 }}>Top finding #{i+1}</label>
+                    <input type="text" value={extra[f]}
+                      onChange={e => setExtra(prev => ({...prev, [f]:e.target.value}))}
+                      placeholder={`e.g. ${['ATC below fold on mobile','Filters reset on back nav','Shipping hidden until checkout'][i]}`}
+                      style={{ width:'100%', background:'var(--paper)', border:'1px solid var(--rule)',
+                        color:'var(--ink)', fontFamily:"var(--font-mono)", fontSize:12, padding:'6px 9px', outline:'none' }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Subject */}
+          <div style={{ padding:'12px 18px', borderBottom:'1px solid var(--rule)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+              <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase',
+                color:'var(--ink-5)' }}>Subject</span>
+              <button id={`copy-subj-${t.id}`} onClick={() => copyText(fill(t.subject), `copy-subj-${t.id}`)}
+                style={{ marginLeft:'auto', fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.06em',
+                  textTransform:'uppercase', background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)',
+                  padding:'3px 10px', cursor:'pointer' }}>Copy subject</button>
+            </div>
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:13, color:'var(--ink)', background:'var(--paper-3)',
+              border:'1px solid var(--rule)', padding:'8px 12px', lineHeight:1.5 }}>{fill(t.subject)}</div>
+          </div>
+
+          {/* Body */}
+          <div style={{ padding:'12px 18px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+              <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase',
+                color:'var(--ink-5)' }}>Email body</span>
+              <button id={`copy-body-${t.id}`} onClick={() => copyText(fill(t.body), `copy-body-${t.id}`)}
+                style={{ marginLeft:'auto', fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.06em',
+                  textTransform:'uppercase', background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)',
+                  padding:'3px 10px', cursor:'pointer' }}>Copy email</button>
+            </div>
+            <pre style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-2)', lineHeight:1.75,
+              whiteSpace:'pre-wrap', wordBreak:'break-word', margin:0 }}>{fill(t.body)}</pre>
+          </div>
+        </div>
+      ))}
+
+      <div style={{ borderTop:'1px solid var(--rule)', paddingTop:20, marginTop:8 }}>
+        <p style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)', letterSpacing:'0.04em', lineHeight:1.6 }}>
+          The client's number is the leverage. Lead with revenue at stake — every time.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── COMPONENTS C: AuditWorkspace, App ───────────────────────────────────────
 
 function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveClientInfo, onBack, theme, onToggleTheme }) {
   const audit = store.audits[auditId];
@@ -3114,8 +3491,8 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
     setNameEditing(false);
   }
 
-  const STAGE_LABELS = ['01 — Checklist', '02 — Findings', '03 — Calculator', '04 — Report'];
-  const NEXT_LABELS  = ['Review Findings', 'Calculate ROI', 'View Report', null];
+  const STAGE_LABELS = ['01 — Checklist', '02 — Revenue', '02 — Revenue', '03 — Report', '04 — Scripts'];
+  const NEXT_LABELS  = ['Size the Revenue', 'See the numbers', 'View Report', 'See Scripts', null];
 
   const SLIDE = 'transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94)';
   const stageStyle = (n) => ({
@@ -3150,15 +3527,15 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
                   onKeyDown={e => { if (e.key === 'Enter') { commitName(); } if (e.key === 'Escape') { nameCancelRef.current = true; setNameEditing(false); } }}
                   onBlur={() => { if (!nameCancelRef.current) commitName(); nameCancelRef.current = false; }}
                   placeholder="Audit title..."
-                  style={{ fontFamily:"'DM Serif Display',serif", fontSize:16, color:'var(--ink)',
+                  style={{ fontFamily:"var(--font-sans)", fontSize:16, color:'var(--ink)',
                     letterSpacing:'-0.2px', background:'transparent', border:'none',
                     borderBottom:'1px solid var(--accent)', outline:'none', minWidth:80, width:180 }}
                 />
                 <button
                   onMouseDown={e => e.preventDefault()}
                   onClick={commitName}
-                  style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.06em',
-                    background:'var(--accent)', border:'none', color:'#fff', padding:'3px 8px',
+                  style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.06em',
+                    background:'var(--btn-bg)', border:'none', color:'var(--btn-ink)', padding:'3px 8px',
                     cursor:'pointer', flexShrink:0 }}>
                   GO →
                 </button>
@@ -3167,7 +3544,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
               <React.Fragment>
                 <span
                   onClick={() => { setNameDraft(ci.audit_title || ''); setNameEditing(true); }}
-                  style={{ fontFamily:"'DM Serif Display',serif", fontSize:16, color:'var(--ink)',
+                  style={{ fontFamily:"var(--font-sans)", fontSize:16, color:'var(--ink)',
                     letterSpacing:'-0.2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
                     cursor:'text' }}>
                   {auditDisplayTitle}
@@ -3175,7 +3552,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
                 {isSetupIncomplete && (
                   <button
                     onClick={() => setClientInfoOpen(true)}
-                    style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:'0.08em',
+                    style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
                       textTransform:'uppercase', color:'var(--amber)', background:'rgba(200,131,74,0.1)',
                       border:'1px solid rgba(200,131,74,0.25)', padding:'2px 7px', whiteSpace:'nowrap',
                       flexShrink:0, cursor:'pointer' }}
@@ -3190,7 +3567,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
         <div style={{ display:'flex', gap:8, flexShrink:0 }}>
           <button onClick={() => setClientInfoOpen(true)}
             style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
-              fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
+              fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
               cursor:'pointer' }}>
             {isSetupIncomplete ? '+ Audit Info' : 'Edit Info'}
           </button>
@@ -3199,7 +3576,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
               const name = (ci.audit_title || ci.client_name || 'audit').toLowerCase().replace(/\s+/g,'-');
               downloadJSON(audit, `cro-audit-${name}-${audit.id}.json`);
             }} style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
-              fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
+              fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
               cursor:'pointer' }} className="desktop-only">
               Export Audit
             </button>
@@ -3221,7 +3598,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
 
         {/* Findings */}
         <div data-stage="findings" style={{ ...stageStyle(1), overflowY:'auto' }}>
-          <FindingsStage audit={audit} checkedIds={checkedIds} setCheckedIds={setCheckedIds} />
+          <FindingsStage audit={audit} checkedIds={checkedIds} setCheckedIds={setCheckedIds} onUpdateItem={(itemId, updates) => onUpdateItem(audit.id, itemId, updates)} />
         </div>
 
         {/* Calculator */}
@@ -3231,7 +3608,12 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
 
         {/* Report */}
         <div data-stage="report" style={{ ...stageStyle(3), overflowY:'auto' }}>
-          <ReportStage audit={audit} checkedIds={checkedIds} />
+          <ReportStage audit={audit} checkedIds={checkedIds} onGoToScripts={() => setStageIndex(4)} />
+        </div>
+
+        {/* Scripts */}
+        <div data-stage="scripts" style={{ ...stageStyle(4), overflowY:'auto' }}>
+          <ScriptsStage audit={audit} />
         </div>
 
       </div>
@@ -3240,12 +3622,12 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
       <div className="mobile-bottom-bar no-print">
         <button onClick={stageIndex > 0 ? () => setStageIndex(stageIndex - 1) : onBack}
           style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-3)', padding:'10px 18px',
-            fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:'0.06em',
+            fontFamily:"var(--font-sans)", fontSize:12, fontWeight:600, letterSpacing:'0.06em',
             textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
           ← Back
         </button>
         <div style={{ flex:1, display:'flex', justifyContent:'flex-start' }}>
-          <span className="desktop-only" style={{ fontFamily:"'DM Mono',monospace", fontSize:10,
+          <span className="desktop-only" style={{ fontFamily:"var(--font-mono)", fontSize:10,
             color:'var(--ink-5)', letterSpacing:'0.04em' }}>
             {STAGE_LABELS[stageIndex]}
           </span>
@@ -3261,17 +3643,10 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
               setStageIndex(nextIdx);
             }
           }}
-            style={{ background:'var(--accent)', border:'none', color:'#fff', padding:'10px 22px',
-              fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:'0.06em',
+            style={{ background:'var(--btn-bg)', border:'none', color:'var(--btn-ink)', padding:'10px 22px',
+              fontFamily:"var(--font-mono)", fontSize:12, fontWeight:600, letterSpacing:'0.08em',
               textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
             {NEXT_LABELS[stageIndex]} →
-          </button>
-        ) : stageIndex === 3 ? (
-          <button onClick={() => window.print()}
-            style={{ background:'var(--accent)', border:'none', color:'#fff', padding:'10px 22px',
-              fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:'0.06em',
-              textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
-            Print / Export PDF
           </button>
         ) : <div />}
       </div>
@@ -3291,7 +3666,7 @@ function App() {
   const [store, setStore] = useState(initStore);
   const [appScreen, setAppScreen] = useState('list'); // 'list' | 'audit'
   const [activeAuditId, setActiveAuditId] = useState(null);
-  const [theme, setTheme] = useState(() => localStorage.getItem('cro-theme') || 'dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('triage-theme') || 'light');
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(!demoMode);
   const [auditsLoading, setAuditsLoading] = useState(!demoMode);
@@ -3304,8 +3679,12 @@ function App() {
   const savedAt = useRef({});
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    try { localStorage.setItem('cro-theme', theme); } catch {}
+    if (theme === 'light') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    try { localStorage.setItem('triage-theme', theme); } catch {}
   }, [theme]);
 
   function toggleTheme() { setTheme(t => t === 'dark' ? 'light' : 'dark'); }
