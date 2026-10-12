@@ -1032,7 +1032,6 @@ function calcROI(audit, checkedIds) {
 function LoginScreen() {
   const [email, setEmail]   = useState('');
   const [status, setStatus] = useState('idle'); // 'idle' | 'sending' | 'sent' | 'error'
-  const [errorMsg, setErrorMsg] = useState('');
 
   async function handleSend(e) {
     e.preventDefault();
@@ -1043,67 +1042,120 @@ function LoginScreen() {
       options: { emailRedirectTo: window.location.origin },
     });
     if (error) {
-      // signInWithOtp with "Enable new user signups" off returns an error for unknown emails.
-      // Show a purchase prompt rather than a raw error string.
-      setErrorMsg('no-account');
       setStatus('error');
     } else {
       setStatus('sent');
     }
   }
 
-  return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center',
-      justifyContent:'center', padding:'32px 24px', background:'var(--paper)' }}>
-      <div style={{ maxWidth:400, width:'100%' }}>
-        <div className="site-header__name" style={{ fontSize:22, marginBottom:16 }}>triage</div>
-        <h1 style={{ fontFamily:"var(--font-sans)", fontSize:32, fontWeight:600,
-          color:'var(--ink)', letterSpacing:'-0.05em', lineHeight:1.1, marginBottom:8 }}>
-          Sign in
-        </h1>
-        <p style={{ color:'var(--ink-4)', fontSize:14, marginBottom:32 }}>
-          Enter your email and we'll send a magic link.
-        </p>
+  const inputStyle = {
+    display:'block', width:'100%', padding:'0 14px', height:44, fontSize:15,
+    fontFamily:'var(--font-sans)', background:'var(--surface)',
+    border:'1px solid var(--rule)', borderRadius:0, color:'var(--ink)',
+    outline:'none', boxSizing:'border-box',
+  };
 
-        {status === 'sent' ? (
-          <div style={{ background:'var(--accent-positive-bg)', border:'1px solid var(--accent-positive)',
-            borderRadius:4, padding:'16px 20px', color:'var(--accent-positive)', fontSize:14 }}>
-            Check your inbox — link sent to <strong>{email}</strong>.
-          </div>
-        ) : (
-          <form onSubmit={handleSend}>
-            <input
-              type="email"
-              required
-              placeholder="your@email.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={{ display:'block', width:'100%', padding:'12px 14px', fontSize:15,
-                fontFamily:"var(--font-sans)", background:'var(--paper-2)',
-                border:'1px solid var(--rule)', borderRadius:0, color:'var(--ink)',
-                outline:'none', marginBottom:12 }}
-            />
-            <button type="submit" disabled={status === 'sending'}
-              style={{ display:'block', width:'100%', padding:'12px 24px',
-                background: status === 'sending' ? 'var(--paper-3)' : 'var(--btn-bg)',
-                color: status === 'sending' ? 'var(--ink-5)' : 'var(--btn-ink)',
-                border:'none', borderRadius:0, fontFamily:"var(--font-sans)",
-                fontSize:13, fontWeight:600, letterSpacing:'0.06em',
-                textTransform:'uppercase', cursor: status === 'sending' ? 'default' : 'pointer' }}>
-              {status === 'sending' ? 'Sending…' : 'Send magic link'}
-            </button>
-            {status === 'error' && (
-              <p style={{ color:'var(--state-fail)', fontSize:13, marginTop:10 }}>
-                No account found for that email.{' '}
-                <a href="https://croauditsystem.lemonsqueezy.com/checkout/buy/9da78faa-4513-40c6-9469-621292edd053"
-                  style={{ color:'var(--state-fail)', textUnderlineOffset:2 }}>
-                  Get access to triage
-                </a>
-                {' '}to get access.
+  return (
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column',
+      background:'var(--bg)' }}>
+
+      {/* Header */}
+      <div style={{ padding:'20px 32px' }}>
+        <span className="site-header__name" style={{ fontSize:16 }}>{THEME.product.name}</span>
+      </div>
+
+      {/* Centered content */}
+      <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center',
+        padding:'32px 24px' }}>
+        <div style={{ width:'100%', maxWidth:360 }}>
+
+          <h1 style={{ fontFamily:'var(--font-sans)', fontSize:32, fontWeight:600,
+            letterSpacing:'-0.04em', lineHeight:1.05, color:'var(--ink)', marginBottom:10 }}>
+            Sign in
+          </h1>
+          <p style={{ fontFamily:'var(--font-sans)', fontSize:15, color:'var(--mute)',
+            lineHeight:1.55, marginBottom:32 }}>
+            Enter the email you bought the kit with. We'll send a one-time link.
+          </p>
+
+          {status === 'sent' ? (
+            <div style={{ border:'1px solid var(--gain)', padding:'16px 20px',
+              background:'var(--state-pass-bg)' }}>
+              <div style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
+                letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--gain)',
+                marginBottom:6 }}>Link sent</div>
+              <div style={{ fontFamily:'var(--font-sans)', fontSize:14, color:'var(--ink)',
+                lineHeight:1.5 }}>
+                Check your inbox at <strong>{email}</strong>. The link expires in 1 hour.
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSend}>
+              <div style={{ marginBottom:10 }}>
+                <label style={{ display:'block', fontFamily:'var(--font-mono)', fontSize:11,
+                  fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase',
+                  color:'var(--mute)', marginBottom:6 }}>Email</label>
+                <input
+                  type="email" required autoFocus
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  style={inputStyle}
+                  onFocus={e => e.target.style.borderColor='var(--accent)'}
+                  onBlur={e => e.target.style.borderColor='var(--rule)'}
+                />
+              </div>
+
+              {status === 'error' && (
+                <div style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--loss)',
+                  letterSpacing:'0.04em', marginBottom:10, lineHeight:1.5 }}>
+                  No account found.{' '}
+                  <a href="https://croauditsystem.lemonsqueezy.com/checkout/buy/9da78faa-4513-40c6-9469-621292edd053"
+                    style={{ color:'var(--loss)', textUnderlineOffset:2 }}>
+                    Get access →
+                  </a>
+                </div>
+              )}
+
+              <button type="submit" disabled={status === 'sending'}
+                className="btn btn-primary btn-full"
+                style={{ height:44, fontSize:12, marginBottom:20 }}>
+                {status === 'sending' ? 'Sending…' : 'Send magic link →'}
+              </button>
+
+              {/* Divider */}
+              <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
+                <div style={{ flex:1, height:1, background:'var(--rule)' }} />
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+                  letterSpacing:'0.08em', textTransform:'uppercase' }}>or</span>
+                <div style={{ flex:1, height:1, background:'var(--rule)' }} />
+              </div>
+
+              {/* Demo CTA */}
+              <a href="/demo" className="btn btn-secondary btn-full"
+                style={{ height:44, textDecoration:'none', display:'flex',
+                  alignItems:'center', justifyContent:'center', marginBottom:12 }}>
+                Try the demo →
+              </a>
+              <p style={{ fontFamily:'var(--font-sans)', fontSize:12, color:'var(--mute)',
+                lineHeight:1.5, textAlign:'center', margin:0 }}>
+                The demo runs the full audit and report. Nothing is saved, and there's no export.
               </p>
-            )}
-          </form>
-        )}
+            </form>
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ padding:'20px 32px', borderTop:'1px solid var(--rule)',
+        fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+        letterSpacing:'0.06em', textTransform:'uppercase',
+        display:'flex', gap:16 }}>
+        <span>{THEME.product.version}</span>
+        <span>·</span>
+        <span>Local-first</span>
+        <span>·</span>
+        <span>Audits stay in this browser</span>
       </div>
     </div>
   );
@@ -1431,63 +1483,56 @@ function DonutChart({ pct, color, size = 52 }) {
 }
 
 function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onImport, onSaveClientInfo, user, onSignOut, auditsLoading, dbError, onDismissError }) {
-  const [listClientInfoId, setListClientInfoId] = useState(null);
   const importRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(null);
+  const [view, setView] = useState(() => {
+    if (demoMode) return 'table';
+    try { return localStorage.getItem('triage-view') || 'table'; } catch { return 'table'; }
+  });
+
   const audits = Object.values(store.audits).sort((a,b) => b.updated_at.localeCompare(a.updated_at));
   const atCap = audits.length >= THEME.limits.maxActiveAudits;
+  const slotsOpen = THEME.limits.maxActiveAudits - audits.length;
 
-  const TIPS = [
-    'New client? Start an audit.',
-    'Covers 60 CRO checkpoints, end to end.',
-    'Generates a client ROI pitch on completion.',
-    'One high-impact fix can move conversion 20–30%.',
-  ];
-  const [tipIdx, setTipIdx] = useState(0);
-  const [tipVisible, setTipVisible] = useState(true);
-  useEffect(() => {
-    if (atCap) return;
-    const id = setInterval(() => {
-      setTipVisible(false);
-      setTimeout(() => { setTipIdx(i => (i + 1) % TIPS.length); setTipVisible(true); }, 450);
-    }, 4500);
-    return () => clearInterval(id);
-  }, [atCap]);
+  function switchView(v) {
+    setView(v);
+    if (!demoMode) { try { localStorage.setItem('triage-view', v); } catch {} }
+  }
 
-  const progressPct = (audit) => {
-    const items = audit.items || {};
-    const done = Object.values(items).filter(v => v.status && v.status !== 'tbd').length;
-    return { done, total: 60, pct: Math.round((done / 60) * 100) };
+  // ── Per-audit helpers ──────────────────────────────────────────────────────
+  const auditTitle   = a => a.client_info?.audit_title || a.client_info?.client_name || 'New Audit';
+  const auditSubline = a => [a.client_info?.store_url, a.client_info?.client_name].filter(Boolean).join(' · ');
+  const auditTheme   = a => a.client_info?.shopify_theme || '—';
+  const auditProgress = a => {
+    const done = Object.values(a.items || {}).filter(v => v.status && v.status !== 'tbd').length;
+    return { done, pct: Math.round((done / 60) * 100) };
   };
-
-  const isSetupIncomplete = (audit) => {
-    const ci = audit.client_info || {};
-    return (!ci.audit_title && !ci.client_name) || !ci.monthly_revenue || !ci.aov || !ci.cvr;
+  const auditFails = a => {
+    const items = Object.entries(a.items || {});
+    const fails = items.filter(([,v]) => v.status === 'fail');
+    const p0 = fails.filter(([id]) => AUDIT_ITEMS.find(i => i.id === id)?.impact === 'High').length;
+    return { total: fails.length, p0 };
   };
-
-  const auditColor = (audit) => {
-    const itemMap = audit.items || {};
-    let highFails = 0, otherFails = 0, passes = 0;
-    for (const [id, v] of Object.entries(itemMap)) {
-      const meta = AUDIT_ITEMS.find(i => i.id === id);
-      if (v.status === 'fail') { meta?.impact === 'High' ? highFails++ : otherFails++; }
-      else if (v.status === 'pass' || v.status === 'na') passes++;
-    }
-    if (highFails > 0)  return { color:'var(--impact-high)', label:`${highFails} P0 finding${highFails > 1 ? 's' : ''}` };
-    if (otherFails > 0) return { color:'var(--amber)',       label:`${otherFails} finding${otherFails > 1 ? 's' : ''}` };
-    if (passes > 5)     return { color:'var(--state-pass)',  label:'Not much to flag yet.' };
-    return                     { color:'var(--ink-5)',       label:'Not started' };
+  const auditRecovery = a => {
+    const ci = a.client_info || {};
+    if (!ci.monthly_revenue) return null;
+    const ids = preCheckItems(a);
+    const roi = calcROI(a, ids);
+    return roi.hasData && roi.monthlyRecovery > 0 ? roi.monthlyRecovery : null;
   };
-
-  const formatDate = (iso) => {
+  const auditStatus = a => {
+    const { done } = auditProgress(a);
+    if (done === 0) return 'not-started';
+    if (done === 60) return 'complete';
+    return 'in-progress';
+  };
+  const formatDate = iso => {
     if (!iso) return '—';
-    const d = new Date(iso);
-    return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
   };
 
   function handleImportFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
       try {
@@ -1500,337 +1545,391 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
     reader.readAsText(file);
   }
 
-  return (
-    <React.Fragment>
-    <main className="audits-main" style={{ maxWidth:840, margin:'0 auto', padding:'48px 24px 100px' }}>
-      {/* Error banner */}
-      {dbError && (
-        <div style={{ marginBottom:20, padding:'12px 18px', background:'rgba(220,38,38,0.1)',
-          border:'1px solid rgba(220,38,38,0.3)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
-          <span style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--impact-high)', letterSpacing:'0.04em', lineHeight:1.5 }}>
-            {dbError}
-          </span>
-          <button onClick={onDismissError} style={{ background:'none', border:'none', color:'var(--ink-4)',
-            fontFamily:"var(--font-mono)", fontSize:16, cursor:'pointer', lineHeight:1, padding:'0 4px', flexShrink:0 }}>
-            ×
-          </button>
-        </div>
-      )}
-
-      {/* Mobile header — stacked layout with + button top-right */}
-      <div className="mobile-only" style={{ position:'relative', marginBottom:20 }}>
-        <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
-          color:'var(--ink-5)', marginBottom:8 }}>
-          {demoMode ? 'Demo Mode' : `Active audits: ${audits.length} of ${THEME.limits.maxActiveAudits}`}
-        </div>
-        <h1 style={{ fontFamily:"var(--font-sans)", fontSize:32, fontWeight:400, color:'var(--ink)',
-          letterSpacing:'-0.5px', lineHeight:1.05, marginBottom:8 }}>Your audits</h1>
-        {user && !demoMode && (
-          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-            <span style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-5)',
-              letterSpacing:'0.04em', overflow:'hidden', maxWidth:200, textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-              {user.email}
-            </span>
-            <span style={{ color:'var(--rule-2)' }}>·</span>
-            <button onClick={onSignOut}
-              style={{ background:'none', border:'none', padding:0, fontFamily:"var(--font-sans)",
-                fontSize:12, color:'var(--ink-5)', cursor:'pointer', textDecoration:'underline',
-                textUnderlineOffset:2 }}>
-              Sign out
-            </button>
+  // ── Row ⋯ menu ─────────────────────────────────────────────────────────────
+  function AuditMenu({ auditId }) {
+    const isOpen = menuOpen === auditId;
+    const items = [
+      { label:'Open',      action:() => { onOpen(auditId); setMenuOpen(null); } },
+      { label:'Duplicate', action:() => { onDuplicate(auditId); setMenuOpen(null); } },
+      ...(!demoMode ? [{ label:'Archive', sub:'Exports .json, frees a slot', action:() => { onArchive(auditId); setMenuOpen(null); } }] : []),
+      { label:'Delete…', action:() => { onDelete(auditId); setMenuOpen(null); }, danger:true },
+    ];
+    return (
+      <div style={{ position:'relative', flexShrink:0 }}>
+        <button onClick={e => { e.stopPropagation(); setMenuOpen(isOpen ? null : auditId); }}
+          style={{ width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center',
+            background:'none', border:'1px solid var(--rule)', color:'var(--mute)',
+            fontFamily:'var(--font-mono)', fontSize:14, cursor:'pointer', letterSpacing:0.04 }}>
+          ⋯
+        </button>
+        {isOpen && (
+          <div style={{ position:'absolute', right:0, top:'100%', marginTop:2, background:'var(--bg)',
+            border:'1px solid var(--ink)', zIndex:300, minWidth:220 }}
+            onMouseLeave={() => setMenuOpen(null)}>
+            {items.map((item, idx) => (
+              <button key={item.label} onClick={item.action}
+                style={{ display:'block', width:'100%', textAlign:'left', padding:'12px 16px',
+                  background:'none', border:'none',
+                  borderBottom: idx < items.length - 1 ? '1px solid var(--rule)' : 'none',
+                  fontFamily:'var(--font-sans)', fontSize:14,
+                  color: item.danger ? 'var(--loss)' : 'var(--ink)', cursor:'pointer' }}
+                onMouseEnter={e => e.currentTarget.style.background='var(--surface)'}
+                onMouseLeave={e => e.currentTarget.style.background='none'}>
+                {item.label}
+                {item.sub && (
+                  <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+                    marginTop:2, letterSpacing:'0.04em' }}>{item.sub}</div>
+                )}
+              </button>
+            ))}
           </div>
         )}
-        <button onClick={onNew} disabled={!demoMode && atCap}
-          style={{ position:'absolute', top:0, right:0, width:44, height:44,
-            background:(!demoMode && atCap) ? 'var(--paper-3)' : 'var(--btn-bg)',
-            color:(!demoMode && atCap) ? 'var(--ink-5)' : 'var(--btn-ink)', border:'none',
-            fontFamily:"var(--font-sans)", fontSize:22, fontWeight:400, lineHeight:1,
-            cursor:(!demoMode && atCap) ? 'not-allowed' : 'pointer',
-            display:'flex', alignItems:'center', justifyContent:'center' }}>
-          +
-        </button>
       </div>
+    );
+  }
 
-      {/* Desktop header row */}
-      <div className="desktop-only" style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:40, gap:16, flexWrap:'wrap' }}>
-        <div>
-          <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
-            color:'var(--ink-5)', marginBottom:10 }}>
-            {demoMode ? 'Demo Mode' : `Active audits: ${audits.length} of ${THEME.limits.maxActiveAudits}`}
-          </div>
-          <h1 style={{ fontFamily:"var(--font-sans)", fontSize:32, fontWeight:400, color:'var(--ink)',
-            letterSpacing:'-0.5px', lineHeight:1.05 }}>Your audits</h1>
+  // ── 60-cell mini map ───────────────────────────────────────────────────────
+  function MiniMap({ audit }) {
+    const cellColor = s => s === 'pass' ? 'var(--gain)' : s === 'fail' ? 'var(--loss)' : 'var(--rule)';
+    return (
+      <div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(10, 1fr)', gap:2, marginBottom:8 }}>
+          {AUDIT_ITEMS.map(item => {
+            const s = getItemState(audit, item.id).status;
+            return (
+              <div key={item.id} style={{ height:8, background:cellColor(s) }} title={item.name} />
+            );
+          })}
         </div>
-        <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:8, flexShrink:0 }}>
-          {user && !demoMode && (
-            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-              <span style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-5)',
-                letterSpacing:'0.04em', overflow:'hidden', maxWidth:200, textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                {user.email}
-              </span>
-              <span style={{ color:'var(--rule-2)' }}>·</span>
-              <button onClick={onSignOut}
-                style={{ background:'none', border:'none', padding:0, fontFamily:"var(--font-sans)",
-                  fontSize:12, color:'var(--ink-5)', cursor:'pointer', textDecoration:'underline',
-                  textUnderlineOffset:2 }}>
-                Sign out
-              </button>
-            </div>
-          )}
-          <button onClick={onNew} disabled={!demoMode && atCap}
-            style={{ background:(!demoMode && atCap) ? 'var(--paper-3)' : 'var(--btn-bg)',
-              color:(!demoMode && atCap) ? 'var(--ink-5)' : 'var(--btn-ink)', border:'none', padding:'12px 24px',
-              fontFamily:"var(--font-sans)", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
-              textTransform:'uppercase', cursor:(!demoMode && atCap) ? 'not-allowed' : 'pointer',
-              display:'flex', alignItems:'center', gap:8 }}>
-            + Start New Audit
-          </button>
-        </div>
-      </div>
-
-      {/* Workspace cap bar — desktop only */}
-      {!demoMode && audits.length > 0 && (
-        <div className="desktop-only" style={{ marginBottom:24, display:'flex', alignItems:'center', gap:10 }}>
-          <div style={{ flex:1, height:2, background:'var(--rule)', position:'relative' }}>
-            <div style={{ position:'absolute', left:0, top:0, height:'100%', background:'var(--accent)',
-              width:`${(audits.length / THEME.limits.maxActiveAudits) * 100}%`, transition:'width 0.3s' }} />
-          </div>
-          <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.08em', textTransform:'uppercase',
-            color: audits.length >= THEME.limits.maxActiveAudits ? 'var(--impact-high)' : 'var(--ink-4)', whiteSpace:'nowrap' }}>
-            {audits.length}/{THEME.limits.maxActiveAudits} active audits
-          </span>
-        </div>
-      )}
-
-      {/* Loading skeleton */}
-      {auditsLoading && (
-        <div className="audits-grid" style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:12 }}>
-          {[0,1,2,4].map(i => (
-            <div key={i} style={{ background:'var(--paper-2)', border:'1px solid var(--rule)', borderRadius:8,
-              padding:'16px 18px', minHeight:160, display:'flex', flexDirection:'column', gap:12 }}>
-              <div style={{ height:14, width:`${50 + i * 12}%`, background:'var(--rule-2)', borderRadius:3 }} />
-              <div style={{ height:10, width:'45%', background:'var(--rule)', borderRadius:2 }} />
-              <div style={{ display:'flex', alignItems:'center', gap:12, flex:1 }}>
-                <div style={{ width:52, height:52, borderRadius:'50%', background:'var(--rule)', flexShrink:0 }} />
-                <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-                  <div style={{ height:9, width:90, background:'var(--rule-2)', borderRadius:2 }} />
-                  <div style={{ height:9, width:70, background:'var(--rule)', borderRadius:2 }} />
-                </div>
-              </div>
-              <div style={{ height:28, width:64, background:'var(--rule)', borderRadius:4, alignSelf:'flex-end' }} />
-            </div>
+        <div style={{ display:'flex', gap:12, fontFamily:'var(--font-mono)', fontSize:9,
+          letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--mute)' }}>
+          {[['Pass','var(--gain)'],['Fail','var(--loss)'],['Not reviewed','var(--rule)']].map(([l,c]) => (
+            <span key={l} style={{ display:'flex', alignItems:'center', gap:4 }}>
+              <span style={{ width:8, height:8, background:c, display:'inline-block', flexShrink:0 }} />
+              {l}
+            </span>
           ))}
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* Empty state */}
-      {!auditsLoading && audits.length === 0 && (
-        <div style={{ border:'1px solid var(--rule)', padding:'56px 32px 48px', background:'var(--paper-2)' }}>
-          <div style={{ fontFamily:"var(--font-sans)", fontSize:22, color:'var(--ink-3)', marginBottom:8, letterSpacing:'-0.3px', textAlign:'center' }}>
-            Your first audit starts here.
+  // ── Shared header ──────────────────────────────────────────────────────────
+  const Header = () => (
+    <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:32, flexWrap:'wrap' }}>
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:'0.1em',
+          textTransform:'uppercase', color:'var(--mute)', marginBottom:8 }}>
+          {demoMode ? 'Demo' : 'Workspace'}
+        </div>
+        <h1 style={{ fontFamily:'var(--font-sans)', fontSize:36, fontWeight:600,
+          letterSpacing:'-0.04em', lineHeight:1.02, color:'var(--ink)', margin:0 }}>
+          Audits
+        </h1>
+      </div>
+      <div style={{ display:'flex', alignItems:'center', gap:12, flexShrink:0, flexWrap:'wrap' }}>
+        {/* Slot pips */}
+        {!demoMode && (
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:4 }}>
+            <div style={{ display:'flex', gap:3 }}>
+              {Array.from({ length: THEME.limits.maxActiveAudits }).map((_, i) => (
+                <div key={i} style={{ width:28, height:8,
+                  background: i < audits.length ? 'var(--btn-bg)' : 'var(--rule)' }} />
+              ))}
+            </div>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.06em',
+              color:'var(--mute)', textTransform:'uppercase' }}>
+              {audits.length} of {THEME.limits.maxActiveAudits} active
+            </span>
           </div>
-          <p style={{ fontFamily:"var(--font-sans)", fontSize:14, color:'var(--ink-5)', lineHeight:1.6,
-            margin:'0 auto 40px', maxWidth:400, textAlign:'center' }}>
-            Three steps. One client-ready deliverable.
-          </p>
+        )}
+        {/* TABLE / GRID toggle */}
+        <div style={{ display:'flex', border:'1px solid var(--rule)', height:46 }}>
+          {['table','grid'].map(v => (
+            <button key={v} onClick={() => switchView(v)}
+              style={{ padding:'0 16px', border:'none', fontFamily:'var(--font-mono)',
+                fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase',
+                cursor:'pointer', transition:'background 0.12s, color 0.12s',
+                background: view === v ? 'var(--ink)' : 'transparent',
+                color: view === v ? 'var(--bg)' : 'var(--mute)',
+                borderRight: v === 'table' ? '1px solid var(--rule)' : 'none' }}>
+              {v}
+            </button>
+          ))}
+        </div>
+        {/* New audit */}
+        <button onClick={onNew} disabled={!demoMode && atCap} className="btn btn-primary"
+          style={{ height:46, opacity: (!demoMode && atCap) ? 0.35 : 1 }}>
+          + New audit
+        </button>
+      </div>
+    </div>
+  );
 
-          {/* 3-step primer */}
-          <div className="fg3" style={{ maxWidth:600, margin:'0 auto 40px', textAlign:'left' }}>
-            {[
-              { n:'01', label:'Browse the store', body:'Mobile and desktop. 5 minutes of first impressions before you open the checklist.' },
-              { n:'02', label:'Work the checklist', body:'60 checkpoints. Mark pass or fail. Capture screenshot and recording evidence as you go.' },
-              { n:'03', label:'Generate the pitch', body:'The ROI calculator turns your findings into a client-ready business case.' },
-            ].map(({ n, label, body }) => (
-              <div key={n}>
-                <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.12em', textTransform:'uppercase',
-                  color:'var(--accent)', marginBottom:8 }}>{n}</div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:13, fontWeight:600, color:'var(--ink-2)', marginBottom:6 }}>{label}</div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-4)', lineHeight:1.6 }}>{body}</div>
+  // ── Empty state ─────────────────────────────────────────────────────────────
+  const EmptyState = () => (
+    <div style={{ border:'1px solid var(--rule)', padding:'64px 48px', background:'var(--surface)' }}>
+      <h2 style={{ fontFamily:'var(--font-sans)', fontSize:36, fontWeight:600,
+        letterSpacing:'-0.04em', color:'var(--ink)', marginBottom:16, lineHeight:1.05 }}>
+        Run your first <em className="hl" style={{ fontStyle:'normal' }}>audit.</em>
+      </h2>
+      <p style={{ fontFamily:'var(--font-sans)', fontSize:15, color:'var(--mute)', lineHeight:1.55,
+        maxWidth:520, marginBottom:40 }}>
+        60 checks across 6 sections of a Shopify store. Every failure gets a CVR lift range
+        and a monthly dollar figure, then rolls into a report you hand the client.
+      </p>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:24, marginBottom:48 }}>
+        {[
+          ['01','Setup',     'Client name, store URL, theme and revenue metrics.'],
+          ['02','Checklist', '60 checks. Mark pass or fail. Capture evidence.'],
+          ['03','Revenue',   'Every failure gets a CVR lift and a dollar figure.'],
+          ['04','Report',    'Phase 1 quick wins + Phase 2 testing roadmap, print-ready.'],
+        ].map(([n, label, body]) => (
+          <div key={n}>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.12em',
+              textTransform:'uppercase', color:'var(--mute)', marginBottom:8 }}>{n}</div>
+            <div style={{ fontFamily:'var(--font-sans)', fontSize:14, fontWeight:600,
+              color:'var(--ink)', marginBottom:6 }}>{label}</div>
+            <div style={{ fontFamily:'var(--font-sans)', fontSize:13, color:'var(--mute)', lineHeight:1.6 }}>{body}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display:'flex', gap:12, alignItems:'center' }}>
+        <button onClick={onNew} className="btn btn-primary btn-lg">+ Start first audit</button>
+        {!demoMode && (
+          <button onClick={() => importRef.current?.click()} className="btn btn-secondary btn-lg">
+            Import .json
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  // ── TABLE VIEW ──────────────────────────────────────────────────────────────
+  const colMono = { fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:'0.08em',
+    textTransform:'uppercase', color:'var(--mute)', padding:'10px 16px', textAlign:'left',
+    borderBottom:'1px solid var(--rule)', whiteSpace:'nowrap', background:'var(--surface)' };
+  const TableView = () => (
+    <div style={{ border:'1px solid var(--rule)' }}>
+      {/* Header */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 100px 160px 80px 120px 100px 80px',
+        background:'var(--surface)', borderBottom:'1px solid var(--rule)' }}>
+        {['Audit','Theme','Progress','Fails','Est. Recovery','Updated',''].map((h,i) => (
+          <div key={i} style={{ ...colMono, borderBottom:'none',
+            textAlign: i >= 4 && i < 6 ? 'right' : 'left' }}>{h}</div>
+        ))}
+      </div>
+      {/* Rows */}
+      {audits.map(audit => {
+        const { done, pct } = auditProgress(audit);
+        const { total: failCount, p0 } = auditFails(audit);
+        const recovery = auditRecovery(audit);
+        const status = auditStatus(audit);
+        return (
+          <div key={audit.id}
+            style={{ display:'grid', gridTemplateColumns:'1fr 100px 160px 80px 120px 100px 80px',
+              borderBottom:'1px solid var(--rule)', alignItems:'center', cursor:'pointer',
+              transition:'background 0.1s' }}
+            onClick={() => onOpen(audit.id)}
+            onMouseEnter={e => e.currentTarget.style.background='var(--surface)'}
+            onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+            {/* AUDIT */}
+            <div style={{ padding:'14px 16px' }}>
+              <div style={{ fontFamily:'var(--font-sans)', fontSize:15, fontWeight:600,
+                color:'var(--ink)', marginBottom:3, lineHeight:1.2,
+                overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                {auditTitle(audit)}
+              </div>
+              <div style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--mute)',
+                letterSpacing:'0.02em', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                {auditSubline(audit) || <span style={{ opacity:0.4 }}>—</span>}
+              </div>
+            </div>
+            {/* THEME */}
+            <div style={{ padding:'14px 16px', fontFamily:'var(--font-mono)', fontSize:12,
+              color:'var(--mute)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+              {auditTheme(audit)}
+            </div>
+            {/* PROGRESS */}
+            <div style={{ padding:'14px 16px' }}>
+              <div style={{ height:6, background:'var(--rule)', marginBottom:5, position:'relative' }}>
+                <div style={{ position:'absolute', left:0, top:0, height:'100%',
+                  background: status === 'complete' ? 'var(--gain)' : 'var(--ink)',
+                  width:`${pct}%`, transition:'width 0.3s' }} />
+              </div>
+              <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+                letterSpacing:'0.04em' }}>
+                {done}/60 · {status === 'not-started' ? 'Not started'
+                  : status === 'complete' ? 'Report ready' : 'In progress'}
+              </div>
+            </div>
+            {/* FAILS */}
+            <div style={{ padding:'14px 16px' }}>
+              {failCount > 0 ? (
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:13, fontWeight:600,
+                  color:'var(--loss)', letterSpacing:'0.02em' }}>
+                  {failCount}{p0 > 0 && <span style={{ fontSize:10, marginLeft:4 }}>· {p0} P0</span>}
+                </span>
+              ) : (
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:12, color:'var(--mute)' }}>—</span>
+              )}
+            </div>
+            {/* EST. RECOVERY */}
+            <div style={{ padding:'14px 16px', textAlign:'right' }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:13, fontWeight:600,
+                color: recovery ? 'var(--gain)' : 'var(--mute)', letterSpacing:'0.02em' }}>
+                {recovery ? `+$${fmt(recovery)}/mo` : '—'}
+              </span>
+            </div>
+            {/* UPDATED */}
+            <div style={{ padding:'14px 16px', fontFamily:'var(--font-mono)', fontSize:11,
+              color:'var(--mute)', textAlign:'right', letterSpacing:'0.02em' }}>
+              {formatDate(audit.updated_at)}
+            </div>
+            {/* ACTIONS */}
+            <div style={{ padding:'8px 12px', display:'flex', alignItems:'center',
+              gap:6, justifyContent:'flex-end' }}
+              onClick={e => e.stopPropagation()}>
+              <button onClick={() => onOpen(audit.id)} className="btn btn-secondary btn-sm">Open</button>
+              <AuditMenu auditId={audit.id} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  // ── GRID VIEW ───────────────────────────────────────────────────────────────
+  const GridView = () => (
+    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:12 }}>
+      {audits.map(audit => {
+        const { done, pct } = auditProgress(audit);
+        const { total: failCount } = auditFails(audit);
+        const recovery = auditRecovery(audit);
+        const status = auditStatus(audit);
+        const ctaLabel = status === 'complete' ? 'Report →' : status === 'in-progress' ? 'Resume →' : 'Start →';
+        return (
+          <div key={audit.id}
+            style={{ border:'1px solid var(--rule)', background:'var(--surface)',
+              display:'flex', flexDirection:'column', transition:'border-color 0.12s' }}
+            onMouseEnter={e => e.currentTarget.style.borderColor='var(--ink)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor='var(--rule)'}>
+            <div style={{ padding:'16px 18px 12px', borderBottom:'1px solid var(--rule)' }}>
+              <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8 }}>
+                <div style={{ minWidth:0 }}>
+                  <div style={{ fontFamily:'var(--font-sans)', fontSize:15, fontWeight:600,
+                    color:'var(--ink)', lineHeight:1.2, marginBottom:3,
+                    overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                    {auditTitle(audit)}
+                  </div>
+                  <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+                    overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                    {audit.client_info?.store_url || '—'}
+                  </div>
+                </div>
+                <div onClick={e => e.stopPropagation()}>
+                  <AuditMenu auditId={audit.id} />
+                </div>
+              </div>
+            </div>
+            <div style={{ padding:'16px 18px' }}>
+              <MiniMap audit={audit} />
+            </div>
+            <div style={{ padding:'0 18px 16px', display:'grid',
+              gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+              {[
+                ['Reviewed', `${done}/60`],
+                ['Fails',    failCount > 0 ? String(failCount) : '—'],
+                ['/Mo',      recovery ? `+$${fmt(recovery)}` : '—'],
+              ].map(([l, v]) => (
+                <div key={l}>
+                  <div style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.1em',
+                    textTransform:'uppercase', color:'var(--mute)', marginBottom:3 }}>{l}</div>
+                  <div style={{ fontFamily:'var(--font-mono)', fontSize:13, fontWeight:600,
+                    color: l === '/Mo' && recovery ? 'var(--gain)' : 'var(--ink)' }}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding:'0 18px 18px', marginTop:'auto' }}>
+              <button onClick={() => onOpen(audit.id)} className="btn btn-primary btn-full" style={{ height:40 }}>
+                {ctaLabel}
+              </button>
+            </div>
+          </div>
+        );
+      })}
+      {/* Empty slot cards */}
+      {!demoMode && Array.from({ length: Math.max(0, THEME.limits.maxActiveAudits - audits.length) }).map((_, i) => (
+        <div key={`slot-${i}`}
+          style={{ border:'1px dashed var(--rule)', minHeight:200, display:'flex', flexDirection:'column',
+            alignItems:'center', justifyContent:'center', gap:8, padding:'24px', cursor:'pointer',
+            transition:'border-color 0.12s' }}
+          onClick={onNew}
+          onMouseEnter={e => e.currentTarget.style.borderColor='var(--ink)'}
+          onMouseLeave={e => e.currentTarget.style.borderColor='var(--rule)'}>
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.1em',
+            textTransform:'uppercase', color:'var(--mute)' }}>Open slot</div>
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600, letterSpacing:'0.08em',
+            textTransform:'uppercase', color:'var(--mute)' }}>+ New audit</div>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <React.Fragment>
+      <input ref={importRef} type="file" accept=".json" style={{ display:'none' }} onChange={handleImportFile} />
+      <main style={{ maxWidth:1100, margin:'0 auto', padding:'48px 32px 100px' }}>
+        {/* Error banner */}
+        {dbError && (
+          <div style={{ marginBottom:20, padding:'12px 18px', background:'var(--state-fail-bg)',
+            border:'1px solid var(--loss)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--loss)',
+              letterSpacing:'0.04em', lineHeight:1.5 }}>{dbError}</span>
+            <button onClick={onDismissError} style={{ background:'none', border:'none', color:'var(--mute)',
+              fontFamily:'var(--font-mono)', fontSize:16, cursor:'pointer', lineHeight:1, padding:'0 4px', flexShrink:0 }}>×</button>
+          </div>
+        )}
+
+        <Header />
+
+        {/* Loading skeleton */}
+        {auditsLoading && (
+          <div style={{ display:'flex', flexDirection:'column', gap:1 }}>
+            {[60,45,80].map((w,i) => (
+              <div key={i} style={{ background:'var(--surface)', border:'1px solid var(--rule)',
+                borderTop: i > 0 ? 'none' : undefined, height:64, padding:'0 16px',
+                display:'flex', alignItems:'center', gap:16 }}>
+                <div style={{ height:12, width:`${w}%`, background:'var(--rule)', maxWidth:240 }} />
               </div>
             ))}
           </div>
+        )}
 
-          <div style={{ textAlign:'center' }}>
-            <button onClick={onNew} style={{ background:'var(--btn-bg)', color:'var(--btn-ink)', border:'none', padding:'12px 28px',
-              fontFamily:"var(--font-sans)", fontSize:13, fontWeight:600, letterSpacing:'0.06em',
-              textTransform:'uppercase', cursor:'pointer' }}>
-              Start your first audit →
-            </button>
-          </div>
-        </div>
-      )}
+        {/* Empty state */}
+        {!auditsLoading && audits.length === 0 && <EmptyState />}
 
-      {/* Audit list */}
-      {!auditsLoading && audits.length > 0 && (
-        <div className="audits-grid" style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:12 }}>
-          {audits.map((audit) => {
-            const { done, total, pct } = progressPct(audit);
-            const { color, label } = auditColor(audit);
-            const isMenuOpen = menuOpen === audit.id;
-            return (
-              <div key={audit.id}
-                style={{ background:'var(--paper-2)', border:'1px solid var(--rule)', borderRadius:8,
-                  position:'relative', transition:'border-color 0.15s', display:'flex', flexDirection:'column' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor='var(--rule-2)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor='var(--rule)'}>
-                <div style={{ padding:'16px 18px', display:'flex', flexDirection:'column', gap:12, flex:1 }}>
-                  {/* Row 1: client name + setup badge + URL — ··· menu pinned right */}
-                  <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                        <div style={{ fontFamily:"var(--font-sans)", fontWeight:600, fontSize:17, color:'var(--ink)',
-                          lineHeight:1.2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                          {audit.client_info?.audit_title || audit.client_info?.client_name || 'New Audit'}
-                          {audit.client_info?.audit_title && audit.client_info?.client_name && (
-                            <span style={{ fontFamily:"var(--font-mono)", fontWeight:400,
-                              fontSize:11, color:'var(--ink-5)', marginLeft:6 }}>
-                              | {audit.client_info.client_name}
-                            </span>
-                          )}
-                        </div>
-                        {isSetupIncomplete(audit) && (
-                          <button onClick={e => { e.stopPropagation(); setListClientInfoId(audit.id); }}
-                            style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
-                              textTransform:'uppercase', color:'var(--amber)', background:'rgba(200,131,74,0.1)',
-                              border:'1px solid rgba(200,131,74,0.25)', padding:'2px 7px', whiteSpace:'nowrap',
-                              flexShrink:0, cursor:'pointer' }}>
-                            Setup incomplete
-                          </button>
-                        )}
-                      </div>
-                      {audit.client_info?.store_url && (
-                        <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)', marginTop:3,
-                          overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                          {audit.client_info.store_url}
-                        </div>
-                      )}
-                    </div>
-                    {!demoMode && (
-                      <div style={{ position:'relative', flexShrink:0 }}>
-                        <button onClick={e => { e.stopPropagation(); setMenuOpen(isMenuOpen ? null : audit.id); }}
-                          style={{ background:'var(--paper-3)', border:'1px solid var(--rule)', color:'var(--ink-3)',
-                            padding:'6px 10px', cursor:'pointer', fontFamily:"var(--font-mono)", fontSize:12,
-                            lineHeight:1, borderRadius:4 }}>
-                          ···
-                        </button>
-                        {isMenuOpen && (
-                          <div style={{ position:'absolute', right:0, top:'100%', marginTop:2, background:'var(--paper-3)',
-                            border:'1px solid var(--rule-2)', zIndex:200, minWidth:160, boxShadow:'0 8px 24px rgba(0,0,0,0.4)',
-                            borderRadius:6 }}
-                            onMouseLeave={() => setMenuOpen(null)}>
-                            {[
-                              { label:'Duplicate', action:() => { onDuplicate(audit.id); setMenuOpen(null); } },
-                              { label:'Archive & Export', action:() => { onArchive(audit.id); setMenuOpen(null); } },
-                              { label:'Delete', action:() => { onDelete(audit.id); setMenuOpen(null); }, danger:true },
-                            ].map(item => (
-                              <button key={item.label} onClick={item.action}
-                                style={{ display:'block', width:'100%', textAlign:'left', padding:'10px 14px',
-                                  background:'none', border:'none', borderBottom:'1px solid var(--rule)',
-                                  fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:'0.04em',
-                                  textTransform:'uppercase', color: item.danger ? 'var(--impact-high)' : 'var(--ink-3)',
-                                  cursor:'pointer' }}
-                                onMouseEnter={e => e.currentTarget.style.background='var(--paper-2)'}
-                                onMouseLeave={e => e.currentTarget.style.background='none'}>
-                                {item.label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  {/* Metric zone: donut + opportunity signal */}
-                  <div style={{ display:'flex', alignItems:'center', gap:12, flex:1 }}>
-                    <DonutChart pct={pct} color={color} />
-                    <div>
-                      <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color, letterSpacing:'0.04em', lineHeight:1.4 }}>
-                        {label}
-                      </div>
-                      <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)', letterSpacing:'0.04em', marginTop:3 }}>
-                        {done}/{total} items reviewed
-                      </div>
-                    </div>
-                  </div>
-                  {/* Bottom row: updated date + Open button */}
-                  <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                    <div className="desktop-only" style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)',
-                      letterSpacing:'0.04em' }}>
-                      <div style={{ textTransform:'uppercase' }}>Updated</div>
-                      <div style={{ color:'var(--ink-4)', marginTop:1 }}>{formatDate(audit.updated_at)}</div>
-                    </div>
-                    <div style={{ flex:1 }} />
-                    <button onClick={() => onOpen(audit.id)}
-                      style={{ background:'var(--btn-bg)', color:'var(--btn-ink)', border:'none', padding:'8px 18px',
-                        fontFamily:"var(--font-sans)", fontSize:12, fontWeight:600, letterSpacing:'0.05em',
-                        textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
-                      Open
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-          {/* Empty workspace placeholder cards */}
-          {!demoMode && Array.from({ length: Math.max(0, THEME.limits.maxActiveAudits - audits.length) }).map((_, i) => (
-            <div key={`empty-${i}`}
-              style={{ border:'1px dashed var(--rule)', borderRadius:8, minHeight:160,
-                display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-                gap:10, padding:'24px 18px', cursor:'pointer' }}
-              onClick={onNew}>
-              <div style={{ width:36, height:36, borderRadius:'50%', border:'1px dashed var(--rule-2)',
-                display:'flex', alignItems:'center', justifyContent:'center',
-                color:'var(--ink-5)', fontSize:20, fontWeight:300, lineHeight:1 }}>
-                +
-              </div>
+        {/* Audit views */}
+        {!auditsLoading && audits.length > 0 && (
+          view === 'table' ? <TableView /> : <GridView />
+        )}
+
+        {/* Footer: slots + import */}
+        {!auditsLoading && audits.length > 0 && !demoMode && (
+          <div style={{ marginTop:20, borderTop:'1px solid var(--rule)', paddingTop:20,
+            display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--mute)', letterSpacing:'0.04em' }}>
+              {slotsOpen > 0
+                ? `${slotsOpen} slot${slotsOpen !== 1 ? 's' : ''} open · Archive a delivered audit to free its slot.`
+                : THEME.copy.workspaceFull}
             </div>
-          ))}
-          {/* Rotating tips — fills the grid cell adjacent to the last empty slot */}
-          {!demoMode && !atCap && (
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'24px 18px', minHeight:160 }}>
-              <div style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-5)',
-                letterSpacing:'0.04em', textAlign:'center', lineHeight:1.7,
-                opacity: tipVisible ? 1 : 0, transition:'opacity 0.45s ease' }}>
-                {TIPS[tipIdx]}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Cap message */}
-      {!demoMode && atCap && (
-        <div style={{ marginTop:20, padding:'14px 18px', background:'var(--paper-3)', border:'1px solid var(--rule)',
-          fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)', letterSpacing:'0.04em', lineHeight:1.6 }}>
-          {THEME.copy.workspaceFull}
-        </div>
-      )}
-
-      {/* Import */}
-      {!demoMode && (
-        <>
-          <input ref={importRef} type="file" accept=".json" style={{display:'none'}} onChange={handleImportFile} />
-          <div style={{ marginTop:24, display:'flex', alignItems:'center', gap:14 }}>
             <button onClick={() => !atCap && importRef.current?.click()} disabled={atCap}
-              style={{ background:'none', border:'1px solid var(--rule)', flexShrink:0,
-                color: atCap ? 'var(--ink-5)' : 'var(--ink-4)', padding:'8px 16px',
-                fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:'0.06em', textTransform:'uppercase',
-                cursor: atCap ? 'not-allowed' : 'pointer', opacity: atCap ? 0.5 : 1 }}>
-              Import Audit
+              className="btn btn-secondary btn-sm" style={{ opacity: atCap ? 0.4 : 1 }}>
+              Import .json
             </button>
-            <span style={{ fontFamily:"var(--font-sans)", fontSize:12, color:'var(--ink-5)', lineHeight:1.5 }}>
-              Restore a previously exported audit from a <strong style={{ fontWeight:600, color:'var(--ink-4)' }}>.json</strong> file.
-            </span>
           </div>
-        </>
-      )}
-    </main>
-    {listClientInfoId && store.audits[listClientInfoId] && (
-      <ClientInfoOverlay
-        audit={store.audits[listClientInfoId]}
-        lastAuditorName={store.last_auditor_name}
-        onSave={(data) => { onSaveClientInfo(listClientInfoId, data); setListClientInfoId(null); }}
-        onClose={() => setListClientInfoId(null)} />
-    )}
+        )}
+      </main>
     </React.Fragment>
   );
 }
@@ -4001,7 +4100,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
               key={step.label}
               className={`step-tab${isActive ? ' active' : ''}${isDone ? ' done' : ''}`}
               onClick={() => setStageIndex(step.stage)}>
-              {isDone && <span className="step-check">✓ </span>}
+              <span className="step-check" style={{ visibility: isDone ? 'visible' : 'hidden' }}>✓</span>
               {step.label}
             </button>
           );
