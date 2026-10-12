@@ -1731,35 +1731,33 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
 
   // ── Shared header ──────────────────────────────────────────────────────────
   const Header = () => (
-    <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:32, flexWrap:'wrap' }}>
-      <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:'0.1em',
-          textTransform:'uppercase', color:'var(--mute)', marginBottom:8 }}>
-          {demoMode ? 'Demo' : 'Workspace'}
-        </div>
-        <h1 style={{ fontFamily:'var(--font-sans)', fontSize:36, fontWeight:600,
-          letterSpacing:'-0.04em', lineHeight:1.02, color:'var(--ink)', margin:0 }}>
-          Audits
-        </h1>
-      </div>
-      <div style={{ display:'flex', alignItems:'center', gap:12, flexShrink:0, flexWrap:'wrap' }}>
-        {/* Slot pips */}
-        {!demoMode && (
-          <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:4 }}>
-            <div style={{ display:'flex', gap:3 }}>
-              {Array.from({ length: THEME.limits.maxActiveAudits }).map((_, i) => (
-                <div key={i} style={{ width:28, height:8,
-                  background: i < audits.length ? 'var(--btn-bg)' : 'var(--rule)' }} />
-              ))}
-            </div>
-            <span style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.06em',
-              color:'var(--mute)', textTransform:'uppercase' }}>
-              {audits.length} of {THEME.limits.maxActiveAudits} active
-            </span>
+    <div style={{ marginBottom:32 }}>
+      {/* Row 1: Audits heading + inline slot count + TABLE/GRID */}
+      <div style={{ display:'flex', alignItems:'baseline', gap:0, marginBottom:16 }}>
+        {/* Left: heading + slot count inline */}
+        <div style={{ display:'flex', alignItems:'baseline', gap:16, flex:1, minWidth:0 }}>
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:'0.1em',
+            textTransform:'uppercase', color:'var(--mute)', marginBottom:8, alignSelf:'flex-start',
+            display:'none' }}>
+            {demoMode ? 'Demo' : 'Workspace'}
           </div>
-        )}
-        {/* TABLE / GRID toggle */}
-        <div style={{ display:'flex', border:'1px solid var(--rule)', height:46 }}>
+          <h1 style={{ fontFamily:'var(--font-sans)', fontSize:36, fontWeight:600,
+            letterSpacing:'-0.04em', lineHeight:1.02, color:'var(--ink)', margin:0, flexShrink:0 }}>
+            Audits
+          </h1>
+          {!demoMode && audits.length > 0 && (
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:13, color:'var(--mute)',
+              letterSpacing:'0.04em' }}>
+              {audits.length} of {THEME.limits.maxActiveAudits} active · {slotsOpen} slot{slotsOpen !== 1 ? 's' : ''} open
+            </span>
+          )}
+          {demoMode && (
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:13, color:'var(--mute)',
+              letterSpacing:'0.04em' }}>Demo</span>
+          )}
+        </div>
+        {/* Right: TABLE/GRID toggle */}
+        <div style={{ display:'flex', border:'1px solid var(--rule)', height:40, flexShrink:0 }}>
           {['table','grid'].map(v => (
             <button key={v} onClick={() => switchView(v)}
               style={{ padding:'0 16px', border:'none', fontFamily:'var(--font-mono)',
@@ -1772,12 +1770,12 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
             </button>
           ))}
         </div>
-        {/* New audit */}
-        <button onClick={onNew} disabled={!demoMode && atCap} className="btn btn-primary"
-          style={{ height:46, opacity: (!demoMode && atCap) ? 0.35 : 1 }}>
-          + New audit
-        </button>
       </div>
+      {/* Row 2: + New audit (left-aligned) */}
+      <button onClick={onNew} disabled={!demoMode && atCap} className="btn btn-primary"
+        style={{ opacity: (!demoMode && atCap) ? 0.35 : 1 }}>
+        + New audit
+      </button>
     </div>
   );
 
