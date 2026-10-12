@@ -657,6 +657,68 @@ body {
   .checklist-card-scroll { padding-bottom: 20px !important; }
 }
 
+/* ── Checklist two-column layout ── */
+.checklist-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.checklist-left {
+  width: 360px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--rule);
+  overflow-y: auto;
+  padding: 24px 20px 48px;
+}
+.checklist-right {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 24px 48px;
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .checklist-body { display: block; overflow-y: auto; }
+  .checklist-left { width: 100%; border-right: none; padding: 16px 16px 0; overflow: visible; }
+  .checklist-right { padding: 0 16px 80px; overflow: visible; }
+}
+
+/* ── Read-only meta table ── */
+.meta-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.meta-table td {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  vertical-align: middle;
+}
+.meta-table td:first-child {
+  color: var(--mute);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  width: 48%;
+  padding-right: 8px;
+}
+.meta-table td:last-child { text-align: right; color: var(--ink); }
+.meta-table tr:last-child td { border-bottom: none; }
+
+/* ── Collapsible field row (mobile) ── */
+.field-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+}
+.field-row-header:first-child { border-top: 1px solid var(--rule); margin-top: 16px; }
+
 /* Audit list view — tighter top padding on mobile */
 @media (max-width: 700px) {
   .audits-main { padding-top: 20px !important; }
@@ -1164,6 +1226,57 @@ function LoginScreen() {
 // ─── COMPONENTS A: inputs, SiteHeader, AuditList, ClientInfoOverlay ───
 
 // Defined outside screen components to prevent React remounting on every render (focus-loss fix)
+// Collapsible field block used in ChecklistStage right column
+function FieldBlock({ label, tag, tagStyle, hasReset, onReset, disabled, defaultOpen, children }) {
+  const [open, setOpen] = useState(defaultOpen !== false);
+  const isPrivate = tagStyle === 'private';
+  return (
+    <div style={{ border: isPrivate ? '1px solid var(--ink)' : '1px solid var(--rule)',
+      marginBottom:8, opacity: disabled ? 0.35 : 1,
+      pointerEvents: disabled ? 'none' : 'auto', transition:'opacity 0.15s' }}>
+      <button onClick={() => setOpen(v => !v)}
+        style={{ width:'100%', background: isPrivate ? 'var(--ink)' : 'var(--surface)',
+          border:'none', borderBottom: open ? `1px solid ${isPrivate ? 'rgba(255,255,255,0.1)' : 'var(--rule)'}` : 'none',
+          padding:'10px 16px', display:'flex', alignItems:'center',
+          justifyContent:'space-between', cursor:'pointer', gap:8 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
+            letterSpacing:'0.1em', textTransform:'uppercase',
+            color: isPrivate ? 'var(--accent)' : 'var(--mute)' }}>
+            {label}
+          </span>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:9,
+            letterSpacing:'0.06em', textTransform:'uppercase',
+            border: isPrivate ? '1px solid var(--mute)' : '1px solid var(--rule)',
+            padding:'1px 6px',
+            color: isPrivate ? 'var(--bg)' : 'var(--mute)',
+            opacity: isPrivate ? 0.7 : 1 }}>
+            {tag}
+          </span>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          {hasReset && open && (
+            <button onClick={e => { e.stopPropagation(); onReset?.(); }}
+              style={{ background:'none', border:'none', fontFamily:'var(--font-mono)', fontSize:9,
+                color:'var(--mute)', letterSpacing:'0.04em', cursor:'pointer', padding:0 }}>
+              Reset to default
+            </button>
+          )}
+          <span style={{ fontSize:9, color: isPrivate ? 'var(--bg)' : 'var(--mute)',
+            opacity: isPrivate ? 0.6 : 1, transform: open ? 'rotate(180deg)' : 'none',
+            display:'inline-block', transition:'transform 0.15s' }}>▼</span>
+        </div>
+      </button>
+      {open && (
+        <div style={{ padding:'12px 16px',
+          background: isPrivate ? 'var(--bg)' : 'transparent' }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AuditTextarea({ value, placeholder, onChange, rows = 3 }) {
   return (
     <textarea value={value || ''} onChange={e => onChange(e.target.value)}
@@ -2517,9 +2630,9 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
         </div>
       )}
 
-      {/* ── Item card ── */}
-      <div ref={cardRef} className="checklist-card-scroll"
-        style={{ flex:1, overflowY:'auto', minHeight:0, outline:'none' }}
+      {/* ── Item card — two-column on desktop ── */}
+      <div className="checklist-body"
+        ref={cardRef}
         tabIndex={-1}
         onTouchStart={e => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY; }}
         onTouchEnd={e => {
@@ -2531,46 +2644,46 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
           if (dx < 0 && nextItem) goTo(nextItem);
           if (dx > 0 && prevItem) goTo(prevItem);
         }}>
-        <div style={{ maxWidth:640, margin:'0 auto', padding:'24px 24px 48px' }}>
+
+        {/* ── LEFT COLUMN: meta + status keys + data table ── */}
+        <div className="checklist-left">
 
           {/* Meta line */}
           <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.1em',
             textTransform:'uppercase', color:'var(--mute)', marginBottom:12 }}>
             {activeSection?.label || activeItem.section}
-            {' · '}Item {String(sectionItemIdx + 1).padStart(2, '0')} of {sectionItems.length}
-            {' · '}#{globalIdx + 1} of 60
+            {' · '}
+            <span className="desktop-only">Item {String(sectionItemIdx + 1).padStart(2,'0')} of {sectionItems.length} · #{globalIdx + 1} of 60</span>
+            <span className="mobile-only">{String(sectionItemIdx + 1).padStart(2,'0')}/{sectionItems.length}</span>
           </div>
 
           {/* Title + question */}
           <div className={cardGlowing ? 'card-glow' : undefined} style={{ marginBottom:20 }}>
             {(() => {
               const colonIdx = activeItem.name.indexOf(':');
-              if (colonIdx === -1) return (
-                <h2 style={{ fontFamily:'var(--font-sans)', fontSize:22, fontWeight:600,
-                  letterSpacing:'-0.03em', lineHeight:1.2, color:'var(--ink)', margin:0 }}>
-                  {activeItem.name}
-                </h2>
-              );
-              const before = activeItem.name.slice(0, colonIdx);
-              const after  = activeItem.name.slice(colonIdx + 1).trim();
+              const title = colonIdx === -1 ? activeItem.name : activeItem.name.slice(0, colonIdx);
+              const question = colonIdx === -1 ? null : activeItem.name.slice(colonIdx + 1).trim();
               return (
                 <>
                   <h2 style={{ fontFamily:'var(--font-sans)', fontSize:22, fontWeight:600,
-                    letterSpacing:'-0.03em', lineHeight:1.2, color:'var(--ink)', marginBottom:8 }}>
-                    {before}
+                    letterSpacing:'-0.03em', lineHeight:1.2, color:'var(--ink)',
+                    marginBottom: question ? 8 : 0 }}>
+                    {title}
                   </h2>
-                  <p style={{ fontFamily:'var(--font-sans)', fontSize:15, color:'var(--mute)',
-                    lineHeight:1.55, margin:0 }}>
-                    {after}
-                  </p>
+                  {question && (
+                    <p style={{ fontFamily:'var(--font-sans)', fontSize:15, color:'var(--mute)',
+                      lineHeight:1.55, margin:0 }}>
+                      {question}
+                    </p>
+                  )}
                 </>
               );
             })()}
           </div>
 
           {/* Status keys — 4 column, 80px tall */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6, marginBottom:16, position:'relative' }}>
-            {/* PASS */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6,
+            marginBottom:0, position:'relative' }}>
             {[
               { id:'pass', label:'Pass', shortcut:'P',
                 activeBg:'var(--gain)', activeColor:'var(--bg)', activeBorder:'var(--gain)',
@@ -2593,35 +2706,32 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                     border: `1px solid ${active ? opt.activeBorder : 'var(--rule)'}`,
                     color: active ? opt.activeColor : opt.idleColor,
                     transition:'background 0.12s, border-color 0.12s, color 0.12s',
-                    display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4 }}>
-                  {/* Keyboard shortcut — top right */}
-                  <span style={{ position:'absolute', top:6, right:7,
+                    display:'flex', flexDirection:'column', alignItems:'center',
+                    justifyContent:'center', gap:4 }}>
+                  {/* Keyboard shortcut — top right, desktop only */}
+                  <span className="desktop-only" style={{ position:'absolute', top:6, right:7,
                     fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
                     opacity:0.55, lineHeight:1 }}>
                     {opt.shortcut}
                   </span>
-                  {/* Label */}
                   <span style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
                     letterSpacing:'0.08em', textTransform:'uppercase' }}>
                     {opt.label}
                   </span>
-                  {/* Viewport icons inside FAIL key */}
+                  {/* Viewport icons in FAIL key */}
                   {opt.id === 'fail' && (
-                    <div style={{ display:'flex', alignItems:'center', gap:3, position:'absolute',
-                      bottom:7, left:8 }}>
-                      {/* Desktop icon */}
+                    <div style={{ display:'flex', alignItems:'center', gap:3,
+                      position:'absolute', bottom:7, left:8 }}>
                       <svg width="14" height="11" viewBox="0 0 14 11" fill="none"
                         style={{ opacity: dOpacity, transition:'opacity 0.15s' }}>
                         <rect x="0.5" y="0.5" width="13" height="8" stroke="currentColor" strokeWidth="1"/>
                         <rect x="4" y="9" width="6" height="1.5" fill="currentColor"/>
                         <rect x="2" y="10" width="10" height="0.5" fill="currentColor"/>
                       </svg>
-                      {/* "+" only when both lit */}
-                      {(failD && failM && isFail) && (
-                        <span style={{ fontFamily:'var(--font-mono)', fontSize:9, fontWeight:900, lineHeight:1,
-                          color:'currentColor', opacity:0.9 }}>+</span>
+                      {failD && failM && isFail && (
+                        <span style={{ fontFamily:'var(--font-mono)', fontSize:9, fontWeight:900,
+                          lineHeight:1, color:'currentColor', opacity:0.9 }}>+</span>
                       )}
-                      {/* Mobile icon */}
                       <svg width="8" height="13" viewBox="0 0 8 13" fill="none"
                         style={{ opacity: mOpacity, transition:'opacity 0.15s' }}>
                         <rect x="0.5" y="0.5" width="7" height="12" stroke="currentColor" strokeWidth="1"/>
@@ -2635,188 +2745,151 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
 
             {/* First-time FAIL tooltip */}
             {failTooltipVisible && (
-              <div style={{ position:'absolute', top:'calc(100% + 8px)', left:'25%', width:300,
+              <div style={{ position:'absolute', top:'calc(100% + 8px)', left:'25%', width:280,
                 background:'var(--ink)', color:'var(--bg)', padding:'12px 14px', zIndex:50,
-                opacity: failTooltipVisible ? 1 : 0, transition:'opacity 0.2s',
                 pointerEvents:'none' }}>
                 <div style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
                   letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6 }}>
                   Fails on desktop + mobile
                 </div>
-                <div style={{ fontFamily:'var(--font-sans)', fontSize:13, lineHeight:1.5, color:'var(--bg)',
-                  opacity:0.85 }}>
+                <div style={{ fontFamily:'var(--font-sans)', fontSize:13, lineHeight:1.5, opacity:0.85 }}>
                   Click Flag again for mobile only, then desktop only.
                 </div>
               </div>
             )}
           </div>
 
-          {/* Recovery estimate — only on FAIL */}
-          {isFail && itemRecovery !== null && (
-            <div style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--gain)',
-              letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:12 }}>
-              Est. recovery if fixed +${fmt(itemRecovery)}/mo
-            </div>
-          )}
+          {/* Read-only meta table (desktop) */}
+          <table className="meta-table desktop-only">
+            <tbody>
+              <tr>
+                <td>Priority</td>
+                <td>{activeItem.impact} · {IMPACT_LABEL[activeItem.impact]}</td>
+              </tr>
+              <tr>
+                <td>Est. fix time</td>
+                <td>
+                  <select value={itemState.estimated_fix_time}
+                    onChange={e => onUpdateItem(audit.id, activeItemId, { estimated_fix_time: e.target.value })}
+                    style={{ fontFamily:'var(--font-mono)', fontSize:11, background:'transparent',
+                      color:'var(--ink)', border:'none', cursor:'pointer',
+                      appearance:'none', WebkitAppearance:'none', textAlign:'right' }}>
+                    {FIX_TIME_OPTIONS.map(v => React.createElement('option', { key:v, value:v }, v))}
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td>Impact area</td>
+                <td>{activeItem.impact_area}</td>
+              </tr>
+              <tr>
+                <td>Shopify fix</td>
+                <td>{activeItem.shopify_fix_complexity}</td>
+              </tr>
+              <tr>
+                <td>CVR lift</td>
+                <td style={{ color:'var(--gain)' }}>+{activeItem.lift_min}–{activeItem.lift_max}%</td>
+              </tr>
+              {isFail && itemRecovery !== null && (
+                <tr>
+                  <td>Est. recovery if fixed</td>
+                  <td style={{ color:'var(--gain)', fontWeight:600, fontSize:14 }}>
+                    +${fmt(itemRecovery)}/MO
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
 
-          {/* Read-only meta */}
-          <div style={{ display:'flex', gap:6, flexWrap:'wrap', alignItems:'center', marginBottom:20 }}>
-            <span style={{ fontFamily:'var(--font-mono)', fontSize:10, padding:'2px 8px',
-              background: activeItem.impact === 'High' ? 'var(--impact-high-bg)' : activeItem.impact === 'Medium' ? 'var(--impact-medium-bg)' : 'var(--surface)',
-              color: activeItem.impact === 'High' ? 'var(--loss)' : activeItem.impact === 'Medium' ? 'var(--amber)' : 'var(--mute)',
-              letterSpacing:'0.06em', textTransform:'uppercase' }}>
-              {IMPACT_LABEL[activeItem.impact] || activeItem.impact}
+          {/* Mobile meta row: single line */}
+          <div className="mobile-only" style={{ fontFamily:'var(--font-mono)', fontSize:11,
+            color:'var(--mute)', letterSpacing:'0.06em', marginTop:12, marginBottom:4,
+            display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <span>
+              {activeItem.impact} · {IMPACT_LABEL[activeItem.impact]}
+              {' · '}{itemState.estimated_fix_time}
+              {' · '}{activeItem.shopify_fix_complexity}
             </span>
-            <select value={itemState.estimated_fix_time}
-              onChange={e => onUpdateItem(audit.id, activeItemId, { estimated_fix_time: e.target.value })}
-              style={{ fontFamily:'var(--font-mono)', fontSize:10, padding:'2px 8px', background:'var(--surface)',
-                color:'var(--mute)', letterSpacing:'0.04em', textTransform:'uppercase',
-                border:'1px solid var(--rule)', cursor:'pointer', appearance:'none', WebkitAppearance:'none' }}>
-              {FIX_TIME_OPTIONS.map(v => React.createElement('option', { key:v, value:v }, v))}
-            </select>
-            <span style={{ fontFamily:'var(--font-mono)', fontSize:10, padding:'2px 8px',
-              background:'var(--surface)', color:'var(--gain)', letterSpacing:'0.04em',
-              border:'1px solid var(--rule)' }}>
-              +{activeItem.lift_min}–{activeItem.lift_max}% CVR
-            </span>
-            <span style={{ fontFamily:'var(--font-mono)', fontSize:10, padding:'2px 8px',
-              color:'var(--mute)', letterSpacing:'0.04em' }}>
-              {activeItem.shopify_fix_complexity}
-            </span>
-          </div>
-
-          {/* FINDING */}
-          <div style={{ border:'1px solid var(--rule)', marginBottom:8,
-            opacity: isFail ? 1 : 0.35, pointerEvents: isFail ? 'auto' : 'none',
-            transition:'opacity 0.15s' }}>
-            <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--rule)',
-              padding:'8px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
-                letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--loss)' }}>Finding</span>
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <span style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--mute)',
-                  letterSpacing:'0.06em', border:'1px solid var(--rule)', padding:'1px 6px' }}>IN REPORT</span>
-                {itemState.finding && (
-                  <button onClick={() => onUpdateItem(audit.id, activeItemId, { finding: '' })}
-                    style={{ background:'none', border:'none', fontFamily:'var(--font-mono)', fontSize:9,
-                      color:'var(--mute)', letterSpacing:'0.04em', cursor:'pointer', padding:0 }}>
-                    Reset to default
-                  </button>
-                )}
-              </div>
-            </div>
-            <div style={{ padding:'12px 16px' }}>
-              <AuditTextarea value={itemState.finding} placeholder={activeItem.default_finding}
-                onChange={v => onUpdateItem(audit.id, activeItemId, { finding: v })} rows={3} />
-            </div>
-          </div>
-
-          {/* RECOMMENDATION */}
-          <div style={{ border:'1px solid var(--rule)', marginBottom:8,
-            opacity: isFail ? 1 : 0.35, pointerEvents: isFail ? 'auto' : 'none',
-            transition:'opacity 0.15s' }}>
-            <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--rule)',
-              padding:'8px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
-                letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--mute)' }}>Recommendation</span>
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <span style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--mute)',
-                  letterSpacing:'0.06em', border:'1px solid var(--rule)', padding:'1px 6px' }}>IN REPORT</span>
-                {itemState.recommendation && (
-                  <button onClick={() => onUpdateItem(audit.id, activeItemId, { recommendation: '' })}
-                    style={{ background:'none', border:'none', fontFamily:'var(--font-mono)', fontSize:9,
-                      color:'var(--mute)', letterSpacing:'0.04em', cursor:'pointer', padding:0 }}>
-                    Reset to default
-                  </button>
-                )}
-              </div>
-            </div>
-            <div style={{ padding:'12px 16px' }}>
-              <AuditTextarea value={itemState.recommendation} placeholder={activeItem.default_recommendation}
-                onChange={v => onUpdateItem(audit.id, activeItemId, { recommendation: v })} rows={3} />
-            </div>
-          </div>
-
-          {/* SCREENSHOT URL */}
-          <div style={{ border:'1px solid var(--rule)', marginBottom:8,
-            opacity: isFail ? 1 : 0.35, pointerEvents: isFail ? 'auto' : 'none',
-            transition:'opacity 0.15s' }}>
-            <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--rule)',
-              padding:'8px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
-                letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--mute)' }}>Screenshot URL</span>
-              <span style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--mute)',
-                letterSpacing:'0.06em', border:'1px solid var(--rule)', padding:'1px 6px' }}>IN REPORT</span>
-            </div>
-            <div style={{ padding:'12px 16px' }}>
-              <AuditUrlInput value={itemState.screenshot_url}
-                onChange={v => onUpdateItem(audit.id, activeItemId, { screenshot_url: v })} />
-            </div>
-          </div>
-
-          {/* NOTES — private, collapsible */}
-          <div style={{ border:'1px solid var(--ink)' }}>
-            <button onClick={() => setShowNotes(v => !v)}
-              style={{ width:'100%', background:'var(--ink)', border:'none', padding:'8px 16px',
-                display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <span style={{ fontFamily:'var(--font-mono)', fontSize:9, fontWeight:600,
-                  letterSpacing:'0.12em', textTransform:'uppercase', color:'var(--accent)',
-                  background:'transparent' }}>Private</span>
-                <span style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--bg)',
-                  letterSpacing:'0.04em', opacity:0.7 }}>
-                  Notes {itemState.notes || itemState.screenshot_url ? '· filled' : ''}
-                </span>
-              </div>
-              <span style={{ color:'var(--bg)', fontSize:9, opacity:0.6,
-                transform: showNotes ? 'rotate(180deg)' : 'none', display:'inline-block',
-                transition:'transform 0.15s' }}>▼</span>
-            </button>
-            {showNotes && (
-              <div style={{ padding:'12px 16px', background:'var(--bg)',
-                display:'flex', flexDirection:'column', gap:10 }}>
-                <AuditTextarea value={itemState.notes}
-                  placeholder="Private notes (not in report)…"
-                  onChange={v => onUpdateItem(audit.id, activeItemId, { notes: v })} rows={2} />
-              </div>
+            {isFail && itemRecovery !== null && (
+              <span style={{ color:'var(--gain)', fontWeight:600 }}>+${fmt(itemRecovery)}/MO</span>
             )}
           </div>
 
-          {/* Prev / Next — desktop only; footer bar handles mobile */}
+          {/* Desktop prev/next inside left column */}
           <div className="desktop-only" style={{ display:'grid', gridTemplateColumns:'1fr 1fr',
             gap:6, marginTop:24 }}>
             <button onClick={() => prevItem && goTo(prevItem)} disabled={!prevItem}
               style={{ background:'var(--surface)', border:'1px solid var(--rule)',
-                color: prevItem ? 'var(--ink)' : 'var(--mute)', padding:'12px 16px',
+                color: prevItem ? 'var(--ink)' : 'var(--mute)', padding:'11px 12px',
                 cursor: prevItem ? 'pointer' : 'default', opacity: prevItem ? 1 : 0.35,
                 textAlign:'left', display:'flex', flexDirection:'column', gap:3 }}>
               <span style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.08em',
                 textTransform:'uppercase', color:'var(--mute)' }}>← Prev</span>
-              {prevItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:12,
+              {prevItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:11,
                 color:'var(--ink)', lineHeight:1.2 }}>{truncate(prevItem.name.split(':')[0])}</span>}
             </button>
             <button onClick={() => nextItem ? goTo(nextItem) : onScrollToFindings()}
               style={{ background: nextItem ? 'var(--surface)' : 'var(--btn-bg)',
                 border: nextItem ? '1px solid var(--rule)' : 'none',
                 color: nextItem ? 'var(--ink)' : 'var(--btn-ink)',
-                padding:'12px 16px', cursor:'pointer',
+                padding:'11px 12px', cursor:'pointer',
                 textAlign:'right', display:'flex', flexDirection:'column', gap:3, alignItems:'flex-end' }}>
               <span style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.08em',
                 textTransform:'uppercase', color: nextItem ? 'var(--mute)' : 'var(--btn-ink)' }}>
                 {nextItem ? 'Next →' : 'Size the revenue →'}
               </span>
-              {nextItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:12,
+              {nextItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:11,
                 color:'var(--ink)', lineHeight:1.2 }}>{truncate(nextItem.name.split(':')[0])}</span>}
             </button>
           </div>
-
-          {/* Keyboard hint */}
-          <div style={{ marginTop:16, fontFamily:'var(--font-mono)', fontSize:10,
-            color:'var(--mute)', letterSpacing:'0.06em' }}>
+          <div className="desktop-only" style={{ marginTop:12, fontFamily:'var(--font-mono)',
+            fontSize:10, color:'var(--mute)', letterSpacing:'0.06em' }}>
             J/K move · / jump
           </div>
-        </div>
-      </div>
+
+        </div>{/* end checklist-left */}
+
+        {/* ── RIGHT COLUMN: text fields ── */}
+        <div className="checklist-right">
+
+          {/* FINDING */}
+          <FieldBlock
+            label="Finding" tag="IN REPORT" tagColor="var(--loss)"
+            hasReset={!!itemState.finding}
+            onReset={() => onUpdateItem(audit.id, activeItemId, { finding: '' })}
+            disabled={!isFail}
+            defaultOpen={true}>
+            <AuditTextarea value={itemState.finding} placeholder={activeItem.default_finding}
+              onChange={v => onUpdateItem(audit.id, activeItemId, { finding: v })} rows={4} />
+          </FieldBlock>
+
+          {/* RECOMMENDATION */}
+          <FieldBlock
+            label="Recommendation" tag="IN REPORT"
+            hasReset={!!itemState.recommendation}
+            onReset={() => onUpdateItem(audit.id, activeItemId, { recommendation: '' })}
+            disabled={!isFail}
+            defaultOpen={true}>
+            <AuditTextarea value={itemState.recommendation} placeholder={activeItem.default_recommendation}
+              onChange={v => onUpdateItem(audit.id, activeItemId, { recommendation: v })} rows={4} />
+          </FieldBlock>
+
+          {/* SCREENSHOT URL */}
+          <FieldBlock label="Screenshot URL" tag="IN REPORT" disabled={!isFail} defaultOpen={false}>
+            <AuditUrlInput value={itemState.screenshot_url}
+              onChange={v => onUpdateItem(audit.id, activeItemId, { screenshot_url: v })} />
+          </FieldBlock>
+
+          {/* NOTES — private */}
+          <FieldBlock label="Notes" tag="PRIVATE" tagStyle="private" defaultOpen={false}>
+            <AuditTextarea value={itemState.notes}
+              placeholder="Private notes (not in report)…"
+              onChange={v => onUpdateItem(audit.id, activeItemId, { notes: v })} rows={4} />
+          </FieldBlock>
+
+        </div>{/* end checklist-right */}
+
+      </div>{/* end checklist-body */}
 
       {/* Mobile prev/next — outside scroll area */}
       <div className="mobile-only" style={{ display:'grid', gridTemplateColumns:'1fr 1fr',
@@ -2838,7 +2911,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
             textAlign:'right', display:'flex', flexDirection:'column', gap:3, alignItems:'flex-end' }}>
           <span style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.08em',
             textTransform:'uppercase', color: nextItem ? 'var(--mute)' : 'var(--btn-ink)' }}>
-            {nextItem ? 'Next →' : 'Size the revenue →'}
+            {nextItem ? 'Next item →' : 'Size the revenue →'}
           </span>
           {nextItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:12, color:'var(--ink)',
             lineHeight:1.2 }}>{truncate(nextItem.name.split(':')[0])}</span>}
