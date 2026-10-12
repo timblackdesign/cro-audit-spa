@@ -2213,21 +2213,72 @@ function SortControl({ value, onChange, options }) {
   );
 }
 
+// ── Checklist sort groups (includes 'priority' mode not in getGroupedItems) ──
+function getChecklistGroups(sort) {
+  if (sort === 'priority') {
+    return [
+      { key:'p0', label:'P0 · High',   items: AUDIT_ITEMS.filter(i => i.impact === 'High') },
+      { key:'p1', label:'P1 · Medium', items: AUDIT_ITEMS.filter(i => i.impact === 'Medium') },
+      { key:'p2', label:'P2 · Low',    items: AUDIT_ITEMS.filter(i => i.impact === 'Low') },
+    ].filter(g => g.items.length > 0);
+  }
+  return getGroupedItems(sort);
+}
+
 function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChange, cardGlowTrigger }) {
-  const [activeItemId, setActiveItemId] = useState(SECTIONS[0].items[0].id);
-  const [openSections, setOpenSections] = useState(() => new Set(getGroupedItems('section').map(g => g.key)));
+  const [activeItemId, setActiveItemId] = useState(AUDIT_ITEMS[0].id);
   const [checklistSort, setChecklistSort] = useState('section');
-  const sidebarRef = useRef(null);
-  const prevSidebarOpenRef = useRef(false);
-  const isMobileLayout = useRef(window.matchMedia('(max-width: 700px)').matches);
-  const groupsRef = useRef(getGroupedItems('section'));
-  const [showDetails, setShowDetails] = useState(false);
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const [hoverCell, setHoverCell] = useState(null); // { item, rect }
   const [showNotes, setShowNotes] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCursor, setSidebarCursor] = useState(0);
+  const [showDetails, setShowDetails] = useState(false);
   const [cardGlowing, setCardGlowing] = useState(false);
   const [revertMsg, setRevertMsg] = useState(false);
+  const [failTooltipVisible, setFailTooltipVisible] = useState(false);
 
+  const failTooltipSeen = useRef(
+    !demoMode && !!(() => { try { return localStorage.getItem('triage-fail-tooltip-seen'); } catch { return false; } })()
+  );
+  const mapStripRef = useRef(null);
+  const cellElRefs = useRef({});
+  const cardRef = useRef(null);
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+
+  // ── Derived ──────────────────────────────────────────────────────────────────
+  const groups = getChecklistGroups(checklistSort);
+  const allItemsFlat = groups.flatMap(g => g.items);
+  const activeIdx = allItemsFlat.findIndex(i => i.id === activeItemId);
+  const prevItem = activeIdx > 0 ? allItemsFlat[activeIdx - 1] : null;
+  const nextItem = activeIdx < allItemsFlat.length - 1 ? allItemsFlat[activeIdx + 1] : null;
+  const activeItem = AUDIT_ITEMS.find(i => i.id === activeItemId) || AUDIT_ITEMS[0];
+  const activeSection = SECTIONS.find(s => s.items.some(i => i.id === activeItemId));
+  const sectionItems = activeSection?.items || [];
+  const sectionItemIdx = sectionItems.findIndex(i => i.id === activeItemId);
+  const globalIdx = AUDIT_ITEMS.findIndex(i => i.id === activeItemId);
+  const itemState = getItemState(audit, activeItemId);
+  const isFail = itemState.status === 'fail';
+
+  const totalDone = AUDIT_ITEMS.filter(i => {
+    const s = getItemState(audit, i.id).status;
+    return s === 'pass' || s === 'fail' || s === 'na';
+  }).length;
+  const totalFails = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail').length;
+
+  // Monthly recovery estimate for current item when FAIL
+  const itemRecovery = (() => {
+    if (!isFail) return null;
+    const ci = audit.client_info || {};
+    const revenue = parseFloat(ci.monthly_revenue) || 0;
+    if (!revenue) return null;
+    const aov = parseFloat(ci.aov) || 85;
+    const cvr = parseFloat(ci.cvr) || 1.8;
+    const sessions = revenue / (aov * (cvr / 100));
+    const midLift = (activeItem.lift_min + activeItem.lift_max) / 2 / 100;
+    return Math.round(sessions * aov * midLift);
+  })();
+
+  // ── Effects ───────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!cardGlowTrigger) return;
     setCardGlowing(true);
@@ -2236,54 +2287,8 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
   }, [cardGlowTrigger]);
 
   useEffect(() => {
-    const sidebar = sidebarRef.current;
-    if (!sidebar) return;
-    function onScroll() {
-      const { scrollTop, scrollHeight, clientHeight } = sidebar;
-      if (scrollTop + clientHeight >= scrollHeight - 8) {
-        setOpenSections(prev => {
-          const gs = groupsRef.current;
-          const lastOpenIdx = gs.reduce((max, g, i) => prev.has(g.key) ? i : max, -1);
-          if (lastOpenIdx >= 0 && lastOpenIdx < gs.length - 1) {
-            return new Set([...prev, gs[lastOpenIdx + 1].key]);
-          }
-          return prev;
-        });
-      }
-    }
-    sidebar.addEventListener('scroll', onScroll, { passive: true });
-    return () => sidebar.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 700px)');
-    const handler = (e) => { isMobileLayout.current = e.matches; };
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  const cardRef = useRef(null);
-  const touchStartX = useRef(null);
-  const touchStartY = useRef(null);
-
-  const activeItem = AUDIT_ITEMS.find(i => i.id === activeItemId) || AUDIT_ITEMS[0];
-  const activeSection = SECTIONS.find(s => s.items.some(i => i.id === activeItemId));
-  const sectionItems = activeSection ? activeSection.items : [];
-  const sectionItemIdx = sectionItems.findIndex(i => i.id === activeItemId);
-
-  useEffect(() => {
     onContextChange?.({ short: activeSection?.short || '', idx: sectionItemIdx + 1, len: sectionItems.length });
   }, [activeItemId]);
-  const itemState = getItemState(audit, activeItemId);
-  const isFail = itemState.status === 'fail';
-  // Ref gives callbacks stable access to current itemState without adding `audit` to their dep arrays
-  const itemStateRef = useRef(itemState);
-  itemStateRef.current = itemState;
-
-  const prog = auditProgress(audit);
-  const totalDone = prog.pass + prog.fail + prog.na;
-  const totalPct = Math.round((totalDone / 60) * 100);
-  const anyMarked = totalDone > 0;
 
   useEffect(() => {
     if (!revertMsg) return;
@@ -2291,446 +2296,554 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
     return () => clearTimeout(t);
   }, [revertMsg]);
 
-  const updateItem = useCallback((field, value) => {
-    if (field === 'status' && value === 'fail' && activeItem.primary_viewport === 'both') {
-      onUpdateItem(audit.id, activeItemId, { status: 'fail', fails_on_desktop: true, fails_on_mobile: true });
-    } else {
-      onUpdateItem(audit.id, activeItemId, { [field]: value });
-    }
-  }, [audit.id, activeItemId, activeItem, onUpdateItem]);
+  // Scroll active cell into view in the map strip
+  useEffect(() => {
+    const el = cellElRefs.current[activeItemId];
+    const strip = mapStripRef.current;
+    if (!el || !strip) return;
+    // Walk up to find offset relative to strip's scrollable area
+    let offset = 0;
+    let node = el;
+    while (node && node !== strip) { offset += node.offsetLeft; node = node.offsetParent; }
+    const width = el.offsetWidth;
+    if (offset < strip.scrollLeft + 60) strip.scrollLeft = offset - 60;
+    else if (offset + width > strip.scrollLeft + strip.clientWidth - 60)
+      strip.scrollLeft = offset + width - strip.clientWidth + 60;
+  }, [activeItemId, checklistSort]);
 
-  const toggleViewport = useCallback(() => {
-    const { fails_on_desktop, fails_on_mobile } = itemStateRef.current;
-    const deskActive = fails_on_desktop !== false;
-    const mobActive  = fails_on_mobile  !== false;
-    // Cycle: both → desktop only → mobile only → both
-    if (deskActive && mobActive) {
-      onUpdateItem(audit.id, activeItemId, { fails_on_desktop: true, fails_on_mobile: false });
-    } else if (deskActive) {
-      onUpdateItem(audit.id, activeItemId, { fails_on_desktop: false, fails_on_mobile: true });
-    } else {
-      onUpdateItem(audit.id, activeItemId, { fails_on_desktop: true, fails_on_mobile: true });
-    }
-  }, [audit.id, activeItemId, onUpdateItem]);
-
-  const groups = getGroupedItems(checklistSort);
-  groupsRef.current = groups;
-  const allItemsFlat = groups.flatMap(g => g.items);
-  const activeIdx = allItemsFlat.findIndex(i => i.id === activeItemId);
-  const prevItem = activeIdx > 0 ? allItemsFlat[activeIdx - 1] : null;
-  const nextItem = activeIdx < allItemsFlat.length - 1 ? allItemsFlat[activeIdx + 1] : null;
-  const sidebarCursorId = allItemsFlat[sidebarCursor]?.id ?? null;
-
-  function handleSortChange(newSort) {
-    const newGroups = getGroupedItems(newSort);
-    setChecklistSort(newSort);
-    setOpenSections(new Set(newGroups.map(g => g.key)));
-  }
-
+  // ── Navigation ───────────────────────────────────────────────────────────
   function goTo(item) {
     setActiveItemId(item.id);
-    setSidebarCursor(allItemsFlat.findIndex(i => i.id === item.id));
-    const group = groupsRef.current.find(g => g.items.some(i => i.id === item.id));
-    if (group) setOpenSections(prev => new Set([...prev, group.key]));
     setShowDetails(false);
     setShowNotes(false);
     if (cardRef.current) cardRef.current.scrollTop = 0;
   }
 
+  // ── Status handling ───────────────────────────────────────────────────────
+  function handleStatusClick(optId) {
+    if (optId === 'fail') {
+      if (itemState.status === 'fail' && activeItem.primary_viewport === 'both') {
+        // Cycle: both → mobile only → desktop only → both
+        const d = itemState.fails_on_desktop !== false;
+        const m = itemState.fails_on_mobile  !== false;
+        if (d && m)       onUpdateItem(audit.id, activeItemId, { fails_on_desktop: false, fails_on_mobile: true });
+        else if (!d && m) onUpdateItem(audit.id, activeItemId, { fails_on_desktop: true,  fails_on_mobile: false });
+        else              onUpdateItem(audit.id, activeItemId, { fails_on_desktop: true,  fails_on_mobile: true });
+      } else {
+        const updates = { status: 'fail' };
+        if (activeItem.primary_viewport === 'both') {
+          updates.fails_on_desktop = true;
+          updates.fails_on_mobile  = true;
+          if (!failTooltipSeen.current) {
+            failTooltipSeen.current = true;
+            if (!demoMode) { try { localStorage.setItem('triage-fail-tooltip-seen', '1'); } catch {} }
+            setFailTooltipVisible(true);
+            setTimeout(() => setFailTooltipVisible(false), 3400);
+          }
+        }
+        onUpdateItem(audit.id, activeItemId, updates);
+      }
+    } else {
+      onUpdateItem(audit.id, activeItemId, { status: optId });
+    }
+  }
+
+  // ── Keyboard shortcuts ────────────────────────────────────────────────────
   useEffect(() => {
     function handleKey(e) {
       const tag = e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      if (sidebarOpen && sidebarRef.current && sidebarRef.current.contains(document.activeElement)) {
-        if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          setSidebarCursor(prev => Math.max(0, prev - 1));
-        } else if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          setSidebarCursor(prev => Math.min(allItemsFlat.length - 1, prev + 1));
-        }
-        return;
-      }
-      if (e.key === 'ArrowLeft'  && prevItem) goTo(prevItem);
-      if (e.key === 'ArrowRight' && nextItem) goTo(nextItem);
+      if (e.key === 'j' || e.key === 'J') { if (nextItem) goTo(nextItem); }
+      else if (e.key === 'k' || e.key === 'K') { if (prevItem) goTo(prevItem); }
+      else if (e.key === 'p' || e.key === 'P') handleStatusClick('pass');
+      else if (e.key === 'f' || e.key === 'F') handleStatusClick('fail');
+      else if (e.key === 't' || e.key === 'T') handleStatusClick('tbd');
+      else if (e.key === 'n' || e.key === 'N') handleStatusClick('na');
     }
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [activeItemId, sidebarOpen, sidebarCursor]);
+  }, [activeItemId, prevItem, nextItem, itemState]);
 
-  useEffect(() => {
-    if (!sidebarRef.current || !sidebarCursorId) return;
-    const btn = sidebarRef.current.querySelector(`[data-item-id="${sidebarCursorId}"]`);
-    if (!btn) { prevSidebarOpenRef.current = sidebarOpen; return; }
-    btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    const sidebarJustOpened = sidebarOpen && !prevSidebarOpenRef.current;
-    prevSidebarOpenRef.current = sidebarOpen;
-    if (sidebarRef.current.contains(document.activeElement) || sidebarJustOpened) {
-      btn.focus({ preventScroll: true });
-    }
-  }, [sidebarCursor, sidebarOpen]);
+  // ── Cell status color ─────────────────────────────────────────────────────
+  function cellColor(itemId) {
+    const s = getItemState(audit, itemId).status;
+    if (s === 'pass' || s === 'na') return 'var(--gain)';
+    if (s === 'fail') return 'var(--loss)';
+    if (s === 'tbd')  return 'var(--mute)';
+    return 'var(--rule)';
+  }
 
-  const statusDot = (itemId) => {
-    const s = (audit.items || {})[itemId]?.status;
-    if (!s || s === 'tbd') return { color:'var(--rule-2)', border:true };
-    if (s === 'pass') return { color:'var(--state-pass)', border:false };
-    if (s === 'fail') return { color:'var(--state-fail)', border:false };
-    return { color:'var(--ink-5)', border:false };
-  };
-
-  const sectionDone = (sec) => sec.items.filter(i => {
-    const s = (audit.items || {})[i.id]?.status;
-    return s && s !== 'tbd';
-  }).length;
-
-  const IMPACT_COLOR = { High:'var(--impact-high)', Medium:'var(--impact-medium)', Low:'var(--ink-3)' };
-  const IMPACT_BG    = { High:'var(--impact-high-bg)', Medium:'var(--impact-medium-bg)', Low:'var(--paper-3)' };
-
-  const STATUS_OPTS = [
-    { id:'pass', label:'Pass', color:'var(--state-pass)',  bg:'var(--state-pass-bg)',  border:'var(--state-pass)' },
-    { id:'fail', label:'Flag', color:'var(--state-fail)',  bg:'var(--state-fail-bg)',  border:'var(--state-fail)' },
-    { id:'tbd',  label:'TBD',  color:'var(--ink-3)',       bg:'var(--paper-3)',         border:'var(--rule-2)' },
-    { id:'na',   label:'N/A',  color:'var(--ink-5)',       bg:'var(--paper)',            border:'var(--rule)' },
+  // ── Sort options ──────────────────────────────────────────────────────────
+  const SORT_OPTIONS = [
+    { value:'section',  label:'Section',    note:'Grouped by store area' },
+    { value:'priority', label:'Priority',   note:'P0 first · highest CVR impact' },
+    { value:'quickwins',label:'Quick wins', note:'Fastest to ship first' },
+    { value:'lift',     label:'CVR lift',   note:'Highest lift range first' },
   ];
+  const activeSortLabel = SORT_OPTIONS.find(o => o.value === checklistSort)?.label || 'Section';
+  const truncate = (str, n=28) => str && str.length > n ? str.slice(0, n) + '…' : str;
 
-  const truncate = (str, n=24) => str && str.length > n ? str.slice(0,n) + '…' : str;
+  // ── Viewport state for FAIL key display ───────────────────────────────────
+  const failD = itemState.fails_on_desktop !== false;
+  const failM = itemState.fails_on_mobile  !== false;
+  const dApplies = activeItem.primary_viewport !== 'mobile';
+  const mApplies = activeItem.primary_viewport !== 'desktop';
+  const dOpacity = !isFail ? 0.15 : (dApplies ? (failD ? 1 : 0.3) : 0.12);
+  const mOpacity = !isFail ? 0.15 : (mApplies ? (failM ? 1 : 0.3) : 0.12);
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div data-stage="checklist" style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, overflow:'hidden' }}>
-      {/* Stage header bar */}
-      <div style={{ background:'var(--paper-2)', borderBottom:'1px solid var(--rule)', flexShrink:0 }}>
-        <div style={{ padding:'10px 20px', display:'flex', alignItems:'center', gap:12 }}>
-          <button onClick={() => setSidebarOpen(v => !v)}
-            style={{ background:'none', border:'1px solid var(--rule)',
-              color: sidebarOpen ? 'var(--accent)' : 'var(--ink-4)',
-              fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
-              textTransform:'uppercase', padding:'5px 10px', cursor:'pointer',
-              display:'flex', alignItems:'center', gap:5 }}>
-            <span>≡</span><span>{sidebarOpen ? 'Hide' : 'Sections'}</span>
-          </button>
-          <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-            color:'var(--btn-ink)', background:'var(--btn-bg)', padding:'2px 8px' }}>01 — Checklist</span>
-          <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-4)', letterSpacing:'0.04em' }}>
-            {totalDone}/60 assessed
-          </span>
-          <div style={{ width:80, height:2, background:'var(--rule)', position:'relative', marginLeft:4 }} className="desktop-only">
-            <div style={{ position:'absolute', left:0, top:0, height:'100%', background:'var(--accent)',
-              width:`${totalPct}%`, transition:'width 0.4s' }} />
-          </div>
-        </div>
-        <div className="mobile-only" style={{ height:2, background:'var(--rule)' }}>
-          <div style={{ height:'100%', width:`${totalPct}%`, background:'var(--accent)', transition:'width 0.4s' }} />
-        </div>
-      </div>
+    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, overflow:'hidden' }}>
 
-      {/* Sidebar + card */}
-      <div style={{ display:'flex', flex:1, overflow:'hidden', minHeight:0 }}>
-        {/* Mobile sidebar backdrop */}
-        {sidebarOpen && (
-          <div className="mobile-only" onClick={() => setSidebarOpen(false)}
-            style={{ position:'fixed', top:46, left:0, right:0, bottom:0, zIndex:399, background:'rgba(0,0,0,0.55)', cursor:'pointer' }} />
-        )}
-        {/* Sidebar */}
-        <div ref={sidebarRef} className={`checklist-sidebar${sidebarOpen ? ' open' : ''}`}>
-          {/* Sort control */}
-          <div style={{ padding:'10px 12px 8px', borderBottom:'1px solid var(--rule)', background:'var(--paper)' }}>
-            <div style={{ fontFamily:"var(--font-mono)", fontSize:8, letterSpacing:'0.1em', textTransform:'uppercase',
-              color:'var(--ink-5)', marginBottom:6 }}>Sort by</div>
-            <SortControl
-              value={checklistSort}
-              onChange={handleSortChange}
-              options={[
-                { value:'section',   label:'Section' },
-                { value:'impact',    label:'Impact' },
-                { value:'fix_time',  label:'Fix Time' },
-                { value:'quickwins', label:'Quick Wins' },
-                { value:'lift',      label:'CVR Lift' },
-              ]}
-            />
-          </div>
-          {groups.map(group => {
-            const isOpen = openSections.has(group.key);
-            const done = sectionDone(group);
-            return (
-              <div key={group.key}>
-                <button className={`sidebar-acc-btn${isOpen ? ' open' : ''}`}
-                  onClick={() => setOpenSections(prev => { const n = new Set(prev); n.has(group.key) ? n.delete(group.key) : n.add(group.key); return n; })}>
-                  <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.08em',
-                    textTransform:'uppercase', color: isOpen ? 'var(--ink-2)' : 'var(--ink-5)' }}>
-                    {group.label}
-                  </span>
-                  <span style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
-                    <span style={{ fontFamily:"var(--font-mono)", fontSize:10,
-                      color: done === group.items.length ? 'var(--state-pass)' : 'var(--ink-5)' }}>
-                      {done}/{group.items.length}
-                    </span>
-                    <span style={{ fontFamily:"var(--font-mono)", fontSize:8, color:'var(--ink-5)',
-                      transform: isOpen ? 'rotate(180deg)' : 'none', transition:'transform 0.15s', display:'inline-block' }}>▼</span>
-                  </span>
-                </button>
-                {isOpen && group.items.map((item, idx) => {
-                  const isActive = item.id === activeItemId;
-                  const isCursor = item.id === sidebarCursorId;
-                  const dot = statusDot(item.id);
-                  const rawSt = (audit.items || {})[item.id] || {};
-                  return (
-                    <button key={item.id} data-item-id={item.id}
-                      className={`sidebar-item-btn${isActive ? ' active' : ''}${isCursor && !isActive ? ' cursor' : ''}`}
-                      onClick={() => {
-                        goTo(item);
-                        setSidebarOpen(false);
-                        if (cardRef.current) cardRef.current.focus();
-                      }}>
-                      <span style={{ width:7, height:7, borderRadius:'50%', background:dot.color, flexShrink:0,
-                        border: dot.border ? '1px solid var(--rule-2)' : 'none' }} />
-                      <ViewportIcons viewport={item.primary_viewport} status={rawSt.status ?? 'tbd'} failsDesktop={rawSt.fails_on_desktop ?? null} failsMobile={rawSt.fails_on_mobile ?? null} size="sidebar" />
-                      <span style={{ fontFamily:"var(--font-sans)", fontSize:11,
-                        color: (isActive || isCursor) ? 'var(--ink)' : 'var(--ink-4)', lineHeight:1.3, flex:1,
-                        overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
-                        {item.name}
-                      </span>
-                      <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)', flexShrink:0 }}>
-                        {idx + 1}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
+      {/* ── Map strip ── */}
+      <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--rule)', flexShrink:0 }}>
+        {/* Strip row: sort button + scrollable cells + summary */}
+        <div style={{ display:'flex', alignItems:'stretch', height:56, position:'relative' }}>
 
-        {/* Item card */}
-        <div ref={cardRef} tabIndex={-1} className="checklist-card-scroll" style={{ flex:1, padding:'16px 20px 80px', overflowY:'auto', minWidth:0, minHeight:0, outline:'none' }}
-          onTouchStart={e => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY; }}
-          onTouchEnd={e => {
-            if (touchStartX.current === null) return;
-            const dx = e.changedTouches[0].clientX - touchStartX.current;
-            const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
-            touchStartX.current = null; touchStartY.current = null;
-            if (dy > 60 || Math.abs(dx) < 50) return;
-            if (dx < 0 && nextItem) goTo(nextItem);
-            if (dx > 0 && prevItem) goTo(prevItem);
-          }}>
-          <div style={{ maxWidth:600, margin:'0 auto', display:'flex', flexDirection:'column', gap:2 }}>
-
-            {/* Item header */}
-            <div className={cardGlowing ? 'card-glow' : undefined}>
-              {(() => {
-                const colonIdx = activeItem.name.indexOf(':');
-                if (colonIdx === -1) return (
-                  <h2 style={{ fontFamily:"var(--font-sans)", fontSize:19, fontWeight:400, color:'var(--ink)',
-                    letterSpacing:'-0.3px', lineHeight:1.25, marginBottom:10 }}>
-                    {activeItem.name}
-                  </h2>
-                );
-                const before = activeItem.name.slice(0, colonIdx);
-                const after = activeItem.name.slice(colonIdx + 1).trim();
-                return (
-                  <>
-                    <h2 style={{ fontFamily:"var(--font-sans)", fontSize:19, fontWeight:400, color:'var(--ink)',
-                      letterSpacing:'-0.3px', lineHeight:1.25, marginBottom:4 }}>
-                      {before}:
-                    </h2>
-                    <p style={{ fontFamily:"var(--font-sans)", fontSize:14, color:'var(--ink-3)',
-                      lineHeight:1.35, marginBottom:10 }}>
-                      {after}
-                    </p>
-                  </>
-                );
-              })()}
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:5, marginBottom:10 }}>
-                {STATUS_OPTS.map(opt => {
-                  const active = itemState.status === opt.id;
-                  return (
-                    <button key={opt.id} onClick={() => updateItem('status', opt.id)}
-                      style={{ padding:'12px 6px', background: active ? opt.bg : 'var(--paper-3)',
-                        border:`1px solid ${active ? opt.border : 'var(--rule)'}`,
-                        color: active ? opt.color : 'var(--ink-5)',
-                        fontFamily:"var(--font-mono)", fontSize:12, fontWeight: active ? 600 : 400,
-                        letterSpacing:'0.06em', textTransform:'uppercase', cursor:'pointer', transition:'all 0.12s' }}>
+          {/* Sort button — sticky left */}
+          <div style={{ position:'sticky', left:0, zIndex:10, flexShrink:0,
+            background:'var(--surface)', borderRight:'1px solid var(--rule)',
+            display:'flex', alignItems:'center' }}>
+            <button
+              onClick={() => setSortDropdownOpen(v => !v)}
+              style={{ padding:'0 14px', height:'100%', background:'none', border:'none',
+                fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
+                letterSpacing:'0.08em', textTransform:'uppercase',
+                color: sortDropdownOpen ? 'var(--ink)' : 'var(--mute)',
+                cursor:'pointer', display:'flex', alignItems:'center', gap:6,
+                whiteSpace:'nowrap' }}>
+              ⇅ {activeSortLabel} ▾
+            </button>
+            {sortDropdownOpen && (
+              <div style={{ position:'absolute', top:'100%', left:0, background:'var(--bg)',
+                border:'1px solid var(--ink)', zIndex:50, minWidth:220 }}
+                onMouseLeave={() => setSortDropdownOpen(false)}>
+                {SORT_OPTIONS.map(opt => (
+                  <button key={opt.value}
+                    onClick={() => { setChecklistSort(opt.value); setSortDropdownOpen(false); }}
+                    style={{ display:'block', width:'100%', padding:'12px 16px', background:'none', border:'none',
+                      borderBottom:'1px solid var(--rule)', textAlign:'left', cursor:'pointer',
+                      background: checklistSort === opt.value ? 'var(--surface)' : 'transparent' }}
+                    onMouseEnter={e => e.currentTarget.style.background='var(--surface)'}
+                    onMouseLeave={e => e.currentTarget.style.background = checklistSort === opt.value ? 'var(--surface)' : 'transparent'}>
+                    <div style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
+                      letterSpacing:'0.06em', textTransform:'uppercase',
+                      color: checklistSort === opt.value ? 'var(--accent-text)' : 'var(--ink)', marginBottom:2 }}>
                       {opt.label}
-                    </button>
-                  );
-                })}
-              </div>
-              <div style={{ display:'flex', gap:5, flexWrap:'wrap', alignItems:'center', marginBottom:10 }}>
-                <ViewportIcons viewport={activeItem.primary_viewport} status={itemState.status} failsDesktop={itemState.fails_on_desktop} failsMobile={itemState.fails_on_mobile} onToggle={toggleViewport} size="card" />
-                {revertMsg && (
-                  <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-4)',
-                    letterSpacing:'0.04em' }}>
-                    Reverted to TBD — mark at least one viewport as failed.
-                  </span>
-                )}
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, padding:'2px 8px',
-                  background:IMPACT_BG[activeItem.impact], color:IMPACT_COLOR[activeItem.impact],
-                  letterSpacing:'0.04em', textTransform:'uppercase' }}>{IMPACT_LABEL[activeItem.impact] || activeItem.impact}</span>
-                <select value={itemState.estimated_fix_time}
-                  onChange={e => updateItem('estimated_fix_time', e.target.value)}
-                  style={{ fontFamily:"var(--font-mono)", fontSize:10, padding:'2px 8px',
-                    background:'var(--paper-3)', color:'var(--ink-4)', letterSpacing:'0.04em',
-                    textTransform:'uppercase', border:'none', cursor:'pointer', appearance:'none',
-                    WebkitAppearance:'none' }}>
-                  {FIX_TIME_OPTIONS.map(v => React.createElement('option', { key:v, value:v }, v))}
-                </select>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, padding:'2px 8px',
-                  background:'var(--paper-3)', color:'var(--accent-positive)', letterSpacing:'0.04em' }}>
-                  +{activeItem.lift_min}–{activeItem.lift_max}% CVR
-                </span>
-              </div>
-              <button onClick={() => setShowDetails(v => !v)}
-                style={{ background:'none', border:'none', color:'var(--ink-5)', fontFamily:"var(--font-mono)",
-                  fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase', cursor:'pointer', padding:0,
-                  display:'flex', alignItems:'center', gap:5 }}>
-                <span style={{ transform:showDetails ? 'rotate(180deg)' : 'none', display:'inline-block',
-                  transition:'transform 0.15s', fontSize:8 }}>▼</span>
-                {showDetails ? 'Hide details' : 'Details'}
-              </button>
-              {showDetails && (
-                <div style={{ marginTop:10, display:'grid', gridTemplateColumns:'1fr 1fr', gap:6 }}>
-                  {[['Impact Area', activeItem.impact_area], ['Shopify Complexity', activeItem.shopify_fix_complexity]].map(([lbl, val]) => (
-                    <div key={lbl} style={{ background:'var(--paper-3)', padding:'8px 10px' }}>
-                      <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em',
-                        textTransform:'uppercase', color:'var(--ink-5)', marginBottom:3 }}>{lbl}</div>
-                      <div style={{ fontFamily:"var(--font-sans)", fontSize:12, color:'var(--ink-3)' }}>{val}</div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+                      letterSpacing:'0.04em' }}>{opt.note}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-            {/* Finding */}
-            <div style={{ background:'var(--paper-2)', border:'1px solid rgba(252,165,165,0.2)',
-              opacity: isFail ? 1 : 0.35, pointerEvents: isFail ? 'auto' : 'none',
-              transition:'opacity 0.15s' }}>
-              <div style={{ padding:'10px 18px', borderBottom:'1px solid var(--rule)',
-                display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600,
-                  letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--state-fail)' }}>Finding</span>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)',
-                  letterSpacing:'0.04em' }}>in client report</span>
-              </div>
-              <div style={{ padding:'10px 18px' }}>
-                <AuditTextarea value={itemState.finding} placeholder={activeItem.default_finding}
-                  onChange={v => updateItem('finding', v)} rows={3} />
-              </div>
-            </div>
-
-            {/* Recommendation */}
-            <div style={{ background:'var(--paper-2)', border:'1px solid var(--rule)',
-              opacity: isFail ? 1 : 0.35, pointerEvents: isFail ? 'auto' : 'none',
-              transition:'opacity 0.15s' }}>
-              <div style={{ padding:'10px 18px', borderBottom:'1px solid var(--rule)',
-                display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600,
-                  letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--ink-3)' }}>Finding</span>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)',
-                  letterSpacing:'0.04em' }}>in client report</span>
-              </div>
-              <div style={{ padding:'10px 18px' }}>
-                <AuditTextarea value={itemState.recommendation} placeholder={activeItem.default_recommendation}
-                  onChange={v => updateItem('recommendation', v)} rows={3} />
-              </div>
-            </div>
-
-            {/* Notes + screenshot — collapsible */}
-            <div style={{ background:'var(--paper-2)', border:'1px solid var(--rule)' }}>
-              <button onClick={() => setShowNotes(v => !v)}
-                style={{ width:'100%', background:'none', border:'none', padding:'10px 18px',
-                  display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer' }}>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontWeight:600,
-                  letterSpacing:'0.1em', textTransform:'uppercase',
-                  color:(itemState.notes || itemState.screenshot_url) ? 'var(--ink-3)' : 'var(--ink-5)' }}>
-                  Notes {itemState.screenshot_url ? '· screenshot' : ''}
-                </span>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:8, color:'var(--ink-5)',
-                  transform:showNotes ? 'rotate(180deg)' : 'none', display:'inline-block', transition:'transform 0.15s' }}>▼</span>
-              </button>
-              {showNotes && (
-                <div style={{ padding:'0 18px 12px', display:'flex', flexDirection:'column', gap:10 }}>
-                  <AuditTextarea value={itemState.notes} placeholder="Private notes (not in report)…"
-                    onChange={v => updateItem('notes', v)} rows={2} />
-                  <div>
-                    <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
-                      <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)',
-                        letterSpacing:'0.06em', textTransform:'uppercase' }}>Screenshot URL</span>
-                      <ScreenshotTooltip />
-                    </div>
-                    <AuditUrlInput value={itemState.screenshot_url} onChange={v => updateItem('screenshot_url', v)} />
+          {/* Scrollable cells */}
+          <div ref={mapStripRef} style={{ flex:1, overflowX:'auto', scrollbarWidth:'none',
+            display:'flex', alignItems:'center', gap:0, padding:'0 12px' }}>
+            <style>{`.map-strip::-webkit-scrollbar{display:none}`}</style>
+            {groups.map((group, gi) => {
+              const groupDone = group.items.filter(i => {
+                const s = getItemState(audit, i.id).status;
+                return s === 'pass' || s === 'fail' || s === 'na';
+              }).length;
+              return (
+                <div key={group.key} style={{ display:'flex', alignItems:'center', gap:6,
+                  flexShrink:0, marginRight:16 }}>
+                  {/* Group label */}
+                  <div style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.08em',
+                    textTransform:'uppercase', color:'var(--mute)', whiteSpace:'nowrap',
+                    marginRight:4, flexShrink:0 }}>
+                    {group.label}
+                    <span style={{ marginLeft:4, color: groupDone === group.items.length ? 'var(--gain)' : 'var(--mute)',
+                      opacity:0.7 }}>{groupDone}/{group.items.length}</span>
                   </div>
+                  {/* Cells */}
+                  {group.items.map(item => {
+                    const isActive = item.id === activeItemId;
+                    const color = cellColor(item.id);
+                    return (
+                      <div key={item.id}
+                        ref={el => { cellElRefs.current[item.id] = el; }}
+                        onClick={() => goTo(item)}
+                        onMouseEnter={e => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setHoverCell({ item, x: rect.left + rect.width / 2, y: rect.bottom + 6 });
+                        }}
+                        onMouseLeave={() => setHoverCell(null)}
+                        style={{ width:18, height:18, background:color, cursor:'pointer',
+                          flexShrink:0, position:'relative',
+                          outline: isActive ? '2px solid var(--ink)' : 'none',
+                          outlineOffset: isActive ? '2px' : '0',
+                          transition:'outline 0.1s' }} />
+                    );
+                  })}
                 </div>
-              )}
-            </div>
+              );
+            })}
+          </div>
 
-            {/* Prev / Next — desktop only; mobile version lives outside the scroll container below */}
-            <div className="checklist-item-nav desktop-only" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:5, paddingTop:6 }}>
-              <button onClick={() => prevItem && goTo(prevItem)} disabled={!prevItem}
-                style={{ background:'var(--paper-2)', border:'1px solid var(--rule)',
-                  color: prevItem ? 'var(--ink-3)' : 'var(--ink-5)', padding:'11px 14px',
-                  cursor: prevItem ? 'pointer' : 'default', opacity: prevItem ? 1 : 0.3,
-                  textAlign:'left', display:'flex', flexDirection:'column', gap:2 }}>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
-                  textTransform:'uppercase', color:'var(--ink-5)' }}>← Prev</span>
-                {prevItem && <span style={{ fontFamily:"var(--font-sans)", fontSize:11,
-                  color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(prevItem.name)}</span>}
-              </button>
-              {!nextItem ? (
-                <button onClick={onScrollToFindings}
-                  style={{ background:'var(--btn-bg)', border:'none', color:'var(--btn-ink)', padding:'11px 14px',
-                    cursor:'pointer', fontFamily:"var(--font-sans)", fontSize:12, fontWeight:600,
-                    letterSpacing:'0.06em', textTransform:'uppercase', textAlign:'right' }}>
-                  Review Findings →
-                </button>
-              ) : (
-                <button onClick={() => goTo(nextItem)}
-                  style={{ background:'var(--paper-2)', border:'1px solid var(--rule)',
-                    color:'var(--ink-3)', padding:'11px 14px', cursor:'pointer',
-                    textAlign:'right', display:'flex', flexDirection:'column', gap:2, alignItems:'flex-end' }}>
-                  <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
-                    textTransform:'uppercase', color:'var(--ink-5)' }}>Next →</span>
-                  <span style={{ fontFamily:"var(--font-sans)", fontSize:11,
-                    color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(nextItem.name)}</span>
-                </button>
-              )}
-            </div>
-
+          {/* Summary — right */}
+          <div className="desktop-only" style={{ flexShrink:0, borderLeft:'1px solid var(--rule)',
+            padding:'0 16px', display:'flex', alignItems:'center', gap:12,
+            fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+            letterSpacing:'0.04em', whiteSpace:'nowrap' }}>
+            <span>{totalDone}/60 reviewed</span>
+            {totalFails > 0 && <span style={{ color:'var(--loss)' }}>{totalFails} fail{totalFails !== 1 ? 's' : ''}</span>}
           </div>
         </div>
       </div>
 
-      {/* Prev / Next — mobile only, outside scroll container so it's always visible */}
+      {/* ── Cell hover tooltip (fixed, rendered outside strip overflow) ── */}
+      {hoverCell && (
+        <div style={{ position:'fixed', left: Math.min(hoverCell.x - 150, window.innerWidth - 316),
+          top: hoverCell.y, width:300, background:'var(--bg)', border:'1px solid var(--ink)',
+          padding:'12px 14px', zIndex:200, pointerEvents:'none',
+          boxShadow:'0 4px 16px rgba(0,0,0,0.12)' }}>
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.1em',
+            textTransform:'uppercase', color:'var(--mute)', marginBottom:6 }}>
+            {hoverCell.item.section} · {getItemState(audit, hoverCell.item.id).status?.toUpperCase() || 'NOT REVIEWED'}
+          </div>
+          <div style={{ fontFamily:'var(--font-sans)', fontSize:15, fontWeight:600,
+            color:'var(--ink)', lineHeight:1.25, marginBottom:4 }}>
+            {hoverCell.item.name.split(':')[0]}
+          </div>
+          {hoverCell.item.name.includes(':') && (
+            <div style={{ fontFamily:'var(--font-sans)', fontSize:13, color:'var(--mute)', lineHeight:1.5 }}>
+              {hoverCell.item.name.split(':').slice(1).join(':').trim()}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Item card ── */}
+      <div ref={cardRef} className="checklist-card-scroll"
+        style={{ flex:1, overflowY:'auto', minHeight:0, outline:'none' }}
+        tabIndex={-1}
+        onTouchStart={e => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY; }}
+        onTouchEnd={e => {
+          if (touchStartX.current === null) return;
+          const dx = e.changedTouches[0].clientX - touchStartX.current;
+          const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+          touchStartX.current = null; touchStartY.current = null;
+          if (dy > 60 || Math.abs(dx) < 50) return;
+          if (dx < 0 && nextItem) goTo(nextItem);
+          if (dx > 0 && prevItem) goTo(prevItem);
+        }}>
+        <div style={{ maxWidth:640, margin:'0 auto', padding:'24px 24px 48px' }}>
+
+          {/* Meta line */}
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.1em',
+            textTransform:'uppercase', color:'var(--mute)', marginBottom:12 }}>
+            {activeSection?.label || activeItem.section}
+            {' · '}Item {String(sectionItemIdx + 1).padStart(2, '0')} of {sectionItems.length}
+            {' · '}#{globalIdx + 1} of 60
+          </div>
+
+          {/* Title + question */}
+          <div className={cardGlowing ? 'card-glow' : undefined} style={{ marginBottom:20 }}>
+            {(() => {
+              const colonIdx = activeItem.name.indexOf(':');
+              if (colonIdx === -1) return (
+                <h2 style={{ fontFamily:'var(--font-sans)', fontSize:22, fontWeight:600,
+                  letterSpacing:'-0.03em', lineHeight:1.2, color:'var(--ink)', margin:0 }}>
+                  {activeItem.name}
+                </h2>
+              );
+              const before = activeItem.name.slice(0, colonIdx);
+              const after  = activeItem.name.slice(colonIdx + 1).trim();
+              return (
+                <>
+                  <h2 style={{ fontFamily:'var(--font-sans)', fontSize:22, fontWeight:600,
+                    letterSpacing:'-0.03em', lineHeight:1.2, color:'var(--ink)', marginBottom:8 }}>
+                    {before}
+                  </h2>
+                  <p style={{ fontFamily:'var(--font-sans)', fontSize:15, color:'var(--mute)',
+                    lineHeight:1.55, margin:0 }}>
+                    {after}
+                  </p>
+                </>
+              );
+            })()}
+          </div>
+
+          {/* Status keys — 4 column, 80px tall */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6, marginBottom:16, position:'relative' }}>
+            {/* PASS */}
+            {[
+              { id:'pass', label:'Pass', shortcut:'P',
+                activeBg:'var(--gain)', activeColor:'var(--bg)', activeBorder:'var(--gain)',
+                idleBg:'var(--surface)', idleColor:'var(--mute)' },
+              { id:'fail', label:'Flag', shortcut:'F',
+                activeBg:'var(--loss)', activeColor:'var(--bg)', activeBorder:'var(--loss)',
+                idleBg:'var(--surface)', idleColor:'var(--mute)' },
+              { id:'tbd',  label:'TBD',  shortcut:'T',
+                activeBg:'var(--ink)', activeColor:'var(--bg)', activeBorder:'var(--ink)',
+                idleBg:'var(--surface)', idleColor:'var(--mute)' },
+              { id:'na',   label:'N/A',  shortcut:'N',
+                activeBg:'var(--ink)', activeColor:'var(--bg)', activeBorder:'var(--ink)',
+                idleBg:'var(--surface)', idleColor:'var(--mute)' },
+            ].map(opt => {
+              const active = itemState.status === opt.id;
+              return (
+                <button key={opt.id} onClick={() => handleStatusClick(opt.id)}
+                  style={{ height:80, position:'relative', cursor:'pointer',
+                    background: active ? opt.activeBg : opt.idleBg,
+                    border: `1px solid ${active ? opt.activeBorder : 'var(--rule)'}`,
+                    color: active ? opt.activeColor : opt.idleColor,
+                    transition:'background 0.12s, border-color 0.12s, color 0.12s',
+                    display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4 }}>
+                  {/* Keyboard shortcut — top right */}
+                  <span style={{ position:'absolute', top:6, right:7,
+                    fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
+                    opacity:0.55, lineHeight:1 }}>
+                    {opt.shortcut}
+                  </span>
+                  {/* Label */}
+                  <span style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
+                    letterSpacing:'0.08em', textTransform:'uppercase' }}>
+                    {opt.label}
+                  </span>
+                  {/* Viewport icons inside FAIL key */}
+                  {opt.id === 'fail' && (
+                    <div style={{ display:'flex', alignItems:'center', gap:3, position:'absolute',
+                      bottom:7, left:8 }}>
+                      {/* Desktop icon */}
+                      <svg width="14" height="11" viewBox="0 0 14 11" fill="none"
+                        style={{ opacity: dOpacity, transition:'opacity 0.15s' }}>
+                        <rect x="0.5" y="0.5" width="13" height="8" stroke="currentColor" strokeWidth="1"/>
+                        <rect x="4" y="9" width="6" height="1.5" fill="currentColor"/>
+                        <rect x="2" y="10" width="10" height="0.5" fill="currentColor"/>
+                      </svg>
+                      {/* "+" only when both lit */}
+                      {(failD && failM && isFail) && (
+                        <span style={{ fontFamily:'var(--font-mono)', fontSize:9, fontWeight:900, lineHeight:1,
+                          color:'currentColor', opacity:0.9 }}>+</span>
+                      )}
+                      {/* Mobile icon */}
+                      <svg width="8" height="13" viewBox="0 0 8 13" fill="none"
+                        style={{ opacity: mOpacity, transition:'opacity 0.15s' }}>
+                        <rect x="0.5" y="0.5" width="7" height="12" stroke="currentColor" strokeWidth="1"/>
+                        <rect x="3" y="10.5" width="2" height="1.5" fill="currentColor"/>
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+
+            {/* First-time FAIL tooltip */}
+            {failTooltipVisible && (
+              <div style={{ position:'absolute', top:'calc(100% + 8px)', left:'25%', width:300,
+                background:'var(--ink)', color:'var(--bg)', padding:'12px 14px', zIndex:50,
+                opacity: failTooltipVisible ? 1 : 0, transition:'opacity 0.2s',
+                pointerEvents:'none' }}>
+                <div style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
+                  letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6 }}>
+                  Fails on desktop + mobile
+                </div>
+                <div style={{ fontFamily:'var(--font-sans)', fontSize:13, lineHeight:1.5, color:'var(--bg)',
+                  opacity:0.85 }}>
+                  Click Flag again for mobile only, then desktop only.
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Recovery estimate — only on FAIL */}
+          {isFail && itemRecovery !== null && (
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--gain)',
+              letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:12 }}>
+              Est. recovery if fixed +${fmt(itemRecovery)}/mo
+            </div>
+          )}
+
+          {/* Read-only meta */}
+          <div style={{ display:'flex', gap:6, flexWrap:'wrap', alignItems:'center', marginBottom:20 }}>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:10, padding:'2px 8px',
+              background: activeItem.impact === 'High' ? 'var(--impact-high-bg)' : activeItem.impact === 'Medium' ? 'var(--impact-medium-bg)' : 'var(--surface)',
+              color: activeItem.impact === 'High' ? 'var(--loss)' : activeItem.impact === 'Medium' ? 'var(--amber)' : 'var(--mute)',
+              letterSpacing:'0.06em', textTransform:'uppercase' }}>
+              {IMPACT_LABEL[activeItem.impact] || activeItem.impact}
+            </span>
+            <select value={itemState.estimated_fix_time}
+              onChange={e => onUpdateItem(audit.id, activeItemId, { estimated_fix_time: e.target.value })}
+              style={{ fontFamily:'var(--font-mono)', fontSize:10, padding:'2px 8px', background:'var(--surface)',
+                color:'var(--mute)', letterSpacing:'0.04em', textTransform:'uppercase',
+                border:'1px solid var(--rule)', cursor:'pointer', appearance:'none', WebkitAppearance:'none' }}>
+              {FIX_TIME_OPTIONS.map(v => React.createElement('option', { key:v, value:v }, v))}
+            </select>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:10, padding:'2px 8px',
+              background:'var(--surface)', color:'var(--gain)', letterSpacing:'0.04em',
+              border:'1px solid var(--rule)' }}>
+              +{activeItem.lift_min}–{activeItem.lift_max}% CVR
+            </span>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:10, padding:'2px 8px',
+              color:'var(--mute)', letterSpacing:'0.04em' }}>
+              {activeItem.shopify_fix_complexity}
+            </span>
+          </div>
+
+          {/* FINDING */}
+          <div style={{ border:'1px solid var(--rule)', marginBottom:8,
+            opacity: isFail ? 1 : 0.35, pointerEvents: isFail ? 'auto' : 'none',
+            transition:'opacity 0.15s' }}>
+            <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--rule)',
+              padding:'8px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
+                letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--loss)' }}>Finding</span>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--mute)',
+                  letterSpacing:'0.06em', border:'1px solid var(--rule)', padding:'1px 6px' }}>IN REPORT</span>
+                {itemState.finding && (
+                  <button onClick={() => onUpdateItem(audit.id, activeItemId, { finding: '' })}
+                    style={{ background:'none', border:'none', fontFamily:'var(--font-mono)', fontSize:9,
+                      color:'var(--mute)', letterSpacing:'0.04em', cursor:'pointer', padding:0 }}>
+                    Reset to default
+                  </button>
+                )}
+              </div>
+            </div>
+            <div style={{ padding:'12px 16px' }}>
+              <AuditTextarea value={itemState.finding} placeholder={activeItem.default_finding}
+                onChange={v => onUpdateItem(audit.id, activeItemId, { finding: v })} rows={3} />
+            </div>
+          </div>
+
+          {/* RECOMMENDATION */}
+          <div style={{ border:'1px solid var(--rule)', marginBottom:8,
+            opacity: isFail ? 1 : 0.35, pointerEvents: isFail ? 'auto' : 'none',
+            transition:'opacity 0.15s' }}>
+            <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--rule)',
+              padding:'8px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
+                letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--mute)' }}>Recommendation</span>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--mute)',
+                  letterSpacing:'0.06em', border:'1px solid var(--rule)', padding:'1px 6px' }}>IN REPORT</span>
+                {itemState.recommendation && (
+                  <button onClick={() => onUpdateItem(audit.id, activeItemId, { recommendation: '' })}
+                    style={{ background:'none', border:'none', fontFamily:'var(--font-mono)', fontSize:9,
+                      color:'var(--mute)', letterSpacing:'0.04em', cursor:'pointer', padding:0 }}>
+                    Reset to default
+                  </button>
+                )}
+              </div>
+            </div>
+            <div style={{ padding:'12px 16px' }}>
+              <AuditTextarea value={itemState.recommendation} placeholder={activeItem.default_recommendation}
+                onChange={v => onUpdateItem(audit.id, activeItemId, { recommendation: v })} rows={3} />
+            </div>
+          </div>
+
+          {/* SCREENSHOT URL */}
+          <div style={{ border:'1px solid var(--rule)', marginBottom:8,
+            opacity: isFail ? 1 : 0.35, pointerEvents: isFail ? 'auto' : 'none',
+            transition:'opacity 0.15s' }}>
+            <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--rule)',
+              padding:'8px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
+                letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--mute)' }}>Screenshot URL</span>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--mute)',
+                letterSpacing:'0.06em', border:'1px solid var(--rule)', padding:'1px 6px' }}>IN REPORT</span>
+            </div>
+            <div style={{ padding:'12px 16px' }}>
+              <AuditUrlInput value={itemState.screenshot_url}
+                onChange={v => onUpdateItem(audit.id, activeItemId, { screenshot_url: v })} />
+            </div>
+          </div>
+
+          {/* NOTES — private, collapsible */}
+          <div style={{ border:'1px solid var(--ink)' }}>
+            <button onClick={() => setShowNotes(v => !v)}
+              style={{ width:'100%', background:'var(--ink)', border:'none', padding:'8px 16px',
+                display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:9, fontWeight:600,
+                  letterSpacing:'0.12em', textTransform:'uppercase', color:'var(--accent)',
+                  background:'transparent' }}>Private</span>
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--bg)',
+                  letterSpacing:'0.04em', opacity:0.7 }}>
+                  Notes {itemState.notes || itemState.screenshot_url ? '· filled' : ''}
+                </span>
+              </div>
+              <span style={{ color:'var(--bg)', fontSize:9, opacity:0.6,
+                transform: showNotes ? 'rotate(180deg)' : 'none', display:'inline-block',
+                transition:'transform 0.15s' }}>▼</span>
+            </button>
+            {showNotes && (
+              <div style={{ padding:'12px 16px', background:'var(--bg)',
+                display:'flex', flexDirection:'column', gap:10 }}>
+                <AuditTextarea value={itemState.notes}
+                  placeholder="Private notes (not in report)…"
+                  onChange={v => onUpdateItem(audit.id, activeItemId, { notes: v })} rows={2} />
+              </div>
+            )}
+          </div>
+
+          {/* Prev / Next — desktop only; footer bar handles mobile */}
+          <div className="desktop-only" style={{ display:'grid', gridTemplateColumns:'1fr 1fr',
+            gap:6, marginTop:24 }}>
+            <button onClick={() => prevItem && goTo(prevItem)} disabled={!prevItem}
+              style={{ background:'var(--surface)', border:'1px solid var(--rule)',
+                color: prevItem ? 'var(--ink)' : 'var(--mute)', padding:'12px 16px',
+                cursor: prevItem ? 'pointer' : 'default', opacity: prevItem ? 1 : 0.35,
+                textAlign:'left', display:'flex', flexDirection:'column', gap:3 }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.08em',
+                textTransform:'uppercase', color:'var(--mute)' }}>← Prev</span>
+              {prevItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:12,
+                color:'var(--ink)', lineHeight:1.2 }}>{truncate(prevItem.name.split(':')[0])}</span>}
+            </button>
+            <button onClick={() => nextItem ? goTo(nextItem) : onScrollToFindings()}
+              style={{ background: nextItem ? 'var(--surface)' : 'var(--btn-bg)',
+                border: nextItem ? '1px solid var(--rule)' : 'none',
+                color: nextItem ? 'var(--ink)' : 'var(--btn-ink)',
+                padding:'12px 16px', cursor:'pointer',
+                textAlign:'right', display:'flex', flexDirection:'column', gap:3, alignItems:'flex-end' }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.08em',
+                textTransform:'uppercase', color: nextItem ? 'var(--mute)' : 'var(--btn-ink)' }}>
+                {nextItem ? 'Next →' : 'Size the revenue →'}
+              </span>
+              {nextItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:12,
+                color:'var(--ink)', lineHeight:1.2 }}>{truncate(nextItem.name.split(':')[0])}</span>}
+            </button>
+          </div>
+
+          {/* Keyboard hint */}
+          <div style={{ marginTop:16, fontFamily:'var(--font-mono)', fontSize:10,
+            color:'var(--mute)', letterSpacing:'0.06em' }}>
+            J/K move · / jump
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile prev/next — outside scroll area */}
       <div className="mobile-only" style={{ display:'grid', gridTemplateColumns:'1fr 1fr',
         borderTop:'1px solid var(--rule)', flexShrink:0 }}>
         <button onClick={() => prevItem && goTo(prevItem)} disabled={!prevItem}
-          style={{ background:'var(--paper-2)', border:'none', borderRight:'1px solid var(--rule)',
-            color: prevItem ? 'var(--ink-3)' : 'var(--ink-5)', padding:'12px 14px',
+          style={{ background:'var(--surface)', border:'none', borderRight:'1px solid var(--rule)',
+            color: prevItem ? 'var(--ink)' : 'var(--mute)', padding:'14px',
             cursor: prevItem ? 'pointer' : 'default', opacity: prevItem ? 1 : 0.35,
-            textAlign:'left', display:'flex', flexDirection:'column', gap:2 }}>
-          <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
-            textTransform:'uppercase', color:'var(--ink-5)' }}>← Prev</span>
-          {prevItem && <span style={{ fontFamily:"var(--font-sans)", fontSize:11,
-            color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(prevItem.name)}</span>}
+            textAlign:'left', display:'flex', flexDirection:'column', gap:3 }}>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.08em',
+            textTransform:'uppercase', color:'var(--mute)' }}>← Prev</span>
+          {prevItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:12, color:'var(--ink)',
+            lineHeight:1.2 }}>{truncate(prevItem.name.split(':')[0])}</span>}
         </button>
-        {!nextItem ? (
-          <button onClick={onScrollToFindings}
-            style={{ background:'var(--btn-bg)', border:'none', color:'var(--btn-ink)', padding:'12px 14px',
-              cursor:'pointer', fontFamily:"var(--font-sans)", fontSize:12, fontWeight:600,
-              letterSpacing:'0.06em', textTransform:'uppercase', textAlign:'right' }}>
-            Review Findings →
-          </button>
-        ) : (
-          <button onClick={() => goTo(nextItem)}
-            style={{ background:'var(--paper-2)', border:'none',
-              color:'var(--ink-3)', padding:'12px 14px', cursor:'pointer',
-              textAlign:'right', display:'flex', flexDirection:'column', gap:2, alignItems:'flex-end' }}>
-            <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em',
-              textTransform:'uppercase', color:'var(--ink-5)' }}>Next →</span>
-            <span style={{ fontFamily:"var(--font-sans)", fontSize:11,
-              color:'var(--ink-4)', lineHeight:1.2 }}>{truncate(nextItem.name)}</span>
-          </button>
-        )}
+        <button onClick={() => nextItem ? goTo(nextItem) : onScrollToFindings()}
+          style={{ background: nextItem ? 'var(--surface)' : 'var(--btn-bg)',
+            border:'none', color: nextItem ? 'var(--ink)' : 'var(--btn-ink)',
+            padding:'14px', cursor:'pointer',
+            textAlign:'right', display:'flex', flexDirection:'column', gap:3, alignItems:'flex-end' }}>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.08em',
+            textTransform:'uppercase', color: nextItem ? 'var(--mute)' : 'var(--btn-ink)' }}>
+            {nextItem ? 'Next →' : 'Size the revenue →'}
+          </span>
+          {nextItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:12, color:'var(--ink)',
+            lineHeight:1.2 }}>{truncate(nextItem.name.split(':')[0])}</span>}
+        </button>
       </div>
-
 
     </div>
   );
