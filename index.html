@@ -90,6 +90,7 @@
 
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+::placeholder { color: var(--mute); opacity: 1; }
 
 body {
   font-family: var(--font-sans);
@@ -751,6 +752,7 @@ body {
   .findings-col-lift, .findings-col-rev { text-align: left !important; }
   .findings-lbl { display: inline !important; }
 }
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
 @keyframes cardGlow {
   0%   { border-color: var(--rule);   box-shadow: none; }
   25%  { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(198,244,50,0.25); }
@@ -1281,8 +1283,8 @@ function AuditTextarea({ value, placeholder, onChange, rows = 3 }) {
   return (
     <textarea value={value || ''} onChange={e => onChange(e.target.value)}
       placeholder={placeholder} rows={rows}
-      style={{ width:'100%', background:'var(--paper)', border:'1px solid var(--rule)', padding:'10px 12px',
-        fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-2)', lineHeight:1.6,
+      style={{ width:'100%', background:'var(--bg)', border:'1px solid var(--rule)', padding:'10px 12px',
+        fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink)', lineHeight:1.6,
         resize:'vertical', outline:'none', transition:'border-color 0.15s', borderRadius:0 }}
       onFocus={e => e.target.style.borderColor='var(--accent)'}
       onBlur={e => e.target.style.borderColor='var(--rule)'} />
@@ -1909,6 +1911,24 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
           </div>
         );
       })}
+      {/* Slots open footer — inside the table box */}
+      {!demoMode && (
+        <div style={{ padding:'14px 18px', background:'var(--surface)',
+          borderTop: audits.length ? '1px solid var(--rule)' : 'none',
+          display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
+            color: atCap ? 'var(--loss)' : 'var(--mute)', letterSpacing:'0.06em',
+            textTransform:'uppercase' }}>
+            {slotsOpen} slot{slotsOpen !== 1 ? 's' : ''} open
+          </span>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--mute)',
+            letterSpacing:'0.02em' }}>
+            {atCap
+              ? THEME.copy.workspaceFull
+              : 'Archive a delivered audit to free its slot. Archiving downloads the audit as .json.'}
+          </span>
+        </div>
+      )}
     </div>
   );
 
@@ -2027,19 +2047,16 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
           view === 'table' ? <TableView /> : <GridView />
         )}
 
-        {/* Footer: slots + import */}
-        {!auditsLoading && audits.length > 0 && !demoMode && (
-          <div style={{ marginTop:20, borderTop:'1px solid var(--rule)', paddingTop:20,
-            display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
-            <div style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--mute)', letterSpacing:'0.04em' }}>
-              {slotsOpen > 0
-                ? `${slotsOpen} slot${slotsOpen !== 1 ? 's' : ''} open · Archive a delivered audit to free its slot.`
-                : THEME.copy.workspaceFull}
-            </div>
+        {/* Import .json — below the table/grid */}
+        {!auditsLoading && !demoMode && (
+          <div style={{ marginTop:16, display:'flex', alignItems:'center', gap:14 }}>
             <button onClick={() => !atCap && importRef.current?.click()} disabled={atCap}
               className="btn btn-secondary btn-sm" style={{ opacity: atCap ? 0.4 : 1 }}>
               Import .json
             </button>
+            <span style={{ fontFamily:'var(--font-sans)', fontSize:13, color:'var(--mute)' }}>
+              Restore an archived audit, or move one from another browser.
+            </span>
           </div>
         )}
       </main>
@@ -2483,7 +2500,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
     if (s === 'pass' || s === 'na') return 'var(--gain)';
     if (s === 'fail') return 'var(--loss)';
     if (s === 'tbd')  return 'var(--mute)';
-    return 'var(--rule)';
+    return 'var(--rule-2)'; // slightly more visible than --rule for unreviewed
   }
 
   // ── Sort options ──────────────────────────────────────────────────────────
@@ -2743,21 +2760,24 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
               );
             })}
 
-            {/* First-time FAIL tooltip */}
-            {failTooltipVisible && (
-              <div style={{ position:'absolute', top:'calc(100% + 8px)', left:'25%', width:280,
-                background:'var(--ink)', color:'var(--bg)', padding:'12px 14px', zIndex:50,
-                pointerEvents:'none' }}>
-                <div style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
-                  letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6 }}>
-                  Fails on desktop + mobile
-                </div>
-                <div style={{ fontFamily:'var(--font-sans)', fontSize:13, lineHeight:1.5, opacity:0.85 }}>
-                  Click Flag again for mobile only, then desktop only.
-                </div>
-              </div>
-            )}
+            {/* First-time FAIL tooltip — rendered via a portal-like fixed div outside the grid */}
           </div>
+
+          {/* First-time FAIL tooltip — fixed so it doesn't clip inside the column */}
+          {failTooltipVisible && (
+            <div style={{ position:'fixed', bottom:120, left:'50%', transform:'translateX(-50%)',
+              width:300, background:'var(--ink)', color:'var(--bg)', padding:'14px 16px',
+              zIndex:500, pointerEvents:'none',
+              animation:'fadeIn 0.2s ease' }}>
+              <div style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
+                letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6, color:'var(--accent)' }}>
+                Fails on desktop + mobile
+              </div>
+              <div style={{ fontFamily:'var(--font-sans)', fontSize:13, lineHeight:1.5, color:'var(--bg)', opacity:0.85 }}>
+                Click Flag again for mobile only, then desktop only.
+              </div>
+            </div>
+          )}
 
           {/* Read-only meta table (desktop) */}
           <table className="meta-table desktop-only">
@@ -2855,8 +2875,8 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
           {/* FINDING */}
           <FieldBlock
             label="Finding" tag="IN REPORT" tagColor="var(--loss)"
-            hasReset={!!itemState.finding}
-            onReset={() => onUpdateItem(audit.id, activeItemId, { finding: '' })}
+            hasReset={!!(audit.items?.[activeItemId]?.finding)}
+            onReset={() => onUpdateItem(audit.id, activeItemId, { finding: undefined })}
             disabled={!isFail}
             defaultOpen={true}>
             <AuditTextarea value={itemState.finding} placeholder={activeItem.default_finding}
@@ -2866,8 +2886,8 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
           {/* RECOMMENDATION */}
           <FieldBlock
             label="Recommendation" tag="IN REPORT"
-            hasReset={!!itemState.recommendation}
-            onReset={() => onUpdateItem(audit.id, activeItemId, { recommendation: '' })}
+            hasReset={!!(audit.items?.[activeItemId]?.recommendation)}
+            onReset={() => onUpdateItem(audit.id, activeItemId, { recommendation: undefined })}
             disabled={!isFail}
             defaultOpen={true}>
             <AuditTextarea value={itemState.recommendation} placeholder={activeItem.default_recommendation}
@@ -3977,17 +3997,19 @@ function SetupStage({ audit, lastAuditorName, onSave, onBack }) {
                     placeholder="Better Brewer Q4 2026" />
                 </div>
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:'auto 1fr', gap:0, marginBottom:16 }}>
-                <div>
-                  <label style={labelStyle}>Store URL</label>
-                  <div style={{ display:'flex' }}>
-                    <span style={{ ...fieldStyle, width:'auto', color:'var(--mute)', borderRight:'none',
-                      flexShrink:0, cursor:'default', userSelect:'none' }}>https://</span>
-                    <input style={{ ...fieldStyle, borderLeft:'none' }} value={form.store_url.replace(/^https?:\/\//,'')}
-                      onChange={e => set('store_url', e.target.value)}
-                      onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--rule)'}
-                      placeholder="betterbrewer.com.au" />
-                  </div>
+              <div style={{ marginBottom:16 }}>
+                <label style={labelStyle}>Store URL</label>
+                <div style={{ display:'flex', border:'1px solid var(--rule)', background:'var(--bg)',
+                  transition:'border-color 0.15s' }}
+                  onFocusCapture={e => e.currentTarget.style.borderColor='var(--accent)'}
+                  onBlurCapture={e => e.currentTarget.style.borderColor='var(--rule)'}>
+                  <span style={{ padding:'11px 10px 11px 14px', fontFamily:'var(--font-mono)', fontSize:14,
+                    color:'var(--mute)', flexShrink:0, userSelect:'none', lineHeight:1 }}>https://</span>
+                  <input style={{ flex:1, border:'none', background:'transparent', padding:'11px 14px 11px 0',
+                    fontFamily:'var(--font-mono)', fontSize:14, color:'var(--ink)', outline:'none' }}
+                    value={form.store_url.replace(/^https?:\/\//,'')}
+                    onChange={e => set('store_url', e.target.value)}
+                    placeholder="betterbrewer.com.au" />
                 </div>
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16 }}>
@@ -4295,14 +4317,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
         <div className="desktop-only" style={{ marginLeft:'auto', display:'flex', alignItems:'center',
           paddingRight:20, fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
           letterSpacing:'0.06em', gap:14, flexShrink:0 }}>
-          {stageIndex >= 1 && (
-            <span>{AUDIT_ITEMS.filter(i => getItemState(audit,i.id).status !== 'tbd').length}/60 reviewed</span>
-          )}
-          {stageIndex >= 2 && (
-            <span style={{ color:'var(--loss)' }}>
-              {AUDIT_ITEMS.filter(i => getItemState(audit,i.id).status === 'fail').length} fails
-            </span>
-          )}
+          {/* summary lives in map strip now, not here */}
         </div>
       </div>
 
@@ -4460,12 +4475,28 @@ function App() {
 
   function handleDismissError() { setDbError(null); }
 
-  function handleNew() {
+  async function handleNew() {
     if (!demoMode && Object.keys(store.audits).length >= THEME.limits.maxActiveAudits) {
       setDbError(THEME.copy.workspaceFull);
       return;
     }
-    setShowNewAuditModal(true);
+    // Create a blank audit, navigate to AuditWorkspace — Setup step handles the form
+    const audit = newAudit(store.last_auditor_name);
+    if (!demoMode) {
+      try {
+        await upsertAuditToDB(user.id, audit);
+        savedAt.current[audit.id] = audit.updated_at;
+      } catch (err) {
+        setDbError('Could not create audit. Check your connection.');
+        return;
+      }
+    }
+    updateStore(prev => ({
+      ...prev,
+      audits: { ...prev.audits, [audit.id]: audit },
+    }));
+    setActiveAuditId(audit.id);
+    setAppScreen('audit');
   }
 
   async function handleCreateAudit(formData) {
