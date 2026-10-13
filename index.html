@@ -543,14 +543,46 @@ body {
   flex-shrink: 0;
 }
 
-/* ── PRINT ── */
+/* ── Report page slots (screen) ── */
+.rpt-page-slot         { display: none; }
+.rpt-page-slot--active { display: block; }
+.rpt-page {
+  max-width: 794px; margin: 0 auto;
+  background: #FFFFFF; color: #0B0C0A;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.14);
+}
+.rpt-pages-wrap { position: relative; overflow: hidden; }
+
+@keyframes rptSlideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes rptSlideOutRight {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
+/* ── Print ── */
 @media print {
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { background: #fff !important; color: #111 !important; }
-  .no-print, .site-header, .demo-banner, .mobile-bottom-bar { display: none !important; }
+  body { background: #fff !important; margin: 0 !important; }
+  .no-print, .site-header, .demo-banner, .mobile-bottom-bar,
+  .audit-topbar, .step-strip, .footer-bar,
   .checklist-sidebar { display: none !important; }
-  .print-section { page-break-inside: avoid; }
+  /* Undo app fixed/absolute positioning */
+  [data-audit-root]   { position: static !important; height: auto !important; overflow: visible !important; background: #fff !important; }
+  [data-stages-wrap]  { position: static !important; overflow: visible !important; height: auto !important; flex: none !important; }
+  [data-stage]:not([data-stage="report"]) { display: none !important; }
+  [data-stage="report"] { position: static !important; opacity: 1 !important; overflow: visible !important; height: auto !important; }
+  /* Show all pages with A4 breaks */
+  .rpt-page-slot               { display: block !important; }
+  .rpt-page-slot + .rpt-page-slot { break-before: page; }
+  .rpt-pages-wrap              { padding: 0 !important; }
+  .rpt-page                    { box-shadow: none !important; max-width: none !important; width: 100% !important; }
+  /* Remove "stake" highlight */
+  .rpt-stake em                { background: none !important; }
 }
+@page { size: A4 portrait; margin: 0; }
 
 /* ── MOBILE ── */
 @media (max-width: 700px) {
@@ -722,9 +754,98 @@ body {
 }
 .field-row-header:first-child { border-top: 1px solid var(--rule); margin-top: 16px; }
 
-/* Audit list view — tighter top padding on mobile */
+/* Audit list — mobile layout ─────────────────────────────────────────── */
 @media (max-width: 700px) {
-  .audits-main { padding-top: 20px !important; }
+  /* Hide the shared SiteHeader; AuditList renders its own mobile topbar */
+  .site-header { display: none !important; }
+
+  /* Main content area: tighter padding + room for sticky bottom bar */
+  .audits-main { padding: 24px 16px 120px !important; }
+
+  /* Desktop table / grid hidden; mobile cards shown */
+  .audits-desktop-view { display: none !important; }
+  .audits-mob-view     { display: flex !important; flex-direction: column; gap: 12px; }
+
+  /* Header controls hidden on mobile (handled by topbar / sticky bar) */
+  .audits-view-toggle { display: none !important; }
+  .audits-new-btn     { display: none !important; }
+  .audits-slot-count  { display: none !important; }
+}
+@media (min-width: 701px) {
+  .audits-mob-view     { display: none !important; }
+  .audits-mob-topbar   { display: none !important; }
+  .audits-mob-new-bar  { display: none !important; }
+}
+
+/* Mobile topbar (AuditList-specific, sticky) */
+.audits-mob-topbar {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+.audits-mob-topbar__wordmark {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.audits-mob-topbar__wordmark::after {
+  content: "";
+  display: inline-block;
+  width: .42em;
+  height: .74em;
+  background: var(--accent);
+  margin-left: .06em;
+  transform: translateY(.06em);
+}
+
+/* Mobile audit card (shared by table + grid mobile views) */
+.audit-mob-card {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Sticky new-audit bar (mobile only) */
+.audits-mob-new-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 16px));
+  border-top: 1px solid var(--rule);
+  background: var(--bg);
+  z-index: 90;
+}
+.audits-mob-new-bar button {
+  height: 52px;
+  width: 100%;
+  background: var(--btn-bg);
+  color: var(--btn-ink);
+  border: 0;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: .1em;
+  cursor: pointer;
+}
+.audits-mob-new-bar button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Calculator metric grid — 1 col on mobile */
@@ -762,12 +883,13 @@ body {
   100% { border-color: var(--rule);   box-shadow: none; }
 }
 .card-glow { animation: cardGlow 900ms ease-out forwards; }
-/* Report Revenue Impact Summary — 2-col on mobile (screen only) */
+/* Report stage mobile */
 @media screen and (max-width: 700px) {
-  .rpt-metric-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  .rpt-metric-cell { padding: 14px 14px !important; }
-  .rpt-metric-cell:nth-child(odd)  { border-right: 1px solid #e5e7eb !important; }
-  .rpt-metric-cell:nth-child(even) { border-right: none !important; }
+  .rpt-cv-bar  { display: none !important; }
+  .rpt-mob-bar { display: grid !important; }
+  .rpt-page    { padding: 28px 20px !important; }
+  .rpt-page h1 { font-size: 32px !important; }
+  .rpt-page h2 { font-size: 28px !important; }
 }
 /* Viewport icons */
 .vp-icon { display:inline-flex; align-items:center; justify-content:center; border-radius:3px; transition:transform 0.15s, background 0.15s, opacity 0.15s; position:relative; }
@@ -1595,7 +1717,7 @@ function DonutChart({ pct, color, size = 52 }) {
   );
 }
 
-function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onImport, onSaveClientInfo, user, onSignOut, auditsLoading, dbError, onDismissError }) {
+function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onImport, onSaveClientInfo, user, onSignOut, theme, onToggleTheme, auditsLoading, dbError, onDismissError }) {
   const importRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(null);
   const [view, setView] = useState(() => {
@@ -1744,6 +1866,218 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
     </div>
   );
 
+  // ── Mobile topbar (list view only, hidden on desktop via CSS) ─────────────
+  const [topbarMenuOpen, setTopbarMenuOpen] = useState(false);
+
+  const MobileTopbar = () => {
+    const maxActive = THEME.limits.maxActiveAudits;
+    return (
+      <div className="audits-mob-topbar">
+        <span className="audits-mob-topbar__wordmark">{THEME.product.name}</span>
+        <div style={{ flex:1 }} />
+        {/* TABLE: "3 of 5 active" + slot dots */}
+        {!demoMode && audits.length > 0 && view === 'table' && (
+          <div style={{ display:'flex', flexDirection:'column', gap:4, alignItems:'flex-end' }}>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:12, fontWeight:500,
+              color:'var(--mute)' }}>
+              {audits.length} of {maxActive} active
+            </span>
+            <div style={{ display:'flex', gap:3 }}>
+              {Array.from({ length: maxActive }).map((_, i) => (
+                <div key={i} style={{ width:18, height:6,
+                  background: i < audits.length ? 'var(--ink)' : 'var(--rule)',
+                  border:'1px solid var(--rule)' }} />
+              ))}
+            </div>
+          </div>
+        )}
+        {/* GRID: "3/5" compact count */}
+        {!demoMode && audits.length > 0 && view === 'grid' && (
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, fontWeight:500,
+            color:'var(--mute)' }}>
+            {audits.length}/{maxActive}
+          </span>
+        )}
+        {/* ⋯ global menu */}
+        <div style={{ position:'relative' }}>
+          <button onClick={e => { e.stopPropagation(); setTopbarMenuOpen(o => !o); }}
+            style={{ width:44, height:44, background:'transparent', border:'1px solid var(--rule)',
+              color:'var(--ink)', fontSize:18, cursor:'pointer', display:'flex',
+              alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            ⋯
+          </button>
+          {topbarMenuOpen && (
+            <div style={{ position:'fixed', right:16, top:56, background:'var(--bg)',
+              border:'1px solid var(--ink)', zIndex:400, minWidth:200 }}
+              onClick={e => e.stopPropagation()}>
+              {/* View switch */}
+              <div style={{ padding:'10px 14px', borderBottom:'1px solid var(--rule)' }}>
+                <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+                  letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8 }}>View</div>
+                <div style={{ display:'flex', gap:6 }}>
+                  {['table','grid'].map(v => (
+                    <button key={v} onClick={() => { switchView(v); setTopbarMenuOpen(false); }}
+                      style={{ flex:1, padding:'6px 0', fontFamily:'var(--font-mono)', fontSize:11,
+                        fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase',
+                        cursor:'pointer', border:'1px solid var(--rule)',
+                        background: view === v ? 'var(--ink)' : 'transparent',
+                        color: view === v ? 'var(--bg)' : 'var(--mute)' }}>
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Theme toggle */}
+              {onToggleTheme && (
+                <button onClick={() => { onToggleTheme(); setTopbarMenuOpen(false); }}
+                  style={{ display:'block', width:'100%', textAlign:'left', padding:'12px 14px',
+                    background:'none', border:'none', borderBottom:'1px solid var(--rule)',
+                    fontFamily:'var(--font-sans)', fontSize:14, color:'var(--ink)', cursor:'pointer' }}>
+                  {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                </button>
+              )}
+              {/* Sign out */}
+              {user && !demoMode && (
+                <button onClick={() => { onSignOut(); setTopbarMenuOpen(false); }}
+                  style={{ display:'block', width:'100%', textAlign:'left', padding:'12px 14px',
+                    background:'none', border:'none',
+                    fontFamily:'var(--font-sans)', fontSize:14, color:'var(--ink)', cursor:'pointer' }}>
+                  Sign out
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // ── Mobile TABLE card ──────────────────────────────────────────────────────
+  const MobileTableCard = ({ audit }) => {
+    const { done, pct } = auditProgress(audit);
+    const { total: failCount, p0 } = auditFails(audit);
+    const recovery = auditRecovery(audit);
+    const status = auditStatus(audit);
+    return (
+      <div className="audit-mob-card">
+        {/* Row 1: title + ⋯ */}
+        <div style={{ display:'flex', gap:12, alignItems:'flex-start' }}>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontFamily:'var(--font-sans)', fontSize:17, fontWeight:600,
+              color:'var(--ink)', lineHeight:1.2,
+              overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+              {auditTitle(audit)}
+            </div>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:13, color:'var(--mute)',
+              marginTop:4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+              {audit.client_info?.store_url || '—'}
+            </div>
+          </div>
+          <div onClick={e => e.stopPropagation()}>
+            <AuditMenu auditId={audit.id} />
+          </div>
+        </div>
+        {/* Progress bar + stats */}
+        <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+          <div style={{ height:6, background:'var(--rule)' }}>
+            <div style={{ height:6, width:`${pct}%`,
+              background: status === 'complete' ? 'var(--gain)' : 'var(--btn-bg)',
+              transition:'width 0.3s' }} />
+          </div>
+          <div style={{ display:'flex', justifyContent:'space-between',
+            fontFamily:'var(--font-mono)', fontSize:13 }}>
+            <span>
+              {done}/60{failCount > 0 && (
+                <> · <span style={{ color:'var(--loss)' }}>{failCount}</span>
+                  {p0 > 0 && <> · <span>{p0}</span></>}
+                </>
+              )}
+            </span>
+            <span style={{ fontWeight:600, color: recovery ? 'var(--gain)' : 'var(--mute)' }}>
+              {recovery ? `+$${fmt(recovery)}/mo` : '—'}
+            </span>
+          </div>
+          {p0 > 0 && (
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:12, fontWeight:600,
+              color:'var(--loss)', letterSpacing:'0.06em' }}>P0</div>
+          )}
+        </div>
+        {/* Footer: updated + OPEN */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, color:'var(--mute)' }}>
+            Updated {formatDate(audit.updated_at)}
+          </span>
+          <button onClick={() => onOpen(audit.id)}
+            style={{ height:44, padding:'0 20px', background:'var(--btn-bg)',
+              color:'var(--btn-ink)', border:0, fontFamily:'var(--font-mono)',
+              fontWeight:600, fontSize:12, letterSpacing:'.1em', cursor:'pointer' }}>
+            OPEN →
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Mobile GRID card (flat 60-item color bar) ───────────────────────────────
+  const FlatBar = ({ audit }) => {
+    const cellColor = s => {
+      if (s === 'pass' || s === 'na') return 'var(--gain)';
+      if (s === 'fail') return 'var(--loss)';
+      return 'var(--rule-2)';
+    };
+    return (
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(60, minmax(0,1fr))', gap:1 }}>
+        {AUDIT_ITEMS.map(item => {
+          const s = getItemState(audit, item.id).status;
+          return <div key={item.id} style={{ height:14, background:cellColor(s) }} />;
+        })}
+      </div>
+    );
+  };
+
+  const MobileGridCard = ({ audit }) => {
+    const { done } = auditProgress(audit);
+    const { total: failCount } = auditFails(audit);
+    const recovery = auditRecovery(audit);
+    return (
+      <div className="audit-mob-card" style={{ gap:12 }}>
+        {/* Title + recovery */}
+        <div style={{ display:'flex', justifyContent:'space-between', gap:12 }}>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontFamily:'var(--font-sans)', fontSize:17, fontWeight:600,
+              color:'var(--ink)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+              {auditTitle(audit)}
+            </div>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:12, color:'var(--mute)',
+              marginTop:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+              {audit.client_info?.store_url || '—'}
+            </div>
+          </div>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:14, fontWeight:600,
+            color: recovery ? 'var(--gain)' : 'var(--mute)', flexShrink:0 }}>
+            {recovery ? `+$${fmt(recovery)}` : '—'}
+          </span>
+        </div>
+        {/* Flat 60-item color bar */}
+        <FlatBar audit={audit} />
+        {/* Footer: count + OPEN */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, color:'var(--mute)' }}>
+            {done}/60 · <span style={{ color: failCount > 0 ? 'var(--loss)' : 'var(--mute)' }}>
+              {failCount} fail{failCount !== 1 ? 's' : ''}
+            </span>
+          </span>
+          <button onClick={() => onOpen(audit.id)}
+            style={{ height:44, padding:'0 18px', background:'var(--btn-bg)',
+              color:'var(--btn-ink)', border:0, fontFamily:'var(--font-mono)',
+              fontWeight:600, fontSize:12, letterSpacing:'.1em', cursor:'pointer' }}>
+            OPEN →
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   // ── Shared header ──────────────────────────────────────────────────────────
   const Header = () => (
     <div style={{ marginBottom:32 }}>
@@ -1761,7 +2095,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
             Audits
           </h1>
           {!demoMode && audits.length > 0 && (
-            <span style={{ fontFamily:'var(--font-mono)', fontSize:13, color:'var(--mute)',
+            <span className="audits-slot-count" style={{ fontFamily:'var(--font-mono)', fontSize:13, color:'var(--mute)',
               letterSpacing:'0.04em' }}>
               {audits.length} of {THEME.limits.maxActiveAudits} active · {slotsOpen} slot{slotsOpen !== 1 ? 's' : ''} open
             </span>
@@ -1771,8 +2105,8 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
               letterSpacing:'0.04em' }}>Demo</span>
           )}
         </div>
-        {/* Right: TABLE/GRID toggle */}
-        <div style={{ display:'flex', border:'1px solid var(--rule)', height:40, flexShrink:0 }}>
+        {/* Right: TABLE/GRID toggle (desktop only) */}
+        <div className="audits-view-toggle" style={{ display:'flex', border:'1px solid var(--rule)', height:40, flexShrink:0 }}>
           {['table','grid'].map(v => (
             <button key={v} onClick={() => switchView(v)}
               style={{ padding:'0 16px', border:'none', fontFamily:'var(--font-mono)',
@@ -1786,8 +2120,8 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
           ))}
         </div>
       </div>
-      {/* Row 2: + New audit (left-aligned) */}
-      <button onClick={onNew} disabled={!demoMode && atCap} className="btn btn-primary"
+      {/* Row 2: + New audit (desktop only) */}
+      <button onClick={onNew} disabled={!demoMode && atCap} className="btn btn-primary audits-new-btn"
         style={{ opacity: (!demoMode && atCap) ? 0.35 : 1 }}>
         + New audit
       </button>
@@ -1810,7 +2144,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
         {[
           ['01','Setup',     'Client name, store URL, theme and revenue metrics.'],
           ['02','Checklist', '60 checks. Mark pass or fail. Capture evidence.'],
-          ['03','Revenue',   'Every failure gets a CVR lift and a dollar figure.'],
+          ['03','Findings',  'Every failure gets a CVR lift and a dollar figure.'],
           ['04','Report',    'Phase 1 quick wins + Phase 2 testing roadmap, print-ready.'],
         ].map(([n, label, body]) => (
           <div key={n}>
@@ -1838,7 +2172,9 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
     textTransform:'uppercase', color:'var(--mute)', padding:'10px 16px', textAlign:'left',
     borderBottom:'1px solid var(--rule)', whiteSpace:'nowrap', background:'var(--surface)' };
   const TableView = () => (
-    <div style={{ border:'1px solid var(--rule)' }}>
+    <>
+      {/* ── Desktop table (hidden on mobile) ── */}
+      <div className="audits-desktop-view" style={{ border:'1px solid var(--rule)' }}>
       {/* Header */}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 100px 160px 80px 120px 100px 80px',
         background:'var(--surface)', borderBottom:'1px solid var(--rule)' }}>
@@ -1942,108 +2278,123 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
           </span>
         </div>
       )}
-    </div>
+      </div>
+      {/* ── Mobile table cards (hidden on desktop) ── */}
+      <div className="audits-mob-view">
+        {audits.map(audit => <MobileTableCard key={audit.id} audit={audit} />)}
+      </div>
+    </>
   );
 
   // ── GRID VIEW ───────────────────────────────────────────────────────────────
   const GridView = () => (
-    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
-      {audits.map(audit => {
-        const { done } = auditProgress(audit);
-        const { total: failCount } = auditFails(audit);
-        const recovery = auditRecovery(audit);
-        const status = auditStatus(audit);
-        const statusLabel = status === 'complete' ? 'Report ready'
-          : status === 'in-progress' ? 'In progress' : 'Not started';
-        const ctaLabel = status === 'complete' ? 'Report →'
-          : status === 'in-progress' ? 'Resume →' : 'Start →';
-        return (
-          <div key={audit.id}
-            style={{ border:'1px solid var(--rule)', background:'var(--surface)',
-              display:'flex', flexDirection:'column', transition:'border-color 0.12s' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor='var(--ink)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor='var(--rule)'}>
+    <>
+      {/* ── Desktop grid (hidden on mobile) ── */}
+      <div className="audits-desktop-view"
+        style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
+        {audits.map(audit => {
+          const { done } = auditProgress(audit);
+          const { total: failCount } = auditFails(audit);
+          const recovery = auditRecovery(audit);
+          const status = auditStatus(audit);
+          const statusLabel = status === 'complete' ? 'Report ready'
+            : status === 'in-progress' ? 'In progress' : 'Not started';
+          const ctaLabel = status === 'complete' ? 'Report →'
+            : status === 'in-progress' ? 'Resume →' : 'Start →';
+          return (
+            <div key={audit.id}
+              style={{ border:'1px solid var(--rule)', background:'var(--surface)',
+                display:'flex', flexDirection:'column', transition:'border-color 0.12s' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor='var(--ink)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor='var(--rule)'}>
 
-            {/* Header: title + ⋯ */}
-            <div style={{ padding:'16px 18px 10px' }}>
-              <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8 }}>
-                <div style={{ minWidth:0 }}>
-                  <div style={{ fontFamily:'var(--font-sans)', fontSize:15, fontWeight:600,
-                    color:'var(--ink)', lineHeight:1.2, marginBottom:3,
-                    overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                    {auditTitle(audit)}
+              {/* Header: title + ⋯ */}
+              <div style={{ padding:'16px 18px 10px' }}>
+                <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8 }}>
+                  <div style={{ minWidth:0 }}>
+                    <div style={{ fontFamily:'var(--font-sans)', fontSize:15, fontWeight:600,
+                      color:'var(--ink)', lineHeight:1.2, marginBottom:3,
+                      overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                      {auditTitle(audit)}
+                    </div>
+                    <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+                      overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                      {auditSubline(audit) || '—'}
+                    </div>
                   </div>
-                  <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
-                    overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                    {auditSubline(audit) || '—'}
+                  <div onClick={e => e.stopPropagation()}>
+                    <AuditMenu auditId={audit.id} />
                   </div>
-                </div>
-                <div onClick={e => e.stopPropagation()}>
-                  <AuditMenu auditId={audit.id} />
                 </div>
               </div>
-            </div>
 
-            {/* Mini map (legend inside at top) */}
-            <div style={{ padding:'0 18px 12px' }}>
-              <MiniMap audit={audit} />
-            </div>
+              {/* Mini map */}
+              <div style={{ padding:'0 18px 12px' }}>
+                <MiniMap audit={audit} />
+              </div>
 
-            {/* Stats row */}
-            <div style={{ padding:'14px 18px 14px', display:'grid',
-              gridTemplateColumns:'1fr 1fr 1fr', gap:8,
-              borderTop:'1px solid var(--rule)' }}>
-              {[
-                ['Reviewed', `${done}/60`],
-                ['Fails',    failCount > 0 ? String(failCount) : '—'],
-                ['/Mo',      recovery ? `+$${fmt(recovery)}` : '—'],
-              ].map(([l, v]) => (
-                <div key={l}>
-                  <div style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.1em',
-                    textTransform:'uppercase', color:'var(--mute)', marginBottom:3 }}>{l}</div>
-                  <div style={{ fontFamily:'var(--font-mono)', fontSize:14, fontWeight:600,
-                    color: l === '/Mo' && recovery ? 'var(--gain)' : 'var(--ink)' }}>{v}</div>
-                </div>
-              ))}
-            </div>
+              {/* Stats row */}
+              <div style={{ padding:'14px 18px 14px', display:'grid',
+                gridTemplateColumns:'1fr 1fr 1fr', gap:8,
+                borderTop:'1px solid var(--rule)' }}>
+                {[
+                  ['Reviewed', `${done}/60`],
+                  ['Fails',    failCount > 0 ? String(failCount) : '—'],
+                  ['/Mo',      recovery ? `+$${fmt(recovery)}` : '—'],
+                ].map(([l, v]) => (
+                  <div key={l}>
+                    <div style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.1em',
+                      textTransform:'uppercase', color:'var(--mute)', marginBottom:3 }}>{l}</div>
+                    <div style={{ fontFamily:'var(--font-mono)', fontSize:14, fontWeight:600,
+                      color: l === '/Mo' && recovery ? 'var(--gain)' : 'var(--ink)' }}>{v}</div>
+                  </div>
+                ))}
+              </div>
 
-            {/* Bottom: status text + CTA */}
-            <div style={{ padding:'0 18px 16px', display:'flex',
-              alignItems:'center', justifyContent:'space-between', gap:8, marginTop:'auto' }}>
-              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
-                letterSpacing:'0.04em' }}>
-                {statusLabel} · {formatDate(audit.updated_at)}
-              </span>
-              <button onClick={() => onOpen(audit.id)}
-                className={`btn btn-sm ${status === 'not-started' ? 'btn-secondary' : 'btn-primary'}`}>
-                {ctaLabel}
-              </button>
+              {/* Bottom: status text + CTA */}
+              <div style={{ padding:'0 18px 16px', display:'flex',
+                alignItems:'center', justifyContent:'space-between', gap:8, marginTop:'auto' }}>
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+                  letterSpacing:'0.04em' }}>
+                  {statusLabel} · {formatDate(audit.updated_at)}
+                </span>
+                <button onClick={() => onOpen(audit.id)}
+                  className={`btn btn-sm ${status === 'not-started' ? 'btn-secondary' : 'btn-primary'}`}>
+                  {ctaLabel}
+                </button>
+              </div>
             </div>
+          );
+        })}
+        {/* Empty slot cards */}
+        {!demoMode && Array.from({ length: Math.max(0, THEME.limits.maxActiveAudits - audits.length) }).map((_, i) => (
+          <div key={`slot-${i}`}
+            style={{ border:'1px dashed var(--rule)', minHeight:200, display:'flex', flexDirection:'column',
+              alignItems:'center', justifyContent:'center', gap:8, padding:'24px', cursor:'pointer',
+              transition:'border-color 0.12s' }}
+            onClick={onNew}
+            onMouseEnter={e => e.currentTarget.style.borderColor='var(--ink)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor='var(--rule)'}>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.1em',
+              textTransform:'uppercase', color:'var(--mute)' }}>Open slot</div>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600, letterSpacing:'0.08em',
+              textTransform:'uppercase', color:'var(--mute)' }}>+ New audit</div>
           </div>
-        );
-      })}
-      {/* Empty slot cards */}
-      {!demoMode && Array.from({ length: Math.max(0, THEME.limits.maxActiveAudits - audits.length) }).map((_, i) => (
-        <div key={`slot-${i}`}
-          style={{ border:'1px dashed var(--rule)', minHeight:200, display:'flex', flexDirection:'column',
-            alignItems:'center', justifyContent:'center', gap:8, padding:'24px', cursor:'pointer',
-            transition:'border-color 0.12s' }}
-          onClick={onNew}
-          onMouseEnter={e => e.currentTarget.style.borderColor='var(--ink)'}
-          onMouseLeave={e => e.currentTarget.style.borderColor='var(--rule)'}>
-          <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.1em',
-            textTransform:'uppercase', color:'var(--mute)' }}>Open slot</div>
-          <div style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600, letterSpacing:'0.08em',
-            textTransform:'uppercase', color:'var(--mute)' }}>+ New audit</div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      {/* ── Mobile grid cards (hidden on desktop) ── */}
+      <div className="audits-mob-view">
+        {audits.map(audit => <MobileGridCard key={audit.id} audit={audit} />)}
+      </div>
+    </>
   );
 
   return (
     <React.Fragment>
       <input ref={importRef} type="file" accept=".json" style={{ display:'none' }} onChange={handleImportFile} />
-      <main style={{ maxWidth:1400, margin:'0 auto', padding:'48px 32px 100px' }}>
+      {/* Mobile topbar — visible only on mobile via CSS */}
+      <MobileTopbar />
+      <main className="audits-main" style={{ maxWidth:1400, margin:'0 auto', padding:'48px 32px 100px' }}>
         {/* Error banner */}
         {dbError && (
           <div style={{ marginBottom:20, padding:'12px 18px', background:'var(--state-fail-bg)',
@@ -2091,6 +2442,14 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
           </div>
         )}
       </main>
+      {/* Sticky new audit bar — mobile only, via CSS */}
+      <div className="audits-mob-new-bar">
+        <button onClick={onNew} disabled={!demoMode && atCap}>
+          {view === 'grid' && !demoMode && slotsOpen > 0
+            ? `+ NEW AUDIT · ${slotsOpen} SLOT${slotsOpen !== 1 ? 'S' : ''} OPEN`
+            : '+ NEW AUDIT'}
+        </button>
+      </div>
     </React.Fragment>
   );
 }
@@ -2099,16 +2458,19 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
   const ci = audit?.client_info || {};
   const pr = audit?.pricing || {};
   const [form, setForm] = useState({
-    audit_title:     ci.audit_title     || '',
-    client_name:     ci.client_name     || '',
-    auditor_name:    ci.auditor_name    || lastAuditorName || '',
-    store_url:       ci.store_url       || '',
-    shopify_theme:   ci.shopify_theme   || '',
-    audit_date:      ci.audit_date      || today(),
-    monthly_revenue: ci.monthly_revenue || '',
-    aov:             ci.aov             || '',
-    cvr:             ci.cvr             || '',
-    audit_fee:       pr.audit_fee       || '',
+    audit_title:      ci.audit_title      || '',
+    client_name:      ci.client_name      || '',
+    auditor_name:     ci.auditor_name     || lastAuditorName || '',
+    store_url:        ci.store_url        || '',
+    shopify_theme:    ci.shopify_theme    || '',
+    audit_date:       ci.audit_date       || today(),
+    monthly_revenue:  ci.monthly_revenue  || '',
+    aov:              ci.aov              || '',
+    cvr:              ci.cvr              || '',
+    audit_fee:        pr.audit_fee        || '',
+    auditor_email:    ci.auditor_email    || '',
+    auditor_website:  ci.auditor_website  || '',
+    auditor_booking:  ci.auditor_booking  || '',
   });
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const canSave = (form.audit_title.trim() || form.client_name.trim()) && form.auditor_name.trim();
@@ -2126,6 +2488,9 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
         monthly_revenue: parseFloat(form.monthly_revenue) || 0,
         aov:             parseFloat(form.aov) || 0,
         cvr:             parseFloat(form.cvr) || 0,
+        auditor_email:   form.auditor_email.trim(),
+        auditor_website: form.auditor_website.trim(),
+        auditor_booking: form.auditor_booking.trim(),
       },
       pricing: { ...(audit?.pricing || {}), audit_fee: parseFloat(form.audit_fee) || 0 },
     });
@@ -2211,6 +2576,25 @@ function ClientInfoOverlay({ audit, lastAuditorName, onSave, onClose, onSkip }) 
                   <label>Audit Fee ($)</label>
                   <CIInput type="number" value={form.audit_fee} onChange={v => set('audit_fee', v)} placeholder="2500" min="0" />
                 </div>
+              </div>
+            </div>
+          </div>
+          {/* Contact card fields (appear on Page 5 of report) */}
+          <div style={{ marginTop:8 }}>
+            <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.1em', textTransform:'uppercase',
+              color:'var(--ink-5)', marginBottom:12 }}>Contact (Page 5 of report)</div>
+            <div className="fg3">
+              <div className="field">
+                <label>Email</label>
+                <CIInput value={form.auditor_email} onChange={v => set('auditor_email', v)} placeholder="you@example.com" />
+              </div>
+              <div className="field">
+                <label>Website</label>
+                <CIInput value={form.auditor_website} onChange={v => set('auditor_website', v)} placeholder="yoursite.com" />
+              </div>
+              <div className="field">
+                <label>Booking link</label>
+                <CIInput value={form.auditor_booking} onChange={v => set('auditor_booking', v)} placeholder="yoursite.com/call" />
               </div>
             </div>
           </div>
@@ -2749,13 +3133,13 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
               const active = itemState.status === opt.id;
               return (
                 <button key={opt.id} onClick={() => handleStatusClick(opt.id)}
-                  style={{ height:70, position:'relative', aspectRatio: '1.75/1',cursor:'pointer',
+                  style={{ height:60, position:'relative', cursor:'pointer',
                     background: active ? opt.activeBg : opt.idleBg,
                     border: `1px solid ${active ? opt.activeBorder : 'var(--rule)'}`,
                     color: active ? opt.activeColor : opt.idleColor,
                     transition:'background 0.12s, border-color 0.12s, color 0.12s',
-                    display:'flex', flexDirection:'column', alignItems:'center',
-                    justifyContent:'center', gap:4 }}>
+                    display:'flex', padding: 6, flexDirection:'column', alignItems:'flex-start',
+                    justifyContent:'flex-start', gap:4 }}>
                   {/* Keyboard shortcut — top right, desktop only */}
                   <span className="desktop-only" style={{ position:'absolute', bottom:6, right:7,
                     fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
@@ -2885,7 +3269,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                 textAlign:'right', display:'flex', flexDirection:'column', gap:3, alignItems:'flex-end' }}>
               <span style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.08em',
                 textTransform:'uppercase', color: nextItem ? 'var(--mute)' : 'var(--btn-ink)' }}>
-                {nextItem ? 'Next →' : 'Size the revenue →'}
+                {nextItem ? 'Next →' : 'Findings →'}
               </span>
               {nextItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:11,
                 color:'var(--ink)', lineHeight:1.2 }}>{truncate(nextItem.name.split(':')[0])}</span>}
@@ -2958,7 +3342,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
             textAlign:'right', display:'flex', flexDirection:'column', gap:3, alignItems:'flex-end' }}>
           <span style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.08em',
             textTransform:'uppercase', color: nextItem ? 'var(--mute)' : 'var(--btn-ink)' }}>
-            {nextItem ? 'Next item →' : 'Size the revenue →'}
+            {nextItem ? 'Next item →' : 'Findings →'}
           </span>
           {nextItem && <span style={{ fontFamily:'var(--font-sans)', fontSize:12, color:'var(--ink)',
             lineHeight:1.2 }}>{truncate(nextItem.name.split(':')[0])}</span>}
@@ -3337,8 +3721,8 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
           {!isMobile && (
             <div style={{ display:'flex', alignItems:'flex-end', gap:16, flexWrap:'wrap' }}>
               <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                <h1 style={{ margin:0, fontSize:32, fontWeight:600, letterSpacing:'-0.04em', lineHeight:1.05 }}>Revenue</h1>
-                <p style={{ margin:0, fontSize:16, color:'var(--ink-5)' }}>Ship quick wins now. Move anything that needs proof into the testing roadmap.</p>
+                <h1 style={{ margin:0, fontSize:32, fontWeight:600, letterSpacing:'-0.04em', lineHeight:1.05 }}>Findings</h1>
+                <p style={{ margin:0, fontSize:16, color:'var(--ink-5)' }}>Select what items to include in the report. Decide what is a quick win and what is a testing candidate.</p>
               </div>
               <div style={{ flex:1 }} />
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -3465,271 +3849,517 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
 // ─── COMPONENTS C: ReportStage, AuditWorkspace, App ───
 
 function ReportStage({ audit, checkedIds, onGoToScripts }) {
-  const ids = checkedIds || new Set();
-  const roi = calcROI(audit, ids);
-  const ci = audit.client_info || {};
+  // ── state ──────────────────────────────────────────────────────────────────
+  const [showPricing,     setShowPricing]     = useState(false);
+  const [showFindings,    setShowFindings]    = useState(true);
+  const [showScreenshots, setShowScreenshots] = useState(true);
+  const [pageIdx,         setPageIdx]         = useState(0);
+  const [fromIdx,         setFromIdx]         = useState(null);
+  const [navDir,          setNavDir]          = useState(null);
+  const [transitioning,   setTransitioning]   = useState(false);
+
+  // ── data ───────────────────────────────────────────────────────────────────
+  const ids  = checkedIds || new Set();
+  const roi  = calcROI(audit, ids);
+  const ci   = audit.client_info || {};
+  const pr   = audit.pricing || {};
+
   const failItems = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail' && ids.has(i.id));
-  const completedCount = AUDIT_ITEMS.filter(i => { const s = getItemState(audit, i.id).status; return s === 'pass' || s === 'fail'; }).length;
+  const sorted = [...failItems].sort((a, b) => {
+    const r = IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact];
+    return r !== 0 ? r : (FIX_TIME_RANK[a.estimated_fix_time] ?? 99) - (FIX_TIME_RANK[b.estimated_fix_time] ?? 99);
+  });
+  const phase1Items = sorted.filter(i => getItemState(audit, i.id).phase === 'quick-win');
+  const phase2Items = sorted.filter(i => getItemState(audit, i.id).phase !== 'quick-win');
 
-  // Group fail items by phase for Phase 1 / Phase 2 sections
-  const phase1Items = [...failItems].sort((a, b) => IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact])
-    .filter(i => getItemState(audit, i.id).phase === 'quick-win');
-  const phase2Items = [...failItems].sort((a, b) => IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact])
-    .filter(i => getItemState(audit, i.id).phase !== 'quick-win');
+  const phase1ROI    = calcROI(audit, new Set(phase1Items.map(i => i.id)));
+  const phase2Upside = Math.round(Math.max(0, roi.monthlyRecovery - phase1ROI.monthlyRecovery));
+  const pitch        = audit.pitch_text || generatePitch(audit, roi, ids);
+  const totalWeeks   = Math.max(12, phase2Items.length * 4);
+  const numMonths    = Math.ceil(totalWeeks / 4);
+  const TOTAL_PAGES  = 5;
 
-  // Also group by section for legacy section layout (kept for fallback)
-  const failsBySec = SECTION_ORDER
-    .map(sec => ({ label: sec, items: failItems.filter(i => i.section === sec) }))
-    .filter(s => s.items.length > 0);
+  // ── design tokens ──────────────────────────────────────────────────────────
+  const mono = 'var(--font-mono)';
+  const sans = 'var(--font-sans)';
+  const ink  = '#0B0C0A';
+  const mute = '#5A5D56';
+  const rule = '#CBCEC4';
+  const bg   = '#EEEFEA';
 
-  const sectionCount = failsBySec.length;
-
-  // Neutral print palette — white bg, black ink, no triage branding
-  const r = {
-    ink:    '#0B0C0A',
-    ink2:   '#2A2C28',
-    ink3:   '#5A5D56',
-    ink4:   '#9A9D94',
-    rule:   '#CBCEC4',
-    rule2:  '#B8BBB0',
-    bg:     '#ffffff',
-    bg2:    '#f5f5f3',
-    accent: '#0B0C0A',
-    high:   '#C2381C', highBg: '#fdf0ed',
-    med:    '#B85C00', medBg:  '#fdf4ec',
-    low:    '#5A5D56', lowBg:  '#f3f4f1',
+  const SECTION_METRIC = {
+    'General':            'Sitewide CVR',
+    'Collection Page':    'Collection CVR',
+    'Product Page':       'Add-to-Cart Rate',
+    'Cart':               'Cart Conversion',
+    'Checkout':           'Checkout Rate',
+    'Mobile/Performance': 'Mobile CVR',
   };
 
-  const mono  = "'Geist Mono', monospace";
-  const serif = "'Geist', sans-serif";
-  const sans  = "'Geist', sans-serif";
+  // ── print handler ──────────────────────────────────────────────────────────
+  function handlePrint() {
+    window.print();
+  }
 
-  const impactColor = { High: r.high, Medium: r.med, Low: r.low };
-  const impactBg    = { High: r.highBg, Medium: r.medBg, Low: r.lowBg };
+  // ── page navigation with slide animation ───────────────────────────────────
+  function navigate(newIdx) {
+    if (transitioning) return;
+    setFromIdx(pageIdx);
+    setNavDir(newIdx > pageIdx ? 'next' : 'prev');
+    setTransitioning(true);
+    setPageIdx(newIdx);
+  }
 
-  const pill = (text, color, bg) => (
-    <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.06em', textTransform:'uppercase',
-      color, background:bg, padding:'3px 8px', border:`1px solid ${color}22`, whiteSpace:'nowrap' }}>
-      {text}
-    </span>
-  );
+  function handleTransitionEnd() {
+    setTransitioning(false);
+    setFromIdx(null);
+  }
 
-  return (
-    <div data-stage="report">
-      {/* Sticky dark header bar — matches other stages */}
-      <div className="no-print" style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
-        borderBottom:'1px solid var(--rule)', padding:'10px 20px',
-        display:'flex', alignItems:'center', gap:12 }}>
-        <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-          color:'var(--on-accent,#0B0C0A)', background:'var(--accent)', padding:'2px 8px' }}>03 — Report</span>
-        <button onClick={() => window.print()} className="no-print"
-          style={{ background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)', padding:'6px 14px',
-            fontFamily:mono, fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase', cursor:'pointer' }}>
-          Print / Export PDF
-        </button>
-        {onGoToScripts && (
-          <button onClick={onGoToScripts} className="no-print"
-            style={{ marginLeft:'auto', background:'none', border:'1px solid var(--rule)', color:'var(--ink-4)',
-              padding:'6px 14px', fontFamily:mono, fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
-              cursor:'pointer' }}>
-            04 — Scripts →
-          </button>
-        )}
+  // ── shared page sub-components ─────────────────────────────────────────────
+  function PageHdr() {
+    return (
+      <div style={{ display:'flex', justifyContent:'space-between', fontFamily:mono, fontSize:10, letterSpacing:'.1em' }}>
+        <span style={{ fontWeight:600 }}>SHOPIFY CRO AUDIT</span>
+        <span style={{ color:mute }}>CONFIDENTIAL · FOR {(ci.client_name || 'CLIENT').toUpperCase()}</span>
       </div>
+    );
+  }
 
-      {/* White paper body */}
-      <div style={{ background: r.bg, minHeight:'100%' }}>
-        <div style={{ maxWidth:760, margin:'0 auto', padding:'48px 32px 80px' }}>
-
-          {/* ── COVER ── */}
-          <div style={{ marginBottom:40 }}>
-            <div style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase',
-              color:r.ink3, marginBottom:20 }}>
-              Shopify CRO Audit
-            </div>
-            <h1 style={{ fontFamily:serif, fontSize:52, fontWeight:600, color:r.ink,
-              letterSpacing:'-0.05em', lineHeight:1, marginBottom:20 }}>
-              {ci.audit_title || ci.client_name || 'Client'}
-            </h1>
-            <div style={{ display:'flex', gap:32, flexWrap:'wrap', marginBottom:24 }}>
-              {[
-                ['Date',   fmtDate(ci.audit_date)],
-                ['Auditor', ci.auditor_name || '—'],
-                ['Theme',   ci.shopify_theme || '—'],
-                ...(ci.store_url ? [['URL', ci.store_url]] : []),
-              ].map(([l, v]) => (
-                <div key={l}>
-                  <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em',
-                    textTransform:'uppercase', color:r.ink4, marginBottom:4 }}>{l}</div>
-                  <div style={{ fontFamily:mono, fontSize:12, color:r.ink2 }}>{v}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ height:3, background:r.accent }} />
-          </div>
-
-          {/* ── PITCH PARAGRAPH ── */}
-          {(() => {
-            const pitch = audit.pitch_text || generatePitch(audit, roi, ids);
-            return pitch ? (
-              <p style={{ fontFamily:sans, fontSize:18, lineHeight:1.65, color:r.ink2,
-                marginBottom:40, paddingBottom:40, borderBottom:`1px solid ${r.rule}` }}>
-                {pitch}
-              </p>
-            ) : null;
-          })()}
-
-          {/* ── REVENUE IMPACT SUMMARY ── */}
-          <div style={{ marginBottom:40 }}>
-            <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-              color:r.ink4, marginBottom:14 }}>Revenue Impact Summary</div>
-            <div className="rpt-metric-grid" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)',
-              border:`1px solid ${r.rule}`, borderBottom:'none' }}>
-              {[
-                ['Monthly Sessions', roi.hasData ? fmt(roi.sessions)         : '—', 'estimated'],
-                ['Current CVR',      roi.hasData ? fmtPct(roi.cvrRaw)        : '—', 'baseline'],
-                ['Projected CVR',    roi.hasData ? fmtPct(roi.projCVRRaw) : '—',
-                  roi.hasData ? (roi.atCeiling ? `≤80% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp)` : `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp)`) : '—'],
-                ['Monthly Recovery', roi.hasData ? `$${fmt(roi.monthlyRecovery)}` : '—', 'per month'],
-                ['Annual at Risk',   roi.hasData ? `$${fmt(roi.annualRecovery)}`  : '—', 'if findings persist'],
-                ['Findings',         failItems.length, `across ${sectionCount} section${sectionCount !== 1 ? 's' : ''}`],
-              ].map(([label, value, sub], i) => (
-                <div key={label} className="rpt-metric-cell" style={{ padding:'20px 18px', borderRight: i % 3 < 2 ? `1px solid ${r.rule}` : 'none',
-                  borderBottom:`1px solid ${r.rule}` }}>
-                  <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase',
-                    color:r.ink4, marginBottom:8 }}>{label}</div>
-                  <div style={{ fontFamily:serif, fontSize:28, color:r.ink, letterSpacing:'-0.5px',
-                    lineHeight:1, marginBottom:5 }}>{value}</div>
-                  <div style={{ fontFamily:mono, fontSize:10, color:r.ink4 }}>{sub}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── ENGAGEMENT SUMMARY (proposal) ── */}
-          {roi.hasData && (
-            <div style={{ marginBottom:48, border:`1px solid ${r.rule}` }}>
-              <div style={{ background:r.bg2, padding:'10px 18px', borderBottom:`1px solid ${r.rule}` }}>
-                <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase',
-                  color:r.ink3 }}>Engagement Summary</span>
-              </div>
-              {[
-                ['Scope',                   `${ids.size} finding${ids.size !== 1 ? 's' : ''}`],
-                ['Estimated CVR lift',      roi.atCeiling ? `≤80% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp, at ceiling)` : `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp)`],
-                ['Revenue at stake · /yr', `$${fmt(roi.annualRecovery)}`],
-                ['Suggested fee',           roi.totalInvestment > 0 ? `$${fmt(roi.totalInvestment)}` : 'TBD'],
-                ['Return on audit',         roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}× · payback ${roi.paybackMonths.toFixed(1)} mo` : '—'],
-              ].map(([l, v], i, arr) => (
-                <div key={l} style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline',
-                  padding:'12px 18px', borderBottom: i < arr.length - 1 ? `1px solid ${r.rule}` : 'none', gap:16 }}>
-                  <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.06em', textTransform:'uppercase',
-                    color:r.ink3, flexShrink:0 }}>{l}</span>
-                  <span style={{ fontFamily:serif, fontSize:16, color:r.ink, letterSpacing:'-0.2px',
-                    textAlign:'right' }}>{v}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* ── ESTIMATES NOTE ── */}
-          <div style={{ borderTop:`1px solid ${r.rule}`, paddingTop:20, marginBottom:40 }}>
-            <p style={{ fontFamily:sans, fontSize:12, color:r.ink3, lineHeight:1.7, margin:0 }}>
-              Figures are estimates built on benchmarked CVR lift ranges — not guarantees. Traffic, season, offer and audience all move conversion rate. The testing roadmap in phase 2 is how these numbers get confirmed: each test proves what a fix is worth.
-            </p>
-          </div>
-
-          {/* ── PHASE 1: QUICK WINS ── */}
-          {phase1Items.length > 0 && (
-            <div style={{ marginBottom:48 }}>
-              <div style={{ display:'flex', alignItems:'baseline', gap:12, marginBottom:24,
-                paddingBottom:10, borderBottom:`2px solid ${r.ink}` }}>
-                <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase', color:r.ink3 }}>
-                  Phase 1
-                </div>
-                <div style={{ fontFamily:serif, fontSize:18, fontWeight:600, color:r.ink, letterSpacing:'-0.03em' }}>
-                  Quick wins
-                </div>
-                <div style={{ fontFamily:mono, fontSize:10, color:r.ink4, marginLeft:'auto' }}>
-                  {phase1Items.length} finding{phase1Items.length !== 1 ? 's' : ''} · ship this week
-                </div>
-              </div>
-              {phase1Items.map(item => {
-                const state = getItemState(audit, item.id);
-                return (
-                  <div key={item.id} style={{ marginBottom:24, paddingBottom:24, borderBottom:`1px solid ${r.rule}` }} className="print-section">
-                    <div style={{ marginBottom:12 }}>
-                      <h3 style={{ fontFamily:serif, fontSize:18, fontWeight:600, color:r.ink, letterSpacing:'-0.03em', lineHeight:1.25, marginBottom:8 }}>{item.name}</h3>
-                      <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
-                        {pill(IMPACT_LABEL[item.impact] || item.impact, impactColor[item.impact], impactBg[item.impact])}
-                        {pill(item.section, r.ink3, r.bg2)}
-                      </div>
-                    </div>
-                    <div style={{ marginBottom:10 }}>
-                      <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase', color:r.high, marginBottom:4 }}>Finding</div>
-                      <p style={{ fontFamily:sans, fontSize:14, color:r.ink2, lineHeight:1.65, margin:0 }}>{state.finding || item.default_finding}</p>
-                    </div>
-                    <div style={{ paddingLeft:14, borderLeft:`3px solid ${r.rule}` }}>
-                      <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase', color:r.ink3, marginBottom:4 }}>Fix</div>
-                      <p style={{ fontFamily:sans, fontSize:14, color:r.ink2, lineHeight:1.65, margin:0 }}>{state.recommendation || item.default_recommendation}</p>
-                    </div>
-                    {state.screenshot_url && (
-                      <div style={{ marginTop:8 }}>
-                        <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase', color:r.ink4, marginBottom:3 }}>Screenshot</div>
-                        <a href={state.screenshot_url} target="_blank" rel="noopener noreferrer"
-                          style={{ fontFamily:mono, fontSize:10, color:r.ink2, wordBreak:'break-all', textDecoration:'underline', textUnderlineOffset:2 }}>{state.screenshot_url}</a>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* ── PHASE 2: TESTING ROADMAP ── */}
-          {phase2Items.length > 0 && (
-            <div style={{ marginBottom:48 }}>
-              <div style={{ display:'flex', alignItems:'baseline', gap:12, marginBottom:24,
-                paddingBottom:10, borderBottom:`2px solid ${r.rule2}` }}>
-                <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase', color:r.ink3 }}>
-                  Phase 2
-                </div>
-                <div style={{ fontFamily:serif, fontSize:18, fontWeight:600, color:r.ink, letterSpacing:'-0.03em' }}>
-                  Testing roadmap
-                </div>
-                <div style={{ fontFamily:mono, fontSize:10, color:r.ink4, marginLeft:'auto' }}>
-                  {phase2Items.length} test{phase2Items.length !== 1 ? 's' : ''}
-                </div>
-              </div>
-              {phase2Items.map(item => {
-                const state = getItemState(audit, item.id);
-                return (
-                  <div key={item.id} style={{ marginBottom:20, paddingBottom:20, borderBottom:`1px solid ${r.rule}` }} className="print-section">
-                    <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, marginBottom:6 }}>
-                      <div style={{ fontFamily:serif, fontSize:15, fontWeight:600, color:r.ink, letterSpacing:'-0.02em', lineHeight:1.3 }}>{item.name}</div>
-                      <div style={{ display:'flex', gap:4, flexShrink:0 }}>
-                        {pill(IMPACT_LABEL[item.impact] || item.impact, impactColor[item.impact], impactBg[item.impact])}
-                      </div>
-                    </div>
-                    <p style={{ fontFamily:sans, fontSize:13, color:r.ink3, lineHeight:1.6, margin:0 }}>{state.finding || item.default_finding}</p>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Empty state */}
-          {failItems.length === 0 && (
-            <div style={{ padding:'48px 24px', textAlign:'center', border:`1px solid ${r.rule}`,
-              fontFamily:mono, fontSize:12, color:r.ink4 }}>
-              No findings yet — go back to the checklist and mark items as Flagged.
-            </div>
-          )}
-
+  function SectionHdr({ label, title, meta }) {
+    return (
+      <div style={{ display:'flex', flexDirection:'column', gap:10, paddingBottom:14, borderBottom:`2px solid ${ink}` }}>
+        <span style={{ fontFamily:mono, fontSize:11, letterSpacing:'.12em', color:mute }}>{label}</span>
+        <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', gap:16 }}>
+          <h2 style={{ margin:0, fontSize:34, fontWeight:600, letterSpacing:'-0.04em', lineHeight:1.05, fontFamily:sans }}>{title}</h2>
+          {meta && <span style={{ flexShrink:0, whiteSpace:'nowrap', fontFamily:mono, fontSize:11, color:mute }}>{meta}</span>}
         </div>
       </div>
+    );
+  }
+
+  function PageFtr({ n }) {
+    const line = [ci.client_name, 'Shopify CRO Audit', fmtDate(ci.audit_date)].filter(Boolean).join(' · ');
+    return (
+      <>
+        <div style={{ flex:1 }} />
+        <div style={{ display:'flex', justifyContent:'space-between', paddingTop:12, borderTop:`1px solid ${rule}`, fontFamily:mono, fontSize:10, color:mute }}>
+          <span>{line}</span>
+          <span>{n} / {TOTAL_PAGES}</span>
+        </div>
+      </>
+    );
+  }
+
+  // common page padding
+  const pageStyle = { padding:'56px 64px 40px', display:'flex', flexDirection:'column', gap:20 };
+
+  // metrics cells (4 base + 2 if pricing)
+  const metrics = [
+    { l:'MONTHLY SESSIONS',  v: roi.hasData ? fmt(roi.sessions)        : '—' },
+    { l:'CURRENT CVR',       v: roi.hasData ? fmtPct(roi.cvrRaw)       : '—' },
+    { l:'PROJECTED CVR',     v: roi.hasData ? fmtPct(roi.projCVRRaw)   : '—' },
+    { l:'MONTHLY RECOVERY',  v: roi.hasData ? `+$${fmt(roi.monthlyRecovery)}` : '—' },
+    ...(showPricing ? [
+      { l:'RETURN',  v: roi.roiMultiple  > 0 ? `${roi.roiMultiple.toFixed(1)}×`    : '—' },
+      { l:'PAYBACK', v: roi.paybackMonths > 0 ? `${roi.paybackMonths.toFixed(1)} mo` : '—' },
+    ] : []),
+  ];
+
+  // table-of-contents rows for Page 1
+  const toc = [
+    { n:'02', t:'Findings',                  d:`${sorted.length} issue${sorted.length !== 1 ? 's' : ''}, ranked` },
+    { n:'03', t:'Phase 1 · Quick wins',      d:`${phase1Items.length} fix${phase1Items.length !== 1 ? 'es' : ''}, week 1` },
+    { n:'04', t:'Phase 2 · Testing roadmap', d:`${phase2Items.length} A/B test${phase2Items.length !== 1 ? 's' : ''}, ${totalWeeks} weeks` },
+    { n:'05', t:'Next steps',                d:'Questions and contact' },
+  ];
+
+  // next-steps for Page 5
+  const nextSteps = [
+    { n:'01', t:'Review the findings',   d:"Flag anything that needs more context or doesn't match how the store works." },
+    { n:'02', t:'Ship Phase 1',          d:'Quick wins go live in the first week, with before and after screenshots.' },
+    { n:'03', t:'Start testing',         d:'Phase 2 tests run one at a time, with results reported monthly.' },
+  ];
+
+  // ── CLIENT VIEW toggle helper ───────────────────────────────────────────────
+  function Toggle({ checked, label, onClick }) {
+    return (
+      <button onClick={onClick} style={{
+        height:44, display:'flex', alignItems:'center', gap:8, padding:'0 4px',
+        background:'transparent', border:0, color:'var(--ink)',
+        fontFamily:mono, fontSize:12, cursor:'pointer', whiteSpace:'nowrap'
+      }}>
+        <span style={{
+          width:16, height:16, boxSizing:'border-box', flexShrink:0,
+          display:'grid', placeItems:'center',
+          background: checked ? 'var(--btn-bg)' : 'transparent',
+          border: checked ? '0' : '1px solid var(--mute)',
+          color:'var(--btn-ink)', fontSize:11, fontWeight:700
+        }}>{checked ? '✓' : ''}</span>
+        {label}
+      </button>
+    );
+  }
+
+  // ── Page 1: Summary ────────────────────────────────────────────────────────
+  const page1 = (
+    <div className="rpt-page" style={pageStyle}>
+      <PageHdr />
+      {/* Cover */}
+      <div style={{ display:'flex', flexDirection:'column', gap:16, paddingBottom:22, borderBottom:`2px solid ${ink}` }}>
+        <h1 style={{ margin:0, fontSize:48, fontWeight:600, letterSpacing:'-0.045em', lineHeight:1.02, fontFamily:sans }}>
+          {ci.audit_title || ci.client_name || 'Client'}
+        </h1>
+        <div style={{ display:'flex', gap:32, flexWrap:'wrap' }}>
+          {[
+            ['PREPARED FOR', ci.client_name   || '—'],
+            ['PREPARED BY',  ci.auditor_name  || '—'],
+            ['AUDIT DATE',   fmtDate(ci.audit_date)],
+            ['STORE',        ci.store_url     || '—'],
+            ['THEME',        ci.shopify_theme || '—'],
+          ].map(([l, v]) => (
+            <div key={l} style={{ display:'flex', flexDirection:'column', gap:4 }}>
+              <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'.1em', color:mute }}>{l}</span>
+              <span style={{ fontSize:13, fontWeight:500, fontFamily:sans }}>{v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Short version */}
+      <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+        <span style={{ fontFamily:mono, fontSize:11, letterSpacing:'.1em', color:mute }}>THE SHORT VERSION</span>
+        <h2 className="rpt-stake" style={{ margin:0, maxWidth:600, fontSize:44, fontWeight:600, letterSpacing:'-0.045em', lineHeight:1.04, fontFamily:sans }}>
+          {roi.hasData ? (
+            <>
+              ${fmt(roi.annualRecovery)} a year is at{' '}
+              <em style={{ fontStyle:'normal', background:'#C6F432', color:ink, padding:'0 .08em' }}>stake</em>
+              {' '}on {ci.store_url || 'your store'}.
+            </>
+          ) : 'Add revenue data to see the projection.'}
+        </h2>
+        <span style={{ fontSize:14, color:mute, fontFamily:sans }}>
+          Across {failItems.length} finding{failItems.length !== 1 ? 's' : ''}.
+          {showPricing && roi.paybackMonths > 0 && ` Fixing them pays back in about ${roi.paybackMonths.toFixed(1)} months.`}
+        </span>
+      </div>
+      {/* Metrics 2-row × N-col grid */}
+      <div style={{ display:'grid', gridTemplateRows:'repeat(2, auto)', gridAutoFlow:'column', gridAutoColumns:'minmax(0,1fr)', borderTop:`1px solid ${rule}`, borderLeft:`1px solid ${rule}` }}>
+        {metrics.map(m => (
+          <div key={m.l} style={{ padding:'12px 16px', display:'flex', flexDirection:'column', gap:6, borderRight:`1px solid ${rule}`, borderBottom:`1px solid ${rule}` }}>
+            <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'.1em', color:mute }}>{m.l}</span>
+            <span style={{ fontSize:24, fontWeight:600, letterSpacing:'-0.03em', fontFamily:sans }}>{m.v}</span>
+          </div>
+        ))}
+      </div>
+      {/* Investment strip — pricing only */}
+      {showPricing && roi.totalInvestment > 0 && (
+        <div style={{ display:'flex', alignItems:'baseline', gap:16, flexWrap:'wrap', padding:'12px 16px', border:`1px solid ${ink}` }}>
+          <span style={{ fontFamily:mono, fontSize:10, fontWeight:600, letterSpacing:'.1em' }}>INVESTMENT</span>
+          <span style={{ fontSize:16, fontWeight:600, letterSpacing:'-0.02em', fontFamily:sans }}>${fmt(roi.totalInvestment)}</span>
+          {roi.auditFee > 0 && roi.implFee > 0 && (
+            <span style={{ fontSize:13, color:mute, fontFamily:sans }}>${fmt(roi.auditFee)} audit + ${fmt(roi.implFee)} implementation</span>
+          )}
+        </div>
+      )}
+      {/* Pitch */}
+      {pitch && (
+        <p style={{ margin:0, padding:'18px 22px', borderLeft:`3px solid ${ink}`, background:bg, fontSize:14, lineHeight:1.65, fontFamily:sans }}>
+          {pitch}
+        </p>
+      )}
+      {/* TOC */}
+      <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+        <span style={{ fontFamily:mono, fontSize:11, letterSpacing:'.1em', color:mute }}>IN THIS REPORT</span>
+        {toc.map(c => (
+          <div key={c.n} style={{ display:'flex', gap:14, alignItems:'baseline', paddingBottom:8, borderBottom:`1px solid ${rule}`, fontSize:14 }}>
+            <span style={{ fontFamily:mono, fontSize:11, color:mute, width:20, flexShrink:0 }}>{c.n}</span>
+            <span style={{ flex:1, fontWeight:500, fontFamily:sans }}>{c.t}</span>
+            <span style={{ color:mute, fontFamily:sans }}>{c.d}</span>
+          </div>
+        ))}
+      </div>
+      <PageFtr n={1} />
+    </div>
+  );
+
+  // ── Page 2: Findings ───────────────────────────────────────────────────────
+  const page2 = (
+    <div className="rpt-page" style={pageStyle}>
+      <PageHdr />
+      <SectionHdr label="FINDINGS" title="What we found"
+        meta={`${sorted.length} in scope · ranked by priority, then effort`} />
+      <div style={{ display:'flex', flexDirection:'column' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'24px minmax(0,1fr) 84px 64px 64px 84px', gap:12, paddingBottom:8, borderBottom:`1px solid ${rule}`, fontFamily:mono, fontSize:9, letterSpacing:'.1em', color:mute }}>
+          <span>#</span><span>FINDING</span><span>SECTION</span><span>PRIORITY</span><span>FIX</span><span>CVR LIFT</span>
+        </div>
+        {sorted.length === 0 ? (
+          <div style={{ padding:'32px', textAlign:'center', fontFamily:mono, fontSize:12, color:mute }}>
+            No findings in scope — flag items in the checklist and select them in the revenue step.
+          </div>
+        ) : sorted.map((item, i) => {
+          const state   = getItemState(audit, item.id);
+          const finding = state.finding || item.default_finding || '';
+          return (
+            <div key={item.id} style={{ display:'grid', gridTemplateColumns:'24px minmax(0,1fr) 84px 64px 64px 84px', gap:12, padding:'14px 0', borderBottom:`1px solid ${rule}`, fontSize:13, lineHeight:1.5, alignItems:'baseline' }}>
+              <span style={{ fontFamily:mono, fontSize:11, color:mute }}>{String(i + 1).padStart(2, '0')}</span>
+              <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+                <strong style={{ fontWeight:600, fontSize:14, fontFamily:sans }}>{item.name}</strong>
+                {finding && <span style={{ color:mute, fontFamily:sans }}>{finding}</span>}
+              </div>
+              <span style={{ fontFamily:sans }}>{SECTION_SHORT[item.section] || item.section}</span>
+              <span style={{ fontFamily:mono, fontSize:11, fontWeight:600 }}>{IMPACT_LABEL[item.impact]}</span>
+              <span style={{ fontFamily:mono, fontSize:11 }}>{item.estimated_fix_time}</span>
+              <span style={{ fontFamily:mono, fontSize:11 }}>+{item.lift_min}–{item.lift_max}%</span>
+            </div>
+          );
+        })}
+      </div>
+      <span style={{ fontSize:12, lineHeight:1.55, color:mute, fontFamily:sans }}>
+        P0 issues block purchases or cost the most revenue. P1 add friction. P2 are polish. Phase 1 covers fixes that ship right away; the rest are tested in Phase 2.
+      </span>
+      <PageFtr n={2} />
+    </div>
+  );
+
+  // ── Page 3: Quick wins ─────────────────────────────────────────────────────
+  const page3 = (
+    <div className="rpt-page" style={pageStyle}>
+      <PageHdr />
+      <SectionHdr label="PHASE 1" title="Quick wins"
+        meta={`${phase1Items.length} finding${phase1Items.length !== 1 ? 's' : ''} · ship in week 1`} />
+      {phase1Items.length === 0 ? (
+        <div style={{ padding:'32px', textAlign:'center', border:`1px solid ${rule}`, fontFamily:mono, fontSize:12, color:mute }}>
+          No quick-win findings. Assign flagged items to Phase 1 in the revenue step.
+        </div>
+      ) : phase1Items.map(item => {
+        const state = getItemState(audit, item.id);
+        return (
+          <div key={item.id} style={{ display:'grid', gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)', gap:24, paddingBottom:16, borderBottom:`1px solid ${rule}`, fontSize:13, lineHeight:1.55 }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+              <span style={{ fontSize:15, fontWeight:600, letterSpacing:'-0.01em', fontFamily:sans }}>{item.name}</span>
+              <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'.06em', color:mute }}>
+                {IMPACT_LABEL[item.impact]} · {SECTION_SHORT[item.section] || item.section}
+              </span>
+              <span style={{ fontFamily:sans }}>{showFindings ? (state.finding || item.default_finding) : '—'}</span>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:6, paddingLeft:16, borderLeft:`1px solid ${rule}` }}>
+              <span style={{ fontFamily:mono, fontSize:10, fontWeight:600, letterSpacing:'.1em' }}>FIX</span>
+              <span style={{ fontFamily:sans }}>{showFindings ? (state.recommendation || item.default_recommendation) : '—'}</span>
+              {showScreenshots && state.screenshot_url && (
+                <a href={state.screenshot_url} target="_blank" rel="noopener noreferrer"
+                  style={{ fontFamily:mono, fontSize:10, color:mute, wordBreak:'break-all', textDecoration:'underline', textUnderlineOffset:2 }}>
+                  {state.screenshot_url}
+                </a>
+              )}
+            </div>
+          </div>
+        );
+      })}
+      <PageFtr n={3} />
+    </div>
+  );
+
+  // ── Page 4: Testing roadmap ────────────────────────────────────────────────
+  const page4 = (
+    <div className="rpt-page" style={pageStyle}>
+      <PageHdr />
+      <SectionHdr label="PHASE 2" title="Testing roadmap"
+        meta={`${phase2Items.length} A/B test${phase2Items.length !== 1 ? 's' : ''} · ${totalWeeks} weeks`} />
+      <p style={{ margin:0, fontSize:14, lineHeight:1.65, color:mute, fontFamily:sans }}>
+        These changes are likely to help, but the size of the effect depends on {ci.client_name || 'the client'}'s audience. Each one runs as an A/B test until it reaches significance. Winners ship to all traffic; results are reported monthly.
+      </p>
+      {phase2Items.length > 0 && (
+        <div style={{ display:'flex', flexDirection:'column' }}>
+          {/* Month + week header */}
+          <div style={{ display:'grid', gridTemplateColumns:`repeat(${totalWeeks}, minmax(0,1fr))`, columnGap:2, fontFamily:mono, fontSize:9, letterSpacing:'.08em', color:mute }}>
+            {Array.from({ length:numMonths }, (_, mi) => (
+              <span key={mi} style={{ gridColumn:`${mi*4+1} / span 4`, paddingBottom:4, borderBottom:`1px solid ${ink}`, color:ink, fontWeight:600 }}>
+                MONTH {mi + 1}
+              </span>
+            ))}
+            {Array.from({ length:totalWeeks }, (_, wi) => (
+              <span key={wi} style={{ padding:'6px 0', textAlign:'center' }}>W{wi + 1}</span>
+            ))}
+          </div>
+          {/* Test rows */}
+          {phase2Items.map((item, i) => {
+            const state    = getItemState(audit, item.id);
+            const metric   = SECTION_METRIC[item.section] || 'CVR';
+            const wkLabel  = `WK ${i * 4 + 1}–${(i + 1) * 4}`;
+            return (
+              <div key={item.id} style={{ display:'flex', flexDirection:'column', gap:10, padding:'16px 0', borderBottom:`1px solid ${rule}` }}>
+                <div style={{ display:'flex', alignItems:'baseline', gap:10 }}>
+                  <span style={{ fontFamily:mono, fontSize:11, color:mute }}>{String(i + 1).padStart(2, '0')}</span>
+                  <span style={{ flex:1, fontSize:15, fontWeight:600, fontFamily:sans }}>{item.name}</span>
+                  <span style={{ fontFamily:mono, fontSize:11, color:mute }}>{wkLabel}</span>
+                </div>
+                <span style={{ fontSize:13, lineHeight:1.55, color:mute, fontFamily:sans }}>
+                  {state.finding || item.default_finding}
+                </span>
+                <div style={{ display:'grid', gridTemplateColumns:`repeat(${totalWeeks}, minmax(0,1fr))`, columnGap:2 }}>
+                  <div style={{ gridColumn:`${i * 4 + 1} / span 4`, background:ink, color:'#FFFFFF', display:'flex', justifyContent:'space-between', alignItems:'center', gap:8, padding:'0 10px', height:32 }}>
+                    <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'.08em' }}>{metric}</span>
+                    <span style={{ fontFamily:mono, fontSize:11, fontWeight:600 }}>+{item.lift_min}–{item.lift_max}%</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {phase2Items.length === 0 && (
+        <div style={{ padding:'32px', textAlign:'center', border:`1px solid ${rule}`, fontFamily:mono, fontSize:12, color:mute }}>
+          No testing candidates. Assign flagged items to Phase 2 in the revenue step.
+        </div>
+      )}
+      {/* Footer summary grid */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3, minmax(0,1fr))', border:`1px solid ${rule}` }}>
+        {[
+          { l:'CADENCE',           v:'One test live at a time, ~4 weeks each', c:'' },
+          { l:'REPORTING',         v:'Monthly results and next test',           c:'' },
+          { l:'UPSIDE IF ALL WIN', v: roi.hasData && phase2Upside > 0 ? `+$${fmt(phase2Upside)}/mo on top of phase 1` : '—', c: roi.hasData && phase2Upside > 0 ? '#3E7A00' : mute },
+        ].map(({ l, v, c }, i, arr) => (
+          <div key={l} style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:4, borderRight: i < arr.length - 1 ? `1px solid ${rule}` : 'none' }}>
+            <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'.1em', color:mute }}>{l}</span>
+            <span style={{ fontSize:13, fontWeight:500, color: c || ink, fontFamily:sans }}>{v}</span>
+          </div>
+        ))}
+      </div>
+      <PageFtr n={4} />
+    </div>
+  );
+
+  // ── Page 5: Next steps ─────────────────────────────────────────────────────
+  const page5 = (
+    <div className="rpt-page" style={pageStyle}>
+      <PageHdr />
+      <SectionHdr label="NEXT STEPS" title="Questions about this report?" />
+      <p style={{ margin:0, maxWidth:560, fontSize:16, lineHeight:1.65, fontFamily:sans }}>
+        Happy to walk through any finding, the numbers behind it, or how the fixes would be shipped. Reply to the email this came with, or book a call below.
+      </p>
+      <div style={{ display:'flex', flexDirection:'column' }}>
+        {nextSteps.map(c => (
+          <div key={c.n} style={{ display:'grid', gridTemplateColumns:'40px minmax(0,1fr)', gap:12, padding:'16px 0', borderBottom:`1px solid ${rule}` }}>
+            <span style={{ fontFamily:mono, fontSize:12, fontWeight:600 }}>{c.n}</span>
+            <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+              <span style={{ fontSize:15, fontWeight:600, fontFamily:sans }}>{c.t}</span>
+              <span style={{ fontSize:13, lineHeight:1.55, color:mute, fontFamily:sans }}>{c.d}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Contact card */}
+      <div style={{ display:'grid', gridTemplateColumns:'minmax(0,1fr) 140px', gap:32, alignItems:'center', padding:24, border:`2px solid ${ink}` }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+          <span style={{ fontSize:24, fontWeight:600, letterSpacing:'-0.03em', fontFamily:sans }}>{ci.auditor_name || '—'}</span>
+          <div style={{ display:'flex', flexDirection:'column', gap:6, fontFamily:mono, fontSize:12 }}>
+            {(ci.auditor_email || '[your email]') && <span>{ci.auditor_email || '[your email]'}</span>}
+            {(ci.auditor_website || '[your website]') && <span>{ci.auditor_website || '[your website]'}</span>}
+            {ci.auditor_booking && <span>Book a call · {ci.auditor_booking}</span>}
+          </div>
+        </div>
+        <div style={{ width:140, height:140, boxSizing:'border-box', border:`1px dashed ${rule}`, display:'grid', placeItems:'center', fontFamily:mono, fontSize:10, letterSpacing:'.1em', color:mute }}>
+          QR CODE
+        </div>
+      </div>
+      <span style={{ fontSize:11, lineHeight:1.55, color:mute, fontFamily:sans }}>
+        Figures are estimates built on benchmarked CVR lift ranges. Combined lift is capped at +3.0–6.0%. Traffic, season, offer and audience all move conversion rate.
+      </span>
+      <PageFtr n={5} />
+    </div>
+  );
+
+  const pages = [page1, page2, page3, page4, page5];
+  const PAGE_LABELS = ['Summary', 'Findings', 'Quick wins', 'Testing roadmap', 'Next steps'];
+
+  // ── render ─────────────────────────────────────────────────────────────────
+  return (
+    <div data-stage="report">
+
+      {/* ── CLIENT VIEW bar ── */}
+      <div className="no-print rpt-cv-bar" style={{
+        position:'sticky', top:0, zIndex:10,
+        height:56, display:'flex', alignItems:'center', gap:12,
+        padding:'0 24px', borderBottom:'1px solid var(--rule)',
+        background:'var(--surface)'
+      }}>
+        <span style={{ fontFamily:mono, fontSize:12, fontWeight:600, letterSpacing:'.08em' }}>CLIENT VIEW</span>
+        <span style={{ fontSize:13, color:'var(--mute)' }}>Notes are hidden. This is what prints.</span>
+        <div style={{ flex:1 }} />
+        <Toggle checked={showFindings}    label="Findings"    onClick={() => setShowFindings(f => !f)} />
+        <Toggle checked={showScreenshots} label="Screenshots" onClick={() => setShowScreenshots(f => !f)} />
+        <Toggle checked={showPricing}     label="Pricing"     onClick={() => setShowPricing(f => !f)} />
+        <span style={{ fontFamily:mono, fontSize:12, color:'var(--mute)' }}>
+          {pageIdx + 1} / {TOTAL_PAGES}
+        </span>
+        <button onClick={handlePrint} style={{
+          height:36, padding:'0 16px', marginLeft:4,
+          background:'var(--btn-bg)', color:'var(--btn-ink)',
+          border:0, fontFamily:mono, fontSize:12, fontWeight:600, letterSpacing:'.06em', cursor:'pointer'
+        }}>Print / Save PDF</button>
+      </div>
+
+      {/* ── Page carousel ── */}
+      {/* maxWidth 914 = 794 page + 60 left col + 60 right col (44px arrow + 16px gap each side) */}
+      <div className="no-print" style={{ display:'flex', alignItems:'flex-start', maxWidth:914, margin:'0 auto', padding:'32px 0 80px', gap:0 }}>
+
+        {/* Left arrow — right-aligned in its 60px column → 16px gap to page */}
+        <div style={{ width:60, flexShrink:0, position:'sticky', top:'calc(50vh - 22px)', display:'flex', justifyContent:'flex-start' }}>
+          <button onClick={() => navigate(pageIdx - 1)} disabled={pageIdx === 0}
+            style={{ width:44, height:44, display:'flex', alignItems:'center', justifyContent:'center',
+              background:'var(--surface)', border:'1px solid var(--rule)', color:'var(--ink)',
+              fontFamily:mono, fontSize:18, cursor:'pointer',
+              opacity: pageIdx === 0 ? 0.25 : 1, transition:'opacity 0.15s' }}>←</button>
+        </div>
+
+        <div className="rpt-pages-wrap" style={{ flex:1 }}>
+        {pages.map((page, i) => {
+          const isActive   = i === pageIdx;
+          const isFrom     = transitioning && i === fromIdx;
+          const show       = isActive || isFrom;
+          // next: new page slides IN from right (animated = active)
+          // prev: old page slides OUT to right (animated = from)
+          const isAnimated = transitioning && (navDir === 'next' ? isActive : isFrom);
+          const anim       = navDir === 'next' ? 'rptSlideInRight' : 'rptSlideOutRight';
+          return (
+            <div key={i}
+              className={`rpt-page-slot${isActive ? ' rpt-page-slot--active' : ''}`}
+              style={isAnimated ? {
+                display: 'block', position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2,
+                animation: `${anim} 0.34s cubic-bezier(0.25,0.46,0.45,0.94) forwards`,
+              } : { display: show ? 'block' : 'none' }}
+              onAnimationEnd={isAnimated ? handleTransitionEnd : undefined}>
+              {page}
+            </div>
+          );
+        })}
+        </div>{/* end rpt-pages-wrap */}
+
+        {/* Right arrow — left-aligned in its 60px column → 16px gap to page */}
+        <div style={{ width:60, flexShrink:0, position:'sticky', top:'calc(50vh - 22px)', display:'flex', justifyContent:'flex-end' }}>
+          <button onClick={() => navigate(pageIdx + 1)} disabled={pageIdx === TOTAL_PAGES - 1}
+            style={{ width:44, height:44, display:'flex', alignItems:'center', justifyContent:'center',
+              background:'var(--surface)', border:'1px solid var(--rule)', color:'var(--ink)',
+              fontFamily:mono, fontSize:18, cursor:'pointer',
+              opacity: pageIdx === TOTAL_PAGES - 1 ? 0.25 : 1, transition:'opacity 0.15s' }}>→</button>
+        </div>
+
+      </div>{/* end outer flex */}
+
+      {/* ── Mobile bottom bar ── */}
+      <div className="no-print rpt-mob-bar" style={{
+        display:'none', position:'fixed', left:0, right:0, bottom:0,
+        padding:'12px 16px 28px', gap:8,
+        borderTop:'1px solid var(--rule)', background:'var(--bg)',
+        gridTemplateColumns:'1fr 1fr', zIndex:20
+      }}>
+        <button onClick={handlePrint} style={{ height:52, background:'transparent', color:'var(--ink)', border:'1px solid var(--rule)', fontFamily:mono, fontWeight:600, fontSize:13, letterSpacing:'.1em', cursor:'pointer' }}>PRINT / PDF</button>
+        <button onClick={onGoToScripts} style={{ height:52, background:'var(--btn-bg)', color:'var(--btn-ink)', border:0, fontFamily:mono, fontWeight:600, fontSize:13, letterSpacing:'.1em', cursor:'pointer' }}>SCRIPTS →</button>
+      </div>
+
     </div>
   );
 }
+
 
 // ─── SCRIPTS STAGE ───────────────────────────────────────────────────────────
 
@@ -4248,14 +4878,14 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveP
   const STEPS = [
     { label: '01 Setup',     stage: 0, activeOn: [0] },
     { label: '02 Checklist', stage: 1, activeOn: [1] },
-    { label: '03 Revenue',   stage: 2, activeOn: [2] },
+    { label: '03 Findings',  stage: 2, activeOn: [2] },
     { label: '04 Report',    stage: 3, activeOn: [3] },
     { label: '05 Scripts',   stage: 4, activeOn: [4] },
   ];
 
   const NEXT_CONFIG = {
     0: { label: 'Start checklist →',  nextStage: 1 },
-    1: { label: 'Size the revenue →', nextStage: 2, guard: () => metricsIncomplete },
+    1: { label: 'Findings →',         nextStage: 2, guard: () => metricsIncomplete },
     2: { label: 'View report →',      nextStage: 3 },
     3: { label: 'See scripts →',      nextStage: 4 },
     4: null,
@@ -4290,7 +4920,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveP
   const saveDone = saveStatus === 'saved';
 
   return (
-    <div style={{ position:'fixed', inset:0, display:'flex', flexDirection:'column', background:'var(--bg)' }}>
+    <div data-audit-root style={{ position:'fixed', inset:0, display:'flex', flexDirection:'column', background:'var(--bg)' }}>
 
       {/* Demo banner */}
       {demoMode && (
@@ -4352,7 +4982,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveP
       </div>
 
       {/* ── Stage container ── */}
-      <div style={{ flex:1, overflow:'hidden', position:'relative' }}>
+      <div data-stages-wrap style={{ flex:1, overflow:'hidden', position:'relative' }}>
 
         {/* Setup */}
         <div data-stage="setup" style={{ ...stageVisible(0), overflowY:'auto' }}>
@@ -4755,6 +5385,8 @@ function App() {
         onSaveClientInfo={handleSaveClientInfo}
         user={user}
         onSignOut={handleSignOut}
+        theme={theme}
+        onToggleTheme={toggleTheme}
         auditsLoading={auditsLoading}
         dbError={dbError}
         onDismissError={handleDismissError}
