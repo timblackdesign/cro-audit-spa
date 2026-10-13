@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/styles.css">
+<script src="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/_ds_bundle.js"></script>
+<style>body{margin:0}a{color:var(--ink)}a:hover{color:var(--accent-text)}</style>
+</helmet>
+<div data-theme="{{ theme }}" style="width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font-body);display:flex;flex-direction:column">
+  <div style="flex:1;display:grid;place-items:center;padding:24px">
+    <div style="width:100%;max-width:400px;display:flex;flex-direction:column;gap:28px">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Wordmark" size="{{ 30 }}" hint-size="100px,30px"></x-import>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <h1 style="margin:0;font-size:36px;font-weight:600;letter-spacing:-0.04em;line-height:1.05">Sign in</h1>
+        <p style="margin:0;font-size:16px;line-height:1.55;color:var(--mute)">Enter the email you bought the kit with. We'll send a one-time link.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <label style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink)">Email</span>
+          <input placeholder="you@studio.dev" style="height:48px;box-sizing:border-box;width:100%;padding:0 14px;background:var(--surface);border:1px solid var(--rule);color:var(--ink);font-family:var(--font-mono);font-size:15px;outline:none;border-radius:0">
+        </label>
+        <button style="height:48px;width:100%;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:0">Send magic link →</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="flex:1;height:1px;background:var(--rule)"></div>
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">or</span>
+        <div style="flex:1;height:1px;background:var(--rule)"></div>
+      </div>
+      <button style="height:48px;width:100%;background:transparent;color:var(--ink);border:1px solid var(--rule);font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:0">Try the demo</button>
+      <p style="margin:0;font-size:14px;line-height:1.5;color:var(--mute)">The demo runs the full audit and report. Nothing is saved, and there's no export.</p>
+    </div>
+  </div>
+  <div style="flex:none;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 24px;border-top:1px solid var(--rule);font-family:var(--font-mono);font-size:12px;color:var(--mute)">
+    <span>v1 · local-first</span>
+    <span>Audits stay in this browser</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;vp&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() { return { theme: this.props.theme || 'dark' }; }
+}
+</script>
+</body>
+</html>

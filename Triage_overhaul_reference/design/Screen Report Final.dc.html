@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/styles.css">
+<script src="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/_ds_bundle.js"></script>
+<script src="findings-data.js"></script>
+<style>body{margin:0}a{color:var(--ink)}a:hover{color:var(--accent-text)}</style>
+</helmet>
+<div data-theme="{{ theme }}" style="width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font-body);display:flex;flex-direction:column;position:relative">
+  <sc-if value="{{ d }}" hint-placeholder-val="{{ true }}">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Wordmark" size="{{ 20 }}" hint-size="64px,20px"></x-import>
+      <span style="color:var(--mute);font-size:18px">/</span>
+      <span style="font-size:14px;font-weight:500;color:var(--mute)">Audits</span>
+      <span style="color:var(--mute);font-size:18px">/</span>
+      <span style="font-size:15px;font-weight:600">Better Brewer storefront</span>
+      <div style="flex:1"></div>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="100px,36px">Edit info</x-import>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="120px,36px">Export .json</x-import>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="70px,36px">Theme</x-import>
+    </div>
+    <div style="height:48px;flex:none;display:flex;align-items:stretch;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+        <div style="display:flex;align-items:center;gap:8px;padding:0 16px;font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;color:{{ s.color }};font-weight:{{ s.weight }};border-bottom:2px solid {{ s.line }}">
+          <span>{{ s.n }}</span><span>{{ s.t }}</span><span style="color:var(--gain)">{{ s.done }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:16px;padding:0 24px;border-bottom:1px solid var(--rule);background:var(--surface)">
+      <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em">CLIENT VIEW</span>
+      <span style="font-size:14px;color:var(--mute)">Notes are hidden. This is what prints.</span>
+      <div style="flex:1"></div>
+      <span style="display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px"><span style="width:16px;height:16px;display:grid;place-items:center;background:var(--btn-bg);color:var(--btn-ink);font-size:11px;font-weight:700">✓</span>Detailed findings</span>
+      <span style="display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px"><span style="width:16px;height:16px;display:grid;place-items:center;background:var(--btn-bg);color:var(--btn-ink);font-size:11px;font-weight:700">✓</span>Screenshot links</span>
+      <button onClick="{{ togglePricing }}" style="height:44px;display:flex;align-items:center;gap:8px;padding:0 4px;background:transparent;border:0;color:var(--ink);font-family:var(--font-mono);font-size:12px;cursor:pointer"><span style="width:16px;height:16px;box-sizing:border-box;display:grid;place-items:center;background:{{ pBoxBg }};border:{{ pBoxBorder }};color:var(--btn-ink);font-size:11px;font-weight:700">{{ pTick }}</span>Show pricing</button>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" size="sm" hint-size="170px,36px">Print / Save PDF</x-import>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:40px 24px">
+      <div data-theme="light" style="--bg:#EEEFEA;--surface:#E3E5DD;--ink:#0B0C0A;--mute:#5A5D56;--rule:#CBCEC4;--accent:#C6F432;--on-accent:#0B0C0A;--accent-text:#4A6400;--loss:#C2381C;--gain:#3E7A00;max-width:880px;margin:0 auto;background:#FFFFFF;color:var(--ink);border:1px solid var(--rule);padding:64px 72px;display:flex;flex-direction:column;gap:40px">
+        <div style="display:flex;flex-direction:column;gap:20px;padding-bottom:28px;border-bottom:2px solid var(--ink)">
+          <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.12em">SHOPIFY CRO AUDIT</span>
+          <h1 style="margin:0;font-size:52px;font-weight:600;letter-spacing:-0.045em;line-height:1.02">Better Brewer storefront</h1>
+          <div style="display:grid;grid-template-columns:repeat(5,auto);gap:28px;justify-content:start">
+            <sc-for list="{{ cover }}" as="c" hint-placeholder-count="5">
+              <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;color:var(--mute)">{{ c.l }}</span><span style="font-size:15px;font-weight:500">{{ c.v }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:24px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;color:var(--mute)">THE SHORT VERSION</span>
+            <h2 style="margin:0;max-width:720px;font-size:52px;font-weight:600;letter-spacing:-0.045em;line-height:1.04;text-wrap:balance">$24,360 a year is at <em style="font-style:normal;background:var(--accent);color:#0B0C0A;padding:0 .08em">stake</em> on betterbrewer.com.au.</h2>
+            <span style="font-size:16px;color:var(--mute)">Across 7 findings.<sc-if value="{{ pricing }}" hint-placeholder-val="{{ false }}"> Fixing them pays back in about 2.1 months.</sc-if></span>
+          </div>
+          <div style="display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);border:1px solid var(--rule)">
+            <sc-for list="{{ grid }}" as="g" hint-placeholder-count="6">
+              <div style="padding:14px 16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)">
+                <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">{{ g.l }}</span>
+                <span style="font-size:22px;font-weight:600;letter-spacing:-0.03em">{{ g.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ pricing }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding:14px 18px;border:1px solid var(--ink)"><span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.1em">INVESTMENT</span><span style="font-size:17px;font-weight:600;letter-spacing:-0.02em">$4,250</span><span style="font-size:15px;color:var(--mute)">$750 audit + $3,500 implementation</span></div>
+        </sc-if>
+        </div>
+        <p style="margin:0;padding:20px 24px;border-left:3px solid var(--ink);background:var(--bg);font-size:17px;line-height:1.6">{{ pitch }}</p>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:10px;border-bottom:2px solid var(--ink)"><span style="font-size:22px;font-weight:600;letter-spacing:-0.03em">Findings</span><span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">ranked by priority, then effort</span></div>
+          <div style="display:grid;grid-template-columns:32px minmax(0,1fr) 110px 70px 80px 100px;gap:12px;padding:0 0 8px;border-bottom:1px solid var(--rule);font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)"><span>#</span><span>FINDING</span><span>SECTION</span><span>PRIORITY</span><span>FIX</span><span>CVR LIFT</span></div>
+          <sc-for list="{{ inScope }}" as="f" hint-placeholder-count="7">
+            <div style="display:grid;grid-template-columns:32px minmax(0,1fr) 110px 70px 80px 100px;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--rule);font-size:14px">
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">{{ f.n }}</span>
+              <span><strong style="font-weight:600">{{ f.title }}</strong> <span style="color:var(--mute)">— {{ f.finding }}</span></span>
+              <span>{{ f.section }}</span>
+              <span style="font-family:var(--font-mono);font-size:12px;font-weight:600">{{ f.p }}</span>
+              <span style="font-family:var(--font-mono);font-size:12px">{{ f.time }}</span>
+              <span style="font-family:var(--font-mono);font-size:12px">{{ f.lift }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;align-items:baseline;gap:14px;padding-bottom:10px;border-bottom:2px solid var(--ink)"><span style="font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;color:var(--mute)">PHASE 1</span><span style="font-size:22px;font-weight:600;letter-spacing:-0.03em">Quick wins</span><div style="flex:1"></div><span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">{{ quickCount }} findings · ship in week 1</span></div>
+          <sc-for list="{{ quick }}" as="f" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;padding-bottom:20px;border-bottom:1px solid var(--rule)">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:18px;font-weight:600;letter-spacing:-0.02em">{{ f.title }}</span>
+                <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;color:var(--mute)">{{ f.p }} · {{ f.section }} · {{ f.time }}</span>
+                <span style="font-size:15px;line-height:1.55">{{ f.finding }}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;padding-left:16px;border-left:1px solid var(--rule)">
+                <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em">FIX</span>
+                <span style="font-size:15px;line-height:1.55">{{ f.rec }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:baseline;gap:14px;padding-bottom:10px;border-bottom:2px solid var(--ink)"><span style="font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;color:var(--mute)">PHASE 2</span><span style="font-size:22px;font-weight:600;letter-spacing:-0.03em">Testing roadmap</span><div style="flex:1"></div><span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">3 A/B tests · 12 weeks</span></div>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:var(--mute)">These changes are likely to help, but the size of the effect depends on Better Brewer's audience. Each one runs as an A/B test until it reaches significance. Winners ship to all traffic; results are reported monthly.</p>
+          <div style="display:grid;grid-template-columns:260px repeat(12,minmax(0,1fr));column-gap:2px;font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">
+            <span></span>
+            <span style="grid-column:2 / span 4;padding:0 0 4px;border-bottom:1px solid var(--ink);color:var(--ink);font-weight:600">MONTH 1</span>
+            <span style="grid-column:6 / span 4;padding:0 0 4px;border-bottom:1px solid var(--ink);color:var(--ink);font-weight:600">MONTH 2</span>
+            <span style="grid-column:10 / span 4;padding:0 0 4px;border-bottom:1px solid var(--ink);color:var(--ink);font-weight:600">MONTH 3</span>
+            <span></span>
+            <sc-for list="{{ weeks }}" as="w" hint-placeholder-count="12"><span style="padding:6px 0;text-align:center">{{ w }}</span></sc-for>
+          </div>
+          <sc-for list="{{ tests }}" as="t" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:260px repeat(12,minmax(0,1fr));column-gap:2px;align-items:stretch;padding:12px 0;border-bottom:1px solid var(--rule)">
+              <div style="display:flex;flex-direction:column;gap:4px;padding-right:16px">
+                <span style="font-size:15px;font-weight:600"><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute);margin-right:6px">{{ t.n }}</span>{{ t.title }}</span>
+                <span style="font-size:13px;line-height:1.45;color:var(--mute)">{{ t.hyp }}</span>
+              </div>
+              <div style="grid-column:{{ t.col }};background:var(--ink);color:#FFFFFF;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 10px;min-height:48px">
+                <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em">{{ t.metric }}</span>
+                <span style="font-family:var(--font-mono);font-size:12px;font-weight:600">{{ t.lift }}</span>
+              </div>
+            </div>
+          </sc-for>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--rule)">
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--rule)"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">CADENCE</span><span style="font-size:15px;font-weight:500">One test live at a time, ~4 weeks each</span></div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--rule)"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">REPORTING</span><span style="font-size:15px;font-weight:500">Monthly results and next test</span></div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">UPSIDE IF ALL WIN</span><span style="font-size:15px;font-weight:500;color:var(--gain)">+$470/mo on top of phase 1</span></div>
+          </div>
+        </div>
+        <span style="font-size:13px;line-height:1.55;color:var(--mute)">Figures are estimates built on benchmarked CVR lift ranges. Traffic, season, offer and audience all move conversion rate.</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ m }}" hint-placeholder-val="{{ false }}">
+    <div style="height:52px;flex:none;display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--rule)">
+      <button style="width:44px;height:44px;background:transparent;border:0;color:var(--ink);font-size:20px">←</button>
+      <div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:600">Report</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">04/05 · CLIENT VIEW</span></div>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:12px 12px 110px">
+      <div data-theme="light" style="--bg:#EEEFEA;--surface:#E3E5DD;--ink:#0B0C0A;--mute:#5A5D56;--rule:#CBCEC4;--accent:#C6F432;--on-accent:#0B0C0A;--accent-text:#4A6400;--loss:#C2381C;--gain:#3E7A00;background:#FFFFFF;color:var(--ink);border:1px solid var(--rule);padding:24px 20px;display:flex;flex-direction:column;gap:24px">
+        <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:18px;border-bottom:2px solid var(--ink)">
+          <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.12em">SHOPIFY CRO AUDIT</span>
+          <h1 style="margin:0;font-size:32px;font-weight:600;letter-spacing:-0.045em;line-height:1.02">Better Brewer storefront</h1>
+          <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">Tim Black · Oct 9, 2026 · Cello</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">THE SHORT VERSION</span><h2 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-0.045em;line-height:1.08">$24,360 a year is at <em style="font-style:normal;background:var(--accent);color:#0B0C0A;padding:0 .08em">stake</em> on betterbrewer.com.au.</h2></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule)">
+          <sc-for list="{{ grid }}" as="g" hint-placeholder-count="6">
+            <div style="padding:10px 12px;display:flex;flex-direction:column;gap:2px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)"><span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--mute)">{{ g.l }}</span><span style="font-size:18px;font-weight:600">{{ g.v }}</span></div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ pricing }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--ink)"><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.1em">INVESTMENT</span><span style="font-size:15px;font-weight:600;letter-spacing:-0.02em">$4,250</span><span style="font-size:13px;color:var(--mute)">$750 audit + $3,500 implementation</span></div>
+        </sc-if>
+        <p style="margin:0;padding:14px 16px;border-left:3px solid var(--ink);background:var(--bg);font-size:15px;line-height:1.6">{{ pitch }}</p>
+        <div style="display:flex;flex-direction:column">
+          <span style="font-size:18px;font-weight:600;padding-bottom:8px;border-bottom:2px solid var(--ink)">Findings</span>
+          <sc-for list="{{ inScope }}" as="f" hint-placeholder-count="7">
+            <div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--rule)"><span style="font-size:14px;font-weight:600">{{ f.n }} {{ f.title }}</span><span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">{{ f.p }}</span></div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;border-bottom:2px solid var(--ink)"><span style="font-size:18px;font-weight:600">Testing roadmap</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">12 WEEKS</span></div>
+          <sc-for list="{{ tests }}" as="t" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;gap:6px;padding:12px 0;border-bottom:1px solid var(--rule)">
+              <div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:14px;font-weight:600">{{ t.title }}</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">{{ t.weeksLabel }}</span></div>
+              <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:2px"><div style="grid-column:{{ t.col12 }};height:6px;background:var(--ink)"></div></div>
+              <span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">{{ t.metric }} · {{ t.lift }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 28px;border-top:1px solid var(--rule);background:var(--bg);display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button style="height:52px;background:transparent;color:var(--ink);border:1px solid var(--rule);font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;border-radius:0">PRINT / PDF</button>
+      <button style="height:52px;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;border-radius:0">SCRIPTS →</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;pricing&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;vp&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { pricing: this.props.pricing ?? false };
+  componentDidMount() { const t = () => window.TRIAGE_APP_FINDINGS ? this.forceUpdate() : setTimeout(t, 50); t(); }
+  renderVals() {
+    const vp = this.props.vp || 'desktop';
+    const all = window.TRIAGE_APP_FINDINGS || [];
+    const steps = ['Setup', 'Checklist', 'Revenue', 'Report', 'Scripts'].map((t, i) => ({
+      n: '0' + (i + 1), t: t.toUpperCase(), done: i < 3 ? '✓' : '',
+      color: i === 3 ? 'var(--ink)' : 'var(--mute)', weight: i === 3 ? 600 : 500, line: i === 3 ? 'var(--btn-bg)' : 'transparent'
+    }));
+    const inScope = all.filter(f => f.on);
+    return {
+      theme: this.props.theme || 'dark', d: vp === 'desktop', m: vp !== 'desktop', steps, inScope,
+      quick: inScope.filter(f => f.ph === 'quick'), quickCount: inScope.filter(f => f.ph === 'quick').length, weeks: Array.from({ length: 12 }, (_, i) => 'W' + (i + 1)), tests: (window.TRIAGE_APP_TESTS || []).map(t => ({ ...t, col: (t.start + 1) + ' / span ' + t.len, col12: t.start + ' / span ' + t.len, weeksLabel: 'WK ' + t.start + '–' + (t.start + t.len - 1) })), pitch: window.TRIAGE_APP_PITCH || '',
+      cover: [{ l: 'PREPARED FOR', v: 'Better Brewer' }, { l: 'PREPARED BY', v: 'Tim Black' }, { l: 'AUDIT DATE', v: 'Oct 9, 2026' }, { l: 'STORE', v: 'betterbrewer.com.au' }, { l: 'THEME', v: 'Cello' }],
+      grid: [{ l: 'MONTHLY SESSIONS', v: '54,906' }, { l: 'CURRENT CVR', v: '0.93%' }, { l: 'PROJECTED CVR', v: '0.97%' }, { l: 'MONTHLY RECOVERY', v: '+$2,030' }].concat(this.state.pricing ? [{ l: 'RETURN', v: '5.7×' }, { l: 'PAYBACK', v: '2.1 mo' }] : []),
+      pricing: this.state.pricing, togglePricing: () => this.setState(s => ({ pricing: !s.pricing })),
+      pTick: this.state.pricing ? '✓' : '', pBoxBg: this.state.pricing ? 'var(--btn-bg)' : 'transparent', pBoxBorder: this.state.pricing ? '0' : '1px solid var(--mute)'
+    };
+  }
+}
+</script>
+</body>
+</html>

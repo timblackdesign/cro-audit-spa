@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Closing Swipe File — CRO Audit System</title>
-<link rel="icon" href="/favicon.png" type="image/png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+<title>Closing Swipe File — triage</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A0B09'/%3E%3Crect x='10' y='5' width='12' height='22' fill='%23C6F432'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --ink:   #e2e8f0;
@@ -501,7 +501,7 @@ mark.fill-manual {
 
 <!-- ── HEADER ── -->
 <header class="site-header">
-  <span class="site-header__name">CRO Audit System</span>
+  <span class="site-header__name">triage</span>
   <span class="header-sep">·</span>
   <span class="header-sub">Closing Swipe File</span>
   <a href="index.html" class="back-link">← Back to audit</a>
@@ -555,7 +555,7 @@ mark.fill-manual {
         <button class="copy-btn" id="copy-subject-t1" onclick="copySubject('t1')">Copy subject</button>
       </div>
       <div class="subject-text" id="subject-t1"></div>
-      <div class="subject-alt">Alternative: I found a revenue leak on your [Product Category] page</div>
+      <div class="subject-alt">Alternative: I found a CVR issue on your [Product Category] page</div>
     </div>
     <div class="card-section">
       <div class="section-row">
@@ -772,7 +772,7 @@ mark.fill-manual {
     </tbody>
   </table>
 
-  <div class="page-footer">CRO Audit System · Closing Swipe File · timblackdesign.com</div>
+  <div class="page-footer">triage · Closing Swipe File · timblackdesign.com</div>
 
 </div><!-- /page-content -->
 
@@ -823,7 +823,7 @@ I'd love to help with [what they requested] for %store%.
 
 Before we move into design or implementation though, I've found that the most successful projects start with a Revenue-First Audit. Rather than changing the look of the site, I want to make sure we're actually fixing the friction points that are currently costing you sales.
 
-I've developed a 60-point Conversion Rate Optimization audit that identifies exactly where your visitors are dropping off and puts a dollar figure on the revenue leak you're currently experiencing. It ensures every hour we spend on implementation is actually moving the needle — rather than guessing at what looks good.
+I've developed a 60-point Conversion Rate Optimization audit that identifies exactly where your visitors are dropping off and puts a number on the revenue at stake. It ensures every hour we spend on implementation is actually moving the needle — rather than guessing at what looks good.
 
 Would you be open to starting with the audit so we have a data-driven roadmap before we touch anything?
 
@@ -959,7 +959,7 @@ function renderAll() {
 function updateState(key, value) {
   state[key] = value.trim();
   if (key === 'auditorName') {
-    try { localStorage.setItem('cro-swipe-auditor-name', value.trim()); } catch (e) {}
+    try { localStorage.setItem('triage-swipe-auditor-name', value.trim()); } catch (e) {}
   }
   renderAll();
 }
@@ -1007,7 +1007,7 @@ function setInput(id, value) {
 document.addEventListener('DOMContentLoaded', () => {
   // Auditor name persists in localStorage
   try {
-    const saved = localStorage.getItem('cro-swipe-auditor-name');
+    const saved = localStorage.getItem('triage-swipe-auditor-name');
     if (saved) {
       state.auditorName = saved;
       setInput('input-auditor', saved);
@@ -1023,7 +1023,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (store)   { state.storeName       = store;   setInput('input-store', store); }
   if (auditor) { state.auditorName     = auditor; setInput('input-auditor', auditor);
-    try { localStorage.setItem('cro-swipe-auditor-name', auditor); } catch(e) {} }
+    try { localStorage.setItem('triage-swipe-auditor-name', auditor); } catch(e) {} }
   if (rev)     { state.monthlyRevenue  = rev;     setInput('input-rev', rev); }
   if (roi)     { state.roiAmount       = roi;     setInput('input-roi', roi); }
 

@@ -1,0 +1,52 @@
+/* Triage colour tokens. Light is the default; dark applies under [data-theme="dark"]. */
+:root{
+/* Base palette */
+--lime-400:#C6F432;--lime-800:#4A6400;--green-700:#3E7A00;
+--red-600:#C2381C;--red-400:#FF6A4D;
+--paper-100:#EEEFEA;--paper-200:#E3E5DD;--paper-300:#CBCEC4;
+--graphite-500:#5A5D56;--graphite-400:#8A8E84;--graphite-300:#B5BAAB;
+--night-900:#0A0B09;--night-800:#13150F;--night-700:#272A21;--night-100:#E8EBE2;
+--black-ink:#0B0C0A;
+
+/* Role tokens (light) */
+--bg:#EEEFEA;
+--surface:#E3E5DD;
+--ink:#0B0C0A;
+--mute:#5A5D56;
+--rule:#CBCEC4;
+--accent:#C6F432;
+--on-accent:#0B0C0A;
+--accent-text:#4A6400;
+--loss:#C2381C;
+--gain:#3E7A00;
+--code-string:#5A5D56;
+--btn-bg:#0B0C0A;
+--btn-ink:#C6F432;
+--wordmark-accent:#C6F432;
+
+/* Semantic aliases */
+--surface-page:var(--bg);
+--surface-card:var(--surface);
+--surface-code:var(--surface);
+--text-strong:var(--ink);
+--text-body:var(--mute);
+--text-muted:var(--mute);
+--border-hairline:var(--rule);
+--focus-ring:var(--accent);
+}
+[data-theme="dark"]{
+--bg:#0A0B09;
+--surface:#13150F;
+--ink:#E8EBE2;
+--mute:#8A8E84;
+--rule:#272A21;
+--accent:#C6F432;
+--on-accent:#0A0B09;
+--accent-text:#C6F432;
+--loss:#FF6A4D;
+--gain:#C6F432;
+--code-string:#B5BAAB;
+--btn-bg:#C6F432;
+--btn-ink:#0A0B09;
+--wordmark-accent:#C6F432;
+}

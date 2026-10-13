@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/styles.css">
+<script src="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/_ds_bundle.js"></script>
+<style>body{margin:0}a{color:var(--ink)}a:hover{color:var(--accent-text)}</style>
+</helmet>
+<div data-theme="{{ theme }}" style="width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font-body);display:flex;flex-direction:column;position:relative">
+  <sc-if value="{{ d }}" hint-placeholder-val="{{ true }}">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Wordmark" size="{{ 20 }}" hint-size="64px,20px"></x-import>
+      <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.1em;color:var(--mute)">FOR SHOPIFY</span>
+      <div style="flex:1"></div>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="130px,36px">Import .json</x-import>
+      <span style="font-family:var(--font-mono);font-size:13px;color:var(--mute)">tim@timblackdesign.com</span>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="70px,36px">Theme</x-import>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:40px 48px">
+      <div style="max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:24px">
+        <div style="display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:24px;align-items:end;padding-bottom:20px;border-bottom:1px solid var(--rule)">
+          <h1 style="margin:0;font-size:36px;font-weight:600;letter-spacing:-0.04em;line-height:1">Audits</h1>
+          <span style="font-family:var(--font-mono);font-size:13px;color:var(--mute);padding-bottom:4px">3 of 5 active · 2 slots open</span>
+          <div style="display:flex;border:1px solid var(--rule);height:46px;box-sizing:border-box"><span style="display:flex;align-items:center;padding:0 14px;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;cursor:pointer;background:transparent;color:var(--mute)">TABLE</span><span style="display:flex;align-items:center;padding:0 14px;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;cursor:pointer;background:var(--ink);color:var(--bg)">GRID</span></div>
+          <x-import component-from-global-scope="TriageDesignSystem_045851.Button" hint-size="150px,46px">+ New audit</x-import>
+        </div>
+        <div style="display:flex;gap:20px;font-family:var(--font-mono);font-size:12px;color:var(--mute);align-items:center">
+          <span style="display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;background:var(--gain)"></span>PASS</span>
+          <span style="display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;background:var(--loss)"></span>FAIL</span>
+          <span style="display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;background:var(--rule)"></span>NOT REVIEWED</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+          <sc-for list="{{ audits }}" as="a" hint-placeholder-count="3">
+            <div style="border:1px solid var(--rule);background:var(--surface);display:flex;flex-direction:column">
+              <div style="padding:20px 20px 16px;display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:18px;font-weight:600;letter-spacing:-0.01em">{{ a.name }}</span>
+                  <span style="font-family:var(--font-mono);font-size:13px;color:var(--mute)">{{ a.url }} · {{ a.theme }}</span>
+                </div>
+                <button style="width:36px;height:36px;flex:none;background:transparent;border:1px solid var(--rule);color:var(--ink);font-size:16px;border-radius:0">⋯</button>
+              </div>
+              <div style="padding:0 20px 16px;display:flex;flex-direction:column;gap:5px">
+                <sc-for list="{{ a.map }}" as="row" hint-placeholder-count="6">
+                  <div style="display:grid;grid-template-columns:96px repeat(10,minmax(0,1fr));gap:3px;align-items:center">
+                    <span style="font-family:var(--font-mono);font-size:11px;color:var(--mute);letter-spacing:.04em">{{ row.label }}</span>
+                    <sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="10">
+                      <div style="height:12px;background:{{ c }}"></div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--rule)">
+                <div style="padding:14px 20px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--rule)">
+                  <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;color:var(--mute)">REVIEWED</span>
+                  <span style="font-family:var(--font-mono);font-size:16px;font-weight:600">{{ a.reviewed }}/60</span>
+                </div>
+                <div style="padding:14px 20px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--rule)">
+                  <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;color:var(--mute)">FAILS</span>
+                  <span style="font-family:var(--font-mono);font-size:16px;font-weight:600;color:{{ a.failColor }}">{{ a.fails }}</span>
+                </div>
+                <div style="padding:14px 20px;display:flex;flex-direction:column;gap:4px">
+                  <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;color:var(--mute)">/MO</span>
+                  <span style="font-family:var(--font-mono);font-size:16px;font-weight:600;color:{{ a.recColor }}">{{ a.rec }}</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--rule);background:var(--bg)">
+                <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">{{ a.status }} · {{ a.updated }}</span>
+                <x-import component-from-global-scope="TriageDesignSystem_045851.Button" size="sm" hint-size="90px,36px">{{ a.cta }}</x-import>
+              </div>
+            </div>
+          </sc-for>
+          <sc-for list="{{ open }}" as="o" hint-placeholder-count="2">
+            <div style="border:1px dashed var(--rule);min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--mute)" style-hover="border-color:var(--ink);color:var(--ink)">
+              <span style="font-size:24px">+</span>
+              <span style="font-family:var(--font-mono);font-size:12px;letter-spacing:.08em">OPEN SLOT · NEW AUDIT</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ m }}" hint-placeholder-val="{{ false }}">
+    <div style="height:52px;flex:none;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--rule)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Wordmark" size="{{ 20 }}" hint-size="64px,20px"></x-import>
+      <div style="flex:1"></div>
+      <span style="font-family:var(--font-mono);font-size:12px;font-weight:500">3/5</span>
+      <button style="width:44px;height:44px;background:transparent;border:1px solid var(--rule);color:var(--ink);font-size:18px;border-radius:0">⋯</button>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:20px 16px 120px;display:flex;flex-direction:column;gap:14px">
+      <h1 style="margin:0 0 4px;font-size:30px;font-weight:600;letter-spacing:-0.04em;line-height:1">Audits</h1>
+      <sc-for list="{{ audits }}" as="a" hint-placeholder-count="3">
+        <div style="border:1px solid var(--rule);background:var(--surface);padding:16px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+              <span style="font-size:17px;font-weight:600">{{ a.name }}</span>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">{{ a.url }}</span>
+            </div>
+            <span style="font-family:var(--font-mono);font-size:14px;font-weight:600;color:{{ a.recColor }}">{{ a.rec }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(60,minmax(0,1fr));gap:1px">
+            <sc-for list="{{ a.flat }}" as="c" hint-placeholder-count="60">
+              <div style="height:14px;background:{{ c }}"></div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">{{ a.reviewed }}/60 · <span style="color:{{ a.failColor }}">{{ a.fails }} fails</span></span>
+            <button style="height:44px;padding:0 18px;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-weight:600;font-size:12px;letter-spacing:.1em;border-radius:0">OPEN →</button>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 28px;border-top:1px solid var(--rule);background:var(--bg)">
+      <button style="height:52px;width:100%;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;border-radius:0">+ NEW AUDIT · 2 SLOTS OPEN</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;vp&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const vp = this.props.vp || 'desktop';
+    const P = 'var(--gain)', F = 'var(--loss)', N = 'var(--rule)';
+    const mk = (seed, reviewed) => {
+      let s = seed, out = [];
+      for (let i = 0; i < 60; i++) { s = (s * 9301 + 49297) % 233280; out.push(i < reviewed ? (s / 233280 < 0.22 ? F : P) : N); }
+      return out;
+    };
+    const labels = ['General', 'Collection', 'Product', 'Cart', 'Checkout', 'Mobile/Perf'];
+    const base = [
+      { name: 'Better Brewer storefront', url: 'betterbrewer.com.au', theme: 'Cello', reviewed: 38, fails: 9, rec: '+$2,030', status: 'In progress', updated: 'Oct 8', cta: 'Resume', seed: 7 },
+      { name: 'Kinfolk Coffee Co.', url: 'kinfolkcoffee.com', theme: 'Prestige', reviewed: 60, fails: 12, rec: '+$3,480', status: 'Report ready', updated: 'Oct 2', cta: 'Report', seed: 3 },
+      { name: 'SHLVS Beauty', url: 'shlvsbeauty.com', theme: 'Dawn', reviewed: 0, fails: 0, rec: '—', status: 'Not started', updated: 'Jul 19', cta: 'Start', seed: 1 }
+    ];
+    const audits = base.map(a => {
+      const flat = mk(a.seed, a.reviewed);
+      const fails = flat.filter(c => c === F).length;
+      return { ...a, fails, flat, map: labels.map((l, i) => ({ label: l, cells: flat.slice(i * 10, i * 10 + 10) })), failColor: fails ? 'var(--loss)' : 'var(--mute)', recColor: fails ? 'var(--gain)' : 'var(--mute)' };
+    });
+    return { theme: this.props.theme || 'dark', d: vp === 'desktop', m: vp !== 'desktop', audits, open: [1, 2] };
+  }
+}
+</script>
+</body>
+</html>

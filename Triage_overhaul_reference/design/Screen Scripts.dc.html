@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/styles.css">
+<script src="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/_ds_bundle.js"></script>
+<style>body{margin:0}a{color:var(--ink)}a:hover{color:var(--accent-text)}</style>
+</helmet>
+<div data-theme="{{ theme }}" style="width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font-body);display:flex;flex-direction:column;position:relative">
+  <sc-if value="{{ d }}" hint-placeholder-val="{{ true }}">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Wordmark" size="{{ 20 }}" hint-size="64px,20px"></x-import>
+      <span style="color:var(--mute);font-size:18px">/</span>
+      <span style="font-size:14px;font-weight:500;color:var(--mute)">Audits</span>
+      <span style="color:var(--mute);font-size:18px">/</span>
+      <span style="font-size:15px;font-weight:600">Better Brewer storefront</span>
+      <div style="flex:1"></div>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="100px,36px">Edit info</x-import>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="120px,36px">Export .json</x-import>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="70px,36px">Theme</x-import>
+    </div>
+    <div style="height:48px;flex:none;display:flex;align-items:stretch;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+        <div style="display:flex;align-items:center;gap:8px;padding:0 16px;font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;color:{{ s.color }};font-weight:{{ s.weight }};border-bottom:2px solid {{ s.line }}">
+          <span>{{ s.n }}</span><span>{{ s.t }}</span><span style="color:var(--gain)">{{ s.done }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:340px minmax(0,1fr)">
+      <div style="border-right:1px solid var(--rule);display:flex;flex-direction:column">
+        <div style="padding:24px 20px 16px;display:flex;flex-direction:column;gap:6px">
+          <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.04em">Scripts</h1>
+          <p style="margin:0;font-size:14px;line-height:1.5;color:var(--mute)">Pre-filled from this audit. Add one specific detail about their store before sending.</p>
+        </div>
+        <sc-for list="{{ scripts }}" as="s" hint-placeholder-count="4">
+          <div style="padding:16px 20px;border-top:1px solid var(--rule);display:flex;gap:12px;background:{{ s.bg }}" style-hover="background:var(--surface)">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:{{ s.numInk }}">{{ s.n }}</span>
+            <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:15px;font-weight:600">{{ s.t }}</span><span style="font-size:13px;color:var(--mute)">{{ s.d }}</span></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="padding:28px 40px;display:flex;flex-direction:column;gap:20px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;background:var(--accent);color:#0B0C0A;padding:3px 7px">01</span>
+          <span style="font-size:22px;font-weight:600;letter-spacing:-0.03em">The foot-in-the-door</span>
+          <span style="font-size:14px;color:var(--mute)">Cold outreach · open with a free quick win</span>
+          <div style="flex:1"></div>
+          <x-import component-from-global-scope="TriageDesignSystem_045851.Button" hint-size="150px,46px">Copy email</x-import>
+        </div>
+        <div style="border:1px solid var(--rule);background:var(--surface)">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--rule)">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.08em;color:var(--mute);width:80px">SUBJECT</span>
+            <span style="flex:1;font-family:var(--font-mono);font-size:15px">Quick question about betterbrewer.com.au's checkout</span>
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.06em;border:1px solid var(--rule);padding:6px 10px">COPY</span>
+          </div>
+          <div style="padding:22px 18px 22px 110px;display:flex;flex-direction:column;gap:16px;font-size:16px;line-height:1.65">
+            <p style="margin:0">Hi Better Brewer team,</p>
+            <p style="margin:0">I was browsing betterbrewer.com.au on my phone and spotted a quick win on <em style="font-style:normal;background:var(--accent);color:#0B0C0A;padding:0 .08em">checkout</em>: shoppers have to <em style="font-style:normal;background:var(--accent);color:#0B0C0A;padding:0 .08em">create an account before they can pay</em>.</p>
+            <p style="margin:0">I see this a lot on Shopify stores at your traffic level. On your numbers it's worth roughly <em style="font-style:normal;background:var(--accent);color:#0B0C0A;padding:0 .08em">$430 a month</em>, and it's a one-day fix.</p>
+            <p style="margin:0">I can send a short screen recording of what I found. No strings attached. Do you have 2 minutes?</p>
+            <p style="margin:0">Tim Black</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px;color:var(--mute)">
+          <span style="width:12px;height:12px;background:var(--accent)"></span><span>Filled from the audit: top quick win, its section and monthly value. Click to swap for another finding.</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ m }}" hint-placeholder-val="{{ false }}">
+    <div style="height:52px;flex:none;display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--rule)">
+      <button style="width:44px;height:44px;background:transparent;border:0;color:var(--ink);font-size:20px">←</button>
+      <div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:600">Scripts</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">05/05 · BETTER BREWER</span></div>
+    </div>
+    <div style="display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--rule);overflow:hidden">
+      <sc-for list="{{ scripts }}" as="s" hint-placeholder-count="4">
+        <span style="flex:none;height:36px;display:flex;align-items:center;padding:0 12px;font-family:var(--font-mono);font-size:12px;font-weight:600;background:{{ s.chipBg }};color:{{ s.chipInk }};border:1px solid {{ s.chipB }}">{{ s.n }} {{ s.short }}</span>
+      </sc-for>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:18px 16px 110px;display:flex;flex-direction:column;gap:14px">
+      <span style="font-size:20px;font-weight:600;letter-spacing:-0.03em">The foot-in-the-door</span>
+      <div style="border:1px solid var(--rule);background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:6px"><span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;color:var(--mute)">SUBJECT</span><span style="font-family:var(--font-mono);font-size:14px">Quick question about betterbrewer.com.au's checkout</span></div>
+      <div style="display:flex;flex-direction:column;gap:12px;font-size:16px;line-height:1.6">
+        <p style="margin:0">Hi Better Brewer team,</p>
+        <p style="margin:0">I was browsing betterbrewer.com.au on my phone and spotted a quick win on <em style="font-style:normal;background:var(--accent);color:#0B0C0A;padding:0 .08em">checkout</em>: shoppers have to <em style="font-style:normal;background:var(--accent);color:#0B0C0A;padding:0 .08em">create an account before they can pay</em>.</p>
+        <p style="margin:0">On your numbers it's worth roughly <em style="font-style:normal;background:var(--accent);color:#0B0C0A;padding:0 .08em">$430 a month</em>, and it's a one-day fix.</p>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 28px;border-top:1px solid var(--rule);background:var(--bg);display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button style="height:52px;background:transparent;color:var(--ink);border:1px solid var(--rule);font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;border-radius:0">COPY SUBJECT</button>
+      <button style="height:52px;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;border-radius:0">COPY EMAIL</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;vp&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const vp = this.props.vp || 'desktop';
+    const steps = ['Setup', 'Checklist', 'Revenue', 'Report', 'Scripts'].map((t, i) => ({
+      n: '0' + (i + 1), t: t.toUpperCase(), done: i < 4 ? '✓' : '',
+      color: i === 4 ? 'var(--ink)' : 'var(--mute)', weight: i === 4 ? 600 : 500, line: i === 4 ? 'var(--btn-bg)' : 'transparent'
+    }));
+    const scripts = [
+      ['01', 'The foot-in-the-door', 'Cold outreach · open with a free quick win', 'COLD'],
+      ['02', 'The strategy-first pivot', 'They asked for a redesign or hourly work', 'PIVOT'],
+      ['03', 'The report hand-off', 'Sending the audit and proposal', 'HAND-OFF'],
+      ['04', 'The nudge', 'No reply after 5 days', 'NUDGE']
+    ].map(([n, t, d, short], i) => ({ n, t, d, short, bg: i === 0 ? 'var(--surface)' : 'transparent', numInk: i === 0 ? 'var(--accent-text)' : 'var(--mute)',
+      chipBg: i === 0 ? 'var(--btn-bg)' : 'transparent', chipInk: i === 0 ? 'var(--btn-ink)' : 'var(--ink)', chipB: i === 0 ? 'var(--btn-bg)' : 'var(--rule)' }));
+    return { theme: this.props.theme || 'dark', d: vp === 'desktop', m: vp !== 'desktop', steps, scripts };
+  }
+}
+</script>
+</body>
+</html>
