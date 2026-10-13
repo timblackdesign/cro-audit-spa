@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/styles.css">
+<script src="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/_ds_bundle.js"></script>
+<script src="findings-data.js"></script>
+<style>body{margin:0}a{color:var(--ink)}a:hover{color:var(--accent-text)}</style>
+</helmet>
+<div data-theme="{{ theme }}" style="width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font-body);display:flex;flex-direction:column;position:relative">
+  <sc-if value="{{ d }}" hint-placeholder-val="{{ true }}">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Wordmark" size="{{ 20 }}" hint-size="64px,20px"></x-import>
+      <span style="color:var(--mute);font-size:18px">/</span>
+      <span style="font-size:14px;font-weight:500;color:var(--mute)">Audits</span>
+      <span style="color:var(--mute);font-size:18px">/</span>
+      <span style="font-size:15px;font-weight:600">Better Brewer storefront</span>
+      <div style="flex:1"></div>
+      <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">✓ Saved · just now</span>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="100px,36px">Edit info</x-import>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="120px,36px">Export .json</x-import>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="70px,36px">Theme</x-import>
+    </div>
+    <div style="height:48px;flex:none;display:flex;align-items:stretch;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+        <div style="display:flex;align-items:center;gap:8px;padding:0 16px;font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;color:{{ s.color }};font-weight:{{ s.weight }};border-bottom:2px solid {{ s.line }}">
+          <span>{{ s.n }}</span><span>{{ s.t }}</span><span style="color:var(--gain)">{{ s.done }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 440px">
+      <div style="padding:32px 40px;display:flex;flex-direction:column;gap:20px;overflow:hidden">
+        <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <h1 style="margin:0;font-size:32px;font-weight:600;letter-spacing:-0.04em;line-height:1.05">Revenue</h1>
+            <p style="margin:0;font-size:16px;color:var(--mute)">Ship quick wins now. Move anything that needs proof into the testing roadmap.</p>
+          </div>
+          <div style="flex:1"></div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.08em;color:var(--mute)">COLUMNS</span>
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ colChips }}" as="c" hint-placeholder-count="4">
+                <button onClick="{{ c.toggle }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 10px;background:transparent;border:1px solid {{ c.border }};color:{{ c.ink }};font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.06em;cursor:pointer;border-radius:0"><span style="width:12px;height:12px;box-sizing:border-box;display:grid;place-items:center;background:{{ c.boxBg }};border:1px solid {{ c.boxBorder }};color:var(--btn-ink);font-size:9px">{{ c.mark }}</span>{{ c.t }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;border:1px solid var(--rule)">
+          <div style="display:grid;grid-template-columns:{{ gridCols }};gap:14px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--rule);background:var(--surface)">
+            <sc-for list="{{ heads }}" as="h" hint-placeholder-count="8">
+              <button onClick="{{ h.sort }}" style="width:100%;padding:0;white-space:nowrap;background:transparent;border:0;text-align:{{ h.align }};font-family:var(--font-mono);font-size:11px;font-weight:{{ h.w }};letter-spacing:.08em;color:{{ h.ink }};cursor:{{ h.cursor }};border-radius:0">{{ h.t }}{{ h.arrow }}</button>
+            </sc-for>
+          </div>
+          <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+            <div style="display:flex;align-items:baseline;gap:12px;padding:14px 18px 10px;border-bottom:1px solid var(--rule);background:var(--bg)">
+              <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--mute)">{{ g.k }}</span>
+              <span style="font-size:16px;font-weight:600">{{ g.t }}</span>
+              <span style="font-size:14px;color:var(--mute)">{{ g.d }}</span>
+              <div style="flex:1"></div>
+              <span style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:{{ g.totInk }}">{{ g.tot }}</span>
+            </div>
+            <sc-for list="{{ g.rows }}" as="f" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:{{ f.grid }};gap:14px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--rule);background:{{ f.rowBg }}">
+                <button onClick="{{ f.toggle }}" style="width:22px;height:22px;padding:0;box-sizing:border-box;display:grid;place-items:center;background:{{ f.boxBg }};border:1px solid {{ f.boxBorder }};color:var(--btn-ink);font-size:14px;font-weight:700;cursor:pointer;border-radius:0">{{ f.check }}</button>
+                <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                  <span style="font-size:15px;font-weight:600;color:{{ f.ink }}">{{ f.title }}</span>
+                  <span style="font-size:14px;color:var(--mute)">{{ f.finding }}</span>
+                </div>
+                <sc-if value="{{ f.sSec }}" hint-placeholder-val="{{ true }}"><span style="font-size:14px;color:{{ f.ink }}">{{ f.section }}</span></sc-if>
+                <sc-if value="{{ f.sImp }}" hint-placeholder-val="{{ true }}"><x-import component-from-global-scope="TriageDesignSystem_045851.PriorityTag" level="{{ f.p }}" muted="{{ f.pm }}" hint-size="30px,24px"></x-import></sc-if>
+                <sc-if value="{{ f.sTime }}" hint-placeholder-val="{{ true }}"><span style="font-family:var(--font-mono);font-size:13px;color:{{ f.ink }}">{{ f.time }}</span></sc-if>
+                <sc-if value="{{ f.sLift }}" hint-placeholder-val="{{ true }}"><span style="font-family:var(--font-mono);font-size:13px;color:{{ f.liftInk }}">{{ f.lift }}</span></sc-if>
+                <button onClick="{{ f.move }}" style="height:28px;padding:0 8px;background:transparent;border:1px solid var(--rule);color:var(--ink);font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.06em;cursor:pointer;border-radius:0">{{ f.moveLabel }}</button>
+                <span style="font-family:var(--font-mono);font-size:15px;font-weight:600;text-align:right;color:{{ f.liftInk }}">{{ f.mo }}</span>
+              </div>
+            </sc-for>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em">PITCH PARAGRAPH</span>
+            <span style="font-family:var(--font-mono);font-size:10px;font-weight:600;border:1px solid var(--rule);padding:2px 5px;color:var(--mute)">IN REPORT</span>
+            <div style="flex:1"></div>
+            <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">Click to edit · Reset</span>
+          </div>
+          <p style="margin:0;padding:16px 18px;background:var(--surface);border:1px solid var(--rule);font-size:16px;line-height:1.6">{{ pitch }}</p>
+        </div>
+      </div>
+
+      <div style="border-left:1px solid var(--rule);display:flex;flex-direction:column;background:var(--surface)">
+        <div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid var(--rule)">
+          <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em">CLIENT SEES</span><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;border:1px solid var(--rule);padding:2px 5px;color:var(--mute)">IN REPORT</span></div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:56px;font-weight:600;letter-spacing:-0.045em;line-height:1;color:var(--gain)">{{ annual }}</span>
+            <span style="font-family:var(--font-mono);font-size:13px;color:var(--mute)">annual revenue at risk · {{ countLabel }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule);background:var(--bg)">
+            <sc-for list="{{ grid }}" as="g" hint-placeholder-count="4">
+              <div style="padding:12px 14px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid var(--rule);border-right:1px solid var(--rule)">
+                <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">{{ g.l }}</span>
+                <span style="font-size:20px;font-weight:600;color:{{ g.c }}">{{ g.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <span style="font-family:var(--font-mono);font-size:13px">{{ roiLine }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 24px;background:var(--ink);color:var(--bg)">
+          <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em">PRIVATE</span><span style="font-size:14px;font-weight:600">Only you see below</span>
+        </div>
+        <div style="padding:18px 24px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--mute)">PHASE 1 · SUGGESTED FEE</span><span style="font-size:22px;font-weight:600;letter-spacing:-0.03em">{{ suggested }}</span></div>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.08em">YOUR IMPLEMENTATION FEE</span><div style="display:flex;height:46px;border:1px solid var(--ink);background:var(--bg);align-items:center"><span style="padding-left:12px;font-family:var(--font-mono);color:var(--mute)">$</span><input defaultValue="3,500" style="flex:1;min-width:0;padding:0 8px;background:transparent;border:0;color:var(--ink);font-family:var(--font-mono);font-size:17px;font-weight:600;outline:none"><span style="padding-right:12px;font-family:var(--font-mono);font-size:12px;color:var(--mute)">+ $750 audit</span></div></label>
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--gain);font-family:var(--font-mono);font-size:12px"><span style="background:var(--gain);color:var(--bg);font-weight:600;padding:2px 6px;font-size:10px;letter-spacing:.08em">PASS</span>$100/hr × 30h floor · +$500 (17%)</div>
+          <div style="display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid var(--rule)">
+            <span style="font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--mute)">PHASE 2 · TESTING RETAINER</span>
+            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:10px">
+              <div style="display:flex;height:44px;border:1px solid var(--rule);background:var(--bg);align-items:center;font-family:var(--font-mono);font-size:14px;padding:0 12px;justify-content:space-between"><span>$1,500</span><span style="color:var(--mute);font-size:12px">/ month</span></div>
+              <div style="display:flex;height:44px;border:1px solid var(--rule);background:var(--bg);align-items:center;font-family:var(--font-mono);font-size:14px;padding:0 12px;justify-content:space-between"><span>3</span><span style="color:var(--mute);font-size:12px">months</span></div>
+            </div>
+            <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">{{ testCount }} tests · ~4 weeks each · renews monthly</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-top:1px solid var(--rule)"><span style="font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--mute)">TOTAL ENGAGEMENT</span><span style="font-size:22px;font-weight:600">$8,750</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="height:72px;flex:none;display:flex;align-items:center;gap:16px;padding:0 24px;border-top:1px solid var(--rule);background:var(--bg)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" hint-size="140px,46px">← Checklist</x-import>
+      <div style="flex:1"></div>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" hint-size="180px,46px">View report →</x-import>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ m }}" hint-placeholder-val="{{ false }}">
+    <div style="height:52px;flex:none;display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--rule)">
+      <button style="width:44px;height:44px;background:transparent;border:0;color:var(--ink);font-size:20px">←</button>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0"><span style="font-size:15px;font-weight:600">Revenue</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">03/05 · BETTER BREWER</span></div>
+    </div>
+    <div style="flex:none;display:grid;grid-template-columns:1fr auto;align-items:end;gap:8px;padding:16px;background:var(--surface);border-bottom:1px solid var(--rule)">
+      <div style="display:flex;flex-direction:column;gap:2px"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">ANNUAL AT RISK · IN REPORT</span><span style="font-size:40px;font-weight:600;letter-spacing:-0.045em;line-height:1;color:var(--gain)">{{ annual }}</span></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:var(--font-mono);font-size:12px"><span style="font-weight:600">{{ monthly }}/mo</span><span>0.93 → 0.97%</span><span style="color:var(--mute)">{{ roiShort }}</span></div>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:0 16px 110px">
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 0 8px;border-bottom:1px solid var(--ink)">
+          <span style="font-size:15px;font-weight:600">{{ g.t }}</span><span style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:{{ g.totInk }}">{{ g.tot }}</span>
+        </div>
+        <sc-for list="{{ g.rows }}" as="f" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)">
+            <button onClick="{{ f.toggle }}" style="width:44px;height:44px;padding:0;display:grid;place-items:center;background:transparent;border:0;border-radius:0"><span style="width:24px;height:24px;box-sizing:border-box;display:grid;place-items:center;background:{{ f.boxBg }};border:1px solid {{ f.boxBorder }};color:var(--btn-ink);font-size:15px;font-weight:700">{{ f.check }}</span></button>
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+              <span style="font-size:16px;font-weight:600;color:{{ f.ink }}">{{ f.title }}</span>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">{{ f.p }} · {{ f.time }}</span>
+            </div>
+            <span style="font-family:var(--font-mono);font-size:14px;font-weight:600;color:{{ f.liftInk }}">{{ f.mo }}</span>
+          </div>
+        </sc-for>
+      </sc-for>
+      <div style="height:56px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--ink);margin-top:16px">
+        <span style="display:flex;gap:8px;align-items:center"><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;background:var(--ink);color:var(--bg);padding:3px 6px">PRIVATE</span><span style="font-size:15px;font-weight:600">Your pricing</span></span>
+        <span style="font-family:var(--font-mono);font-size:13px">$3,500 + $1,500/mo ▾</span>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 28px;border-top:1px solid var(--rule);background:var(--bg)">
+      <button style="width:100%;height:52px;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;border-radius:0">VIEW REPORT →</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1300},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;vp&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { cols: { sec: true, imp: true, time: true, lift: true }, sort: 'imp', phase: {}, on: {} };
+  componentDidMount() { const t = () => window.TRIAGE_APP_FINDINGS ? this.forceUpdate() : setTimeout(t, 50); t(); }
+  renderVals() {
+    const vp = this.props.vp || 'desktop';
+    const st = this.state, C = st.cols;
+    const steps = ['Setup', 'Checklist', 'Revenue', 'Report', 'Scripts'].map((t, i) => ({
+      n: '0' + (i + 1), t: t.toUpperCase(), done: i < 2 ? '✓' : '',
+      color: i === 2 ? 'var(--ink)' : 'var(--mute)', weight: i === 2 ? 600 : 500, line: i === 2 ? 'var(--btn-bg)' : 'transparent'
+    }));
+    const money = s => parseInt(String(s).replace(/[^0-9]/g, ''), 10) || 0;
+    const fmt = n => '$' + n.toLocaleString('en-US');
+    const timeRank = t => t.includes('min') ? 0 : t.includes('hr') ? 1 : t.includes('day') ? 2 : 3;
+    const liftMin = l => parseFloat(l.replace('+', '')) || 0;
+    const sorters = {
+      imp: (a, b) => a.p.localeCompare(b.p) || money(b.mo) - money(a.mo),
+      sec: (a, b) => a.section.localeCompare(b.section),
+      time: (a, b) => timeRank(a.time) - timeRank(b.time),
+      lift: (a, b) => liftMin(b.lift) - liftMin(a.lift)
+    };
+    const grid = ['28px', 'minmax(0,1fr)', C.sec && '120px', C.imp && '96px', C.time && '80px', C.lift && '110px', '74px', '80px'].filter(Boolean).join(' ');
+    const all = (window.TRIAGE_APP_FINDINGS || []).map(f => {
+      const ph = st.phase[f.n] || f.ph, on = st.on[f.n] ?? f.on;
+      return { ...f, ph, on, grid, sSec: C.sec, sImp: C.imp, sTime: C.time, sLift: C.lift,
+        check: on ? '✓' : '', boxBg: on ? 'var(--btn-bg)' : 'transparent', boxBorder: on ? 'var(--btn-bg)' : 'var(--mute)',
+        rowBg: on ? 'var(--bg)' : 'var(--surface)', ink: on ? 'var(--ink)' : 'var(--mute)', liftInk: on ? 'var(--gain)' : 'var(--mute)',
+        moveLabel: ph === 'quick' ? '→ TEST' : '→ SHIP',
+        toggle: () => this.setState(s => ({ on: { ...s.on, [f.n]: !on } })),
+        move: () => this.setState(s => ({ phase: { ...s.phase, [f.n]: ph === 'quick' ? 'test' : 'quick' } })) };
+    }).sort(sorters[st.sort]);
+    const quick = all.filter(f => f.ph === 'quick'), test = all.filter(f => f.ph === 'test');
+    const sum = rows => rows.filter(f => f.on).reduce((a, f) => a + money(f.mo), 0);
+    const mo = sum(all), yr = mo * 12, fees = 4250;
+    const groups = [
+      { k: 'PHASE 1', t: 'Quick wins', d: 'Ship in week 1 · implementation fee', rows: quick, tot: '+' + fmt(sum(quick)) + '/mo', totInk: 'var(--gain)' },
+      { k: 'PHASE 2', t: 'Testing roadmap', d: 'A/B test over 12 weeks · monthly retainer', rows: test, tot: '+' + fmt(sum(test)) + '/mo if proven', totInk: 'var(--gain)' }
+    ];
+    const H = [['', null, 'left'], ['FINDING', null, 'left'], C.sec && ['SECTION', 'sec', 'left'], C.imp && ['PRIORITY', 'imp', 'left'], C.time && ['FIX TIME', 'time', 'left'], C.lift && ['CVR LIFT', 'lift', 'left'], ['PHASE', null, 'left'], ['/MO', null, 'right']].filter(Boolean);
+    const heads = H.map(([t, k, align]) => ({ t, align, arrow: k && st.sort === k ? ' ↓' : '', w: k && st.sort === k ? 600 : 500,
+      ink: k && st.sort === k ? 'var(--ink)' : 'var(--mute)', cursor: k ? 'pointer' : 'default', sort: () => k && this.setState({ sort: k }) }));
+    const colChips = [['sec', 'SECTION'], ['imp', 'PRIORITY'], ['time', 'FIX TIME'], ['lift', 'CVR LIFT']].map(([k, t]) => ({ t,
+      mark: C[k] ? '✓' : '', boxBg: C[k] ? 'var(--btn-bg)' : 'transparent', boxBorder: C[k] ? 'var(--btn-bg)' : 'var(--mute)',
+      border: 'transparent', ink: C[k] ? 'var(--ink)' : 'var(--mute)',
+      toggle: () => this.setState(s => ({ cols: { ...s.cols, [k]: !s.cols[k] } })) }));
+    const roi = (yr / fees).toFixed(1);
+    return {
+      theme: this.props.theme || 'dark', d: vp === 'desktop', m: vp !== 'desktop', steps, groups, heads, colChips, gridCols: grid,
+      pitch: window.TRIAGE_APP_PITCH || '', annual: fmt(yr), monthly: '+' + fmt(mo),
+      countLabel: all.filter(f => f.on).length + ' findings', roiLine: `${roi}× return on $4,250 · pays back in ${(fees / mo).toFixed(1)} months`, roiShort: roi + '× ROI',
+      suggested: fmt(Math.round(yr * 0.2)), testCount: test.length,
+      grid: [
+        { l: 'CURRENT CVR', v: '0.93%', c: 'var(--ink)' }, { l: 'PROJECTED CVR', v: '0.97%', c: 'var(--gain)' },
+        { l: 'MONTHLY RECOVERY', v: '+' + fmt(mo), c: 'var(--gain)' }, { l: 'TESTS PLANNED', v: test.length + ' · 12 wks', c: 'var(--ink)' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

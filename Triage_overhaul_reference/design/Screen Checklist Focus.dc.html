@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/styles.css">
+<script src="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/_ds_bundle.js"></script>
+<style>body{margin:0}a{color:var(--ink)}a:hover{color:var(--accent-text)}</style>
+</helmet>
+<div data-theme="{{ theme }}" style="width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font-body);display:flex;flex-direction:column;position:relative">
+  <sc-if value="{{ d }}" hint-placeholder-val="{{ true }}">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Wordmark" size="{{ 20 }}" hint-size="64px,20px"></x-import>
+      <span style="color:var(--mute);font-size:18px">/</span>
+      <span style="font-size:14px;font-weight:500;color:var(--mute)">Audits</span>
+      <span style="color:var(--mute);font-size:18px">/</span>
+      <span style="font-size:15px;font-weight:600">Better Brewer storefront</span>
+      <div style="flex:1"></div>
+      <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">✓ Saved · 2m ago</span>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="100px,36px">Edit info</x-import>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="120px,36px">Export .json</x-import>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="70px,36px">Theme</x-import>
+    </div>
+    <div style="height:48px;flex:none;display:flex;align-items:stretch;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+        <div style="display:flex;align-items:center;gap:8px;padding:0 16px;font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;color:{{ s.color }};font-weight:{{ s.weight }};border-bottom:2px solid {{ s.line }}">
+          <span>{{ s.n }}</span><span>{{ s.t }}</span><span style="color:var(--gain)">{{ s.done }}</span>
+        </div>
+      </sc-for>
+      <div style="flex:1"></div>
+      <div style="display:flex;align-items:center;gap:16px;font-family:var(--font-mono);font-size:13px">
+        <span><strong style="font-weight:600">38/60</strong> <span style="color:var(--mute)">reviewed</span></span>
+        <span style="color:var(--loss);font-weight:500">9 fails</span>
+        <span style="color:var(--gain);font-weight:500">+$2,030/mo so far</span>
+      </div>
+    </div>
+    <div ref="{{ stripRef }}" style="flex:none;padding:16px 0 16px 24px;border-bottom:1px solid var(--rule);background:var(--surface);display:flex;gap:24px;align-items:flex-start;position:relative;z-index:5">
+      <div style="position:relative;flex:none">
+        <button onClick="{{ toggleSort }}" style="height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid {{ sortBorder }};background:var(--bg);color:var(--ink);font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.06em;cursor:pointer;border-radius:0"><span style="font-size:15px">⇅</span>{{ sortLabel }}<span style="color:var(--mute)">▾</span></button>
+        <sc-if value="{{ sortOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:48px;left:0;z-index:20;width:300px;background:var(--bg);border:1px solid var(--ink);display:flex;flex-direction:column">
+            <span style="padding:10px 14px 6px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;color:var(--mute)">SORT CHECKLIST BY</span>
+            <sc-for list="{{ sortOpts }}" as="o" hint-placeholder-count="4">
+              <button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:10px;padding:0 14px;height:44px;background:{{ o.bg }};border:0;border-top:1px solid var(--rule);color:var(--ink);font-family:var(--font-body);font-size:14px;font-weight:{{ o.w }};text-align:left;cursor:pointer;border-radius:0"><span style="width:14px;font-family:var(--font-mono);color:var(--gain)">{{ o.mark }}</span><span style="flex:1">{{ o.t }}</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">{{ o.hint }}</span></button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      <div style="flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;display:flex;gap:24px;padding:3px 24px 8px 3px;margin:-3px 0 -8px -3px">
+      <sc-for list="{{ sections }}" as="s" hint-placeholder-count="6">
+        <div style="flex:none;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;gap:8px;font-family:var(--font-mono);font-size:11px;letter-spacing:.06em">
+            <span style="font-weight:{{ s.weight }};color:{{ s.ink }}">{{ s.short }}</span><span style="color:var(--mute)">{{ s.done }}/{{ s.total }}</span>
+          </div>
+          <div style="display:flex;gap:3px">
+            <sc-for list="{{ s.cells }}" as="c" hint-placeholder-count="10">
+              <div onMouseEnter="{{ c.enter }}" onMouseLeave="{{ c.leave }}" style="flex:none;width:18px;height:18px;cursor:pointer">
+                <div style="width:18px;height:18px;box-sizing:border-box;background:{{ c.bg }};outline:{{ c.ol }};outline-offset:2px"></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      </div>
+      <sc-if value="{{ tip }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:{{ tip.y }};left:{{ tip.x }};z-index:30;width:300px;box-sizing:border-box;padding:12px 14px;background:var(--bg);border:1px solid var(--ink);display:flex;flex-direction:column;gap:6px;pointer-events:none">
+          <div style="display:flex;justify-content:space-between;gap:8px;font-family:var(--font-mono);font-size:11px;letter-spacing:.06em"><span style="color:var(--mute)">{{ tip.where }}</span><span style="font-weight:600;color:{{ tip.stInk }}">{{ tip.st }}</span></div>
+          <span style="font-size:15px;font-weight:600;line-height:1.3">{{ tip.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:var(--mute)">{{ tip.q }}</span>
+        </div>
+      </sc-if>
+    </div>
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+      <div style="padding:36px 40px;display:flex;flex-direction:column;gap:26px;border-right:1px solid var(--rule)">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px;min-height:20px">
+            <span style="flex:1;font-family:var(--font-mono);font-size:12px;color:var(--mute);letter-spacing:.06em">GENERAL · ITEM 01 OF 10 · #1 OF 60</span>
+            <sc-if value="{{ vC }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ vpi.cycle }}" title="Click to cycle" style="height:44px;display:flex;align-items:center;gap:12px;padding:0 14px;background:transparent;border:1px solid {{ vpi.chipBorder }};color:{{ vpi.chipInk }};cursor:{{ vpi.cursor }};border-radius:0">
+                <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--mute)">FAILS ON</span>
+                <span style="display:flex;align-items:center;gap:4px"><span style="flex:none;display:flex;width:22px;height:22px;opacity:{{ vpi.dOp }};transition:opacity 120ms ease">{{ vpi.dIcon }}</span><span style="font-family:var(--font-mono);font-size:12px;font-weight:700;opacity:{{ vpi.plusOp }}">+</span><span style="flex:none;display:flex;width:22px;height:22px;opacity:{{ vpi.mOp }};transition:opacity 120ms ease">{{ vpi.mIcon }}</span></span>
+                <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.06em;opacity:{{ vpi.rowOp }}">{{ vpi.label }}</span>
+              </button>
+            </sc-if>
+          </div>
+          <h2 style="margin:0;font-size:40px;font-weight:600;letter-spacing:-0.045em;line-height:1.02">Sticky header</h2>
+          <p style="margin:0;font-size:19px;line-height:1.45;color:var(--mute)">Does the header remain visible on scroll-up?</p>
+        </div>
+        <sc-if value="{{ vA }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+            <sc-for list="{{ statuses }}" as="s" hint-placeholder-count="4">
+              <button onClick="{{ s.pick }}" title="{{ s.title }}" style="position:relative;height:80px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:12px 14px;background:{{ s.bg }};color:{{ s.color }};border:1px solid {{ s.border }};font-family:var(--font-mono);font-size:14px;font-weight:600;letter-spacing:.08em;cursor:pointer;border-radius:0">
+                <span>{{ s.t }}</span>
+                <span style="position:absolute;top:12px;right:14px;font-size:12px;font-weight:500;opacity:.6">{{ s.k }}</span>
+                <sc-if value="{{ s.isFail }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:4px"><span style="flex:none;display:flex;width:22px;height:22px;opacity:{{ vpi.dOp }};transition:opacity 120ms ease">{{ vpi.dIcon }}</span><span style="font-family:var(--font-mono);font-size:12px;font-weight:700;opacity:{{ vpi.plusOp }}">+</span><span style="flex:none;display:flex;width:22px;height:22px;opacity:{{ vpi.mOp }};transition:opacity 120ms ease">{{ vpi.mIcon }}</span></span></sc-if>
+              <sc-if value="{{ s.tipOn }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:calc(100% + 8px);left:-1px;z-index:15;width:300px;box-sizing:border-box;padding:12px 14px;background:var(--ink);color:var(--bg);display:flex;flex-direction:column;gap:6px;text-align:left;pointer-events:none;opacity:{{ tipOp }};transition:opacity 200ms ease"><span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em">FAILS ON DESKTOP + MOBILE</span><span style="font-family:var(--font-body);font-size:14px;font-weight:400;letter-spacing:0;line-height:1.45">Click FAIL again for mobile only, then desktop only.</span></span></sc-if></button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ vNotA }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+            <sc-for list="{{ statuses }}" as="s" hint-placeholder-count="4">
+              <button onClick="{{ s.pick }}" style="height:72px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:12px 14px;background:{{ s.bg }};color:{{ s.color }};border:1px solid {{ s.border }};font-family:var(--font-mono);font-size:14px;font-weight:600;letter-spacing:.08em;cursor:pointer;border-radius:0">
+                <span>{{ s.t }}</span><span style="font-size:11px;font-weight:500">KEY {{ s.k }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ vB }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:12px;opacity:{{ vpi.rowOp }}">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--mute);width:84px">FAILS ON</span>
+            <sc-for list="{{ vpBtns }}" as="b" hint-placeholder-count="2">
+              <button onClick="{{ b.toggle }}" style="height:48px;display:flex;align-items:center;gap:10px;padding:0 16px;background:transparent;border:1px solid {{ b.border }};color:{{ b.ink }};font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;cursor:{{ b.cursor }};border-radius:0"><span style="display:flex;opacity:{{ b.op }}">{{ b.icon }}</span><span style="opacity:{{ b.op }}">{{ b.t }}</span></button>
+            </sc-for>
+            <span style="font-size:14px;color:var(--mute)">{{ vpi.hint }}</span>
+          </div>
+        </sc-if>
+        
+        <div style="border:1px solid var(--rule)">
+          <sc-for list="{{ meta }}" as="x" hint-placeholder-count="6">
+            <div style="display:flex;justify-content:space-between;gap:12px;padding:11px 16px;border-bottom:1px solid var(--rule)">
+              <span style="font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--mute)">{{ x.l }}</span>
+              <span style="font-size:15px;font-weight:600;color:{{ x.c }}">{{ x.v }}</span>
+            </div>
+          </sc-for>
+          <div style="display:flex;justify-content:space-between;gap:12px;padding:14px 16px;background:var(--surface)">
+            <span style="font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--mute)">EST. RECOVERY IF FIXED</span>
+            <span style="font-family:var(--font-mono);font-size:18px;font-weight:600;color:var(--gain)">+$140/MO</span>
+          </div>
+        </div>
+      </div>
+      <div style="padding:36px 40px;display:flex;flex-direction:column;gap:20px;background:var(--surface)">
+        <label style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em">FINDING</span><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--mute);border:1px solid var(--rule);padding:2px 5px">IN REPORT</span><div style="flex:1"></div><span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">Reset to default</span></div>
+          <textarea defaultValue="Header does not remain visible on scroll-up, making navigation difficult." style="height:100px;resize:none;box-sizing:border-box;padding:14px;background:var(--bg);border:1px solid var(--rule);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;outline:none;border-radius:0"></textarea>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em">RECOMMENDATION</span><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--mute);border:1px solid var(--rule);padding:2px 5px">IN REPORT</span><div style="flex:1"></div><span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">Reset to default</span></div>
+          <textarea defaultValue="Enable &quot;Sticky Header&quot; in theme settings." style="height:84px;resize:none;box-sizing:border-box;padding:14px;background:var(--bg);border:1px solid var(--rule);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;outline:none;border-radius:0"></textarea>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em">SCREENSHOT URL</span><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--mute);border:1px solid var(--rule);padding:2px 5px">IN REPORT</span></div>
+          <input defaultValue="https://cln.sh/bb-header-scroll" style="height:44px;box-sizing:border-box;padding:0 12px;background:var(--bg);border:1px solid var(--rule);color:var(--ink);font-family:var(--font-mono);font-size:14px;outline:none;border-radius:0">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:8px;flex:1">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em">NOTES</span><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;background:var(--ink);color:var(--bg);padding:3px 6px">PRIVATE</span></div>
+          <textarea defaultValue="sections/header.liquid — sticky setting exists but is off." style="flex:1;min-height:72px;resize:none;box-sizing:border-box;padding:14px;background:var(--bg);border:1px dashed var(--mute);color:var(--ink);font-family:var(--font-mono);font-size:13px;line-height:1.6;outline:none;border-radius:0"></textarea>
+        </label>
+      </div>
+    </div>
+    <div style="height:72px;flex:none;display:flex;align-items:center;gap:12px;padding:0 24px;border-top:1px solid var(--rule);background:var(--bg)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" hint-size="110px,46px">← Prev</x-import>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" hint-size="240px,46px">Next · Search visibility →</x-import>
+      <div style="flex:1"></div>
+      <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">{{ keyHint }}</span>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" hint-size="210px,46px">Size the revenue →</x-import>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ m }}" hint-placeholder-val="{{ false }}">
+    <div style="height:52px;flex:none;display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--rule)">
+      <button style="width:44px;height:44px;background:transparent;border:0;color:var(--ink);font-size:20px">←</button>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0"><span style="font-size:15px;font-weight:600">Better Brewer storefront</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">38/60 · 9 FAILS · +$2,030/MO</span></div>
+      <button style="width:44px;height:44px;background:transparent;border:1px solid var(--rule);color:var(--ink);font-size:16px">⋯</button>
+    </div>
+    <div style="padding:10px 16px 12px;border-bottom:1px solid var(--rule);background:var(--surface);display:flex;flex-direction:column;gap:5px;position:relative;z-index:5">
+      <div style="position:relative;display:flex;justify-content:flex-end;margin-bottom:4px">
+        <button onClick="{{ toggleSort }}" style="height:40px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid {{ sortBorder }};background:var(--bg);color:var(--ink);font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.06em;border-radius:0"><span style="font-size:15px">⇅</span>{{ sortLabel }}<span style="color:var(--mute)">▾</span></button>
+        <div style="position:absolute;right:0;top:0;width:280px"><sc-if value="{{ sortOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:48px;left:0;z-index:20;width:280px;background:var(--bg);border:1px solid var(--ink);display:flex;flex-direction:column">
+            <span style="padding:10px 14px 6px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;color:var(--mute)">SORT CHECKLIST BY</span>
+            <sc-for list="{{ sortOpts }}" as="o" hint-placeholder-count="4">
+              <button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:10px;padding:0 14px;height:44px;background:{{ o.bg }};border:0;border-top:1px solid var(--rule);color:var(--ink);font-family:var(--font-body);font-size:14px;font-weight:{{ o.w }};text-align:left;cursor:pointer;border-radius:0"><span style="width:14px;font-family:var(--font-mono);color:var(--gain)">{{ o.mark }}</span><span style="flex:1">{{ o.t }}</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">{{ o.hint }}</span></button>
+            </sc-for>
+          </div>
+        </sc-if></div>
+      </div>
+      <sc-for list="{{ sections }}" as="s" hint-placeholder-count="6">
+        <div style="display:grid;grid-template-columns:84px minmax(0,1fr);gap:6px;align-items:start">
+          <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.04em;font-weight:{{ s.weight }};color:{{ s.ink }}">{{ s.short }}</span>
+          <div style="display:flex;gap:3px;overflow-x:auto;padding:2px;margin:-2px"><sc-for list="{{ s.cells }}" as="c" hint-placeholder-count="10"><div onClick="{{ c.tap }}" style="flex:none;width:22px;height:14px;box-sizing:border-box;background:{{ c.bg }};outline:{{ c.mol }};outline-offset:1px;cursor:pointer"></div></sc-for></div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ picked }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:8px;padding:10px 12px;background:var(--bg);border:1px solid var(--ink);display:flex;gap:10px;align-items:flex-start">
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;gap:8px;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em"><span style="color:var(--mute)">{{ picked.where }}</span><span style="font-weight:600;color:{{ picked.stInk }}">{{ picked.st }}</span></div>
+            <span style="font-size:14px;font-weight:600;line-height:1.3">{{ picked.title }}</span>
+            <span style="font-size:13px;line-height:1.4;color:var(--mute)">{{ picked.q }}</span>
+          </div>
+          <button onClick="{{ picked.open }}" style="height:44px;flex:none;padding:0 12px;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;border-radius:0">OPEN →</button>
+        </div>
+      </sc-if>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:18px 16px 110px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--mute);letter-spacing:.06em">GENERAL · 01/10</span>
+        <h2 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-0.035em;line-height:1.1">Sticky header</h2>
+        <p style="margin:0;font-size:16px;color:var(--mute)">Does the header remain visible on scroll-up?</p>
+      </div>
+      <sc-if value="{{ vA }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+          <sc-for list="{{ statuses }}" as="s" hint-placeholder-count="4">
+            <button onClick="{{ s.pick }}" style="position:relative;height:68px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:10px;background:{{ s.bg }};color:{{ s.color }};border:1px solid {{ s.border }};font-family:var(--font-mono);font-size:13px;font-weight:600;letter-spacing:.06em;border-radius:0">
+              <span>{{ s.t }}</span>
+              <sc-if value="{{ s.isFail }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:3px"><span style="flex:none;display:flex;width:18px;height:18px;opacity:{{ vpi.dOp }};transition:opacity 120ms ease">{{ vpi.dIcon }}</span><span style="font-family:var(--font-mono);font-size:12px;font-weight:700;opacity:{{ vpi.plusOp }}">+</span><span style="flex:none;display:flex;width:19px;height:19px;opacity:{{ vpi.mOp }};transition:opacity 120ms ease">{{ vpi.mIcon }}</span></span></sc-if>
+            <sc-if value="{{ s.tipOn }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:calc(100% + 8px);left:-1px;z-index:15;width:240px;box-sizing:border-box;padding:12px 14px;background:var(--ink);color:var(--bg);display:flex;flex-direction:column;gap:6px;text-align:left;pointer-events:none;opacity:{{ tipOp }};transition:opacity 200ms ease"><span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em">FAILS ON DESKTOP + MOBILE</span><span style="font-family:var(--font-body);font-size:14px;font-weight:400;letter-spacing:0;line-height:1.45">Click FAIL again for mobile only, then desktop only.</span></span></sc-if></button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ vNotA }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+          <sc-for list="{{ statuses }}" as="s" hint-placeholder-count="4">
+            <button onClick="{{ s.pick }}" style="height:56px;background:{{ s.bg }};color:{{ s.color }};border:1px solid {{ s.border }};font-family:var(--font-mono);font-size:13px;font-weight:600;letter-spacing:.06em;border-radius:0">{{ s.t }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ vB }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:auto 1fr 1fr;align-items:center;gap:8px;opacity:{{ vpi.rowOp }}">
+          <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--mute)">FAILS ON</span>
+          <sc-for list="{{ vpBtns }}" as="b" hint-placeholder-count="2">
+            <button onClick="{{ b.toggle }}" style="height:48px;display:flex;align-items:center;justify-content:center;gap:8px;background:transparent;border:1px solid {{ b.border }};color:{{ b.ink }};font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.06em;border-radius:0"><span style="display:flex;opacity:{{ b.op }}">{{ b.icon }}</span><span style="opacity:{{ b.op }}">{{ b.t }}</span></button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ vC }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ vpi.cycle }}" style="height:48px;display:flex;align-items:center;gap:12px;padding:0 14px;background:transparent;border:1px solid {{ vpi.chipBorder }};color:{{ vpi.chipInk }};border-radius:0">
+          <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--mute)">FAILS ON</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="flex:none;display:flex;width:20px;height:20px;opacity:{{ vpi.dOp }};transition:opacity 120ms ease">{{ vpi.dIcon }}</span><span style="font-family:var(--font-mono);font-size:12px;font-weight:700;opacity:{{ vpi.plusOp }}">+</span><span style="flex:none;display:flex;width:20px;height:20px;opacity:{{ vpi.mOp }};transition:opacity 120ms ease">{{ vpi.mIcon }}</span></span>
+          <span style="flex:1"></span>
+          <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;opacity:{{ vpi.rowOp }}">{{ vpi.label }}</span>
+        </button>
+      </sc-if>
+      <div style="display:flex;justify-content:space-between;padding:12px 14px;border:1px solid var(--rule);font-family:var(--font-mono);font-size:13px">
+        <span>P1 · &lt; 30 MIN · THEME SETTING</span><span style="color:var(--gain);font-weight:600">+$140/MO</span>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em">FINDING <span style="color:var(--mute);font-weight:500">· IN REPORT</span></span>
+        <textarea defaultValue="Header does not remain visible on scroll-up, making navigation difficult." style="height:92px;resize:none;box-sizing:border-box;padding:12px;background:var(--surface);border:1px solid var(--rule);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;outline:none;border-radius:0"></textarea>
+      </label>
+      <div style="display:flex;flex-direction:column;border-top:1px solid var(--rule)">
+        <sc-for list="{{ collapsed }}" as="c" hint-placeholder-count="3">
+          <div style="height:52px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--rule)"><span style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em">{{ c.t }}</span><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;padding:2px 5px;background:{{ c.bg }};color:{{ c.ink }};border:1px solid {{ c.b }}">{{ c.tag }}</span><div style="flex:1"></div><span style="color:var(--mute)">▾</span></div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 28px;border-top:1px solid var(--rule);background:var(--bg);display:grid;grid-template-columns:1fr 2fr;gap:8px">
+      <button style="height:52px;background:transparent;color:var(--ink);border:1px solid var(--rule);font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;border-radius:0">← PREV</button>
+      <button style="height:52px;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;border-radius:0">NEXT ITEM →</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;vp&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;,&quot;c&quot;],&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;iconStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;triage&quot;,&quot;app&quot;],&quot;default&quot;:&quot;triage&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showTip&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;itemVp&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;both&quot;,&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;both&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;sort&quot;:{&quot;editor&quot;:null,&quot;default&quot;:&quot;section&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { sort: 'section', sortOpen: false, hov: null, tipPos: null, pick: null, status: 'FAIL', vpd: true, vpm: true, tip: false, tipVis: false, tipSeen: false };
+  componentDidMount() { if (this.props.showTip) this.setState({ tip: true, tipVis: true }); }
+  componentWillUnmount() { clearTimeout(this.t1); clearTimeout(this.t2); }
+  flashTip() {
+    clearTimeout(this.t1); clearTimeout(this.t2);
+    this.setState({ tip: true, tipVis: false, tipSeen: true });
+    requestAnimationFrame(() => this.setState({ tipVis: true }));
+    this.t1 = setTimeout(() => this.setState({ tipVis: false }), 3200);
+    this.t2 = setTimeout(() => this.setState({ tip: false }), 3450);
+  }
+  stripRef = React.createRef();
+  renderVals() {
+    const vp = this.props.vp || 'desktop';
+    const P = 'var(--gain)', F = 'var(--loss)', T = 'var(--mute)', N = 'var(--rule)';
+    const steps = ['Setup', 'Checklist', 'Revenue', 'Report', 'Scripts'].map((t, i) => ({
+      n: '0' + (i + 1), t: t.toUpperCase(), done: i < 1 ? '✓' : '',
+      color: i === 1 ? 'var(--ink)' : 'var(--mute)', weight: i === 1 ? 600 : 500, line: i === 1 ? 'var(--btn-bg)' : 'transparent'
+    }));
+    const gen = [F, P, F, P, P, F, P, T, T, F];
+    const mk = (fail, done) => Array.from({ length: 10 }, (_, i) => i < done ? ([2, 6].includes(i) && fail > (i === 2 ? 0 : 1) ? F : P) : N);
+    const secCells = [gen, mk(1, 10), mk(2, 10), mk(1, 6), mk(1, 3), mk(0, 0)];
+    const secNames = ['GENERAL', 'COLLECTION', 'PRODUCT', 'CART', 'CHECKOUT', 'MOBILE/PERF'];
+    const flat = [];
+    secCells.forEach((cells, si) => cells.forEach((bg, ci) => {
+      const i = si * 10 + ci, r = ((i * 37 + 11) % 100) / 100;
+      flat.push({ bg, sec: si, i, cur: i === 0,
+        p: i === 0 ? 1 : r < 0.25 ? 0 : r < 0.65 ? 1 : 2,
+        t: i === 0 ? 0 : (i * 53 % 7) < 3 ? 0 : (i * 53 % 7) < 5 ? 1 : 2,
+        l: i === 0 ? 2 : (i * 29 % 11) % 4 });
+    }));
+    const defs = {
+      section: { key: 'sec', labels: secNames, rows: 1, note: 'Grouped by checklist section' },
+      impact: { key: 'p', labels: ['P0 · HIGH', 'P1 · MEDIUM', 'P2 · LOW'], rows: 1, note: 'Highest priority first · next item follows this order' },
+      quick: { key: 't', labels: ['< 30 MIN', '< 2 HRS', '1 DAY +'], rows: 1, note: 'Fastest fixes first · next item follows this order' },
+      cvr: { key: 'l', labels: ['+0.20% +', '+0.10–0.20%', '+0.05–0.10%', '< +0.05%'], rows: 1, note: 'Biggest CVR lift first · next item follows this order' }
+    };
+    const def = defs[this.state.sort];
+    const NAMES = ["Sticky Header: Does the header remain visible on scroll-up?","Predictive Search: Does the search suggest products and collections?","Logo Link: Does clicking the logo return the user to the homepage?","Typography Hierarchy: Is there a clear visual difference between heading levels?","Readability: Is the body text at least 16px?","Footer Policies: Are legal and policy pages easy to find in the footer?","Social Links: Do social icons open in a new tab?","404 Page: Does the 404 error page provide clear navigation options?","Search Visibility: Is the search bar clearly visible on mobile?","Tap Targets: Are all buttons and links at least 44x44px on mobile?","Secondary Hover Image: Does hovering over a product card reveal a second image?","Clear Titles: Does the collection H1 clearly describe what is being sold?","Breadcrumbs: Can users navigate back to the previous category?","Active Filters: Is it immediately clear which filters are currently applied?","Sorting Options: Are sorting controls (Price, Newest, Best Selling) available?","Product Count: Does the page show the number of items in the collection?","Price Visibility: Are sale prices clearly distinguished from regular prices?","Quick Add / View: Can users add to cart without leaving the collection page?","Grid Consistency: Do all product images share the same aspect ratio?","Filter Logic: Are filters (Size, Color, etc.) collapsible on mobile?","High-Res Images: Can users zoom in or see high-quality product details?","Above-the-Fold CTA: Is the Add to Cart button visible without scrolling?","Variant Clarity: Is it obvious which size or color is currently selected?","Stock Status: Are out-of-stock variants clearly grayed out or disabled?","Price Placement: Is the price positioned immediately above the Add to Cart button?","Value Props: Are shipping and returns info displayed near the CTA?","Description Tabs: Is long product information organized into collapsible accordions?","Social Proof: Are star ratings and review counts visible near the product title?","User Reviews: Is there a photo review section below the product details?","Inventory Urgency: Is low-stock messaging (Only X left) surfaced to the user?","Cart Trigger: Does the cart open automatically as a drawer when an item is added?","Order Summary: Are product names, variants, and quantities clearly shown in the cart?","Quantity Adjustment: Can users change item quantities directly in the cart?","Empty State: Does an empty cart suggest products to browse?","Discount Field: Is it obvious where to enter a discount code?","Trust Badges: Are payment provider icons and secure checkout badges visible in the cart?","Shipping Calculator: Does the cart estimate shipping costs before checkout?","Free Shipping Bar: Is there a progress bar showing how close the user is to free shipping?","Upsells / Cross-sells: Are there relevant add-on product suggestions in the cart?","Sticky CTA (Mobile): Does the checkout button remain visible as users scroll the cart?","Guest Checkout: Can users check out without creating an account?","Breadcrumb Progress: Does the user know which checkout step they are on?","Express Checkout: Are Shop Pay and Apple Pay buttons prominent above the fold?","Auto-fill Support: Are checkout form fields optimized for browser auto-fill?","Error Handling: Are validation error messages clearly highlighted and actionable?","Checkout Branding: Does the checkout page reflect the brand (logo, colors, banner)?","Abandoned Checkout Recovery: Is automated abandoned checkout email or SMS enabled?","Post-Purchase Page: Is the Thank You page clear about what happens next?","Order Confirmation Email: Does the automated email arrive promptly with all key info?","Order Summary Toggle (Mobile): Is the total price easy to view on mobile?","No Content Shifting: Does the layout remain stable while the page loads?","Image Format: Are hero and product images served in WebP format?","App Bloat: Are there unused or redundant Shopify apps still installed?","Third-Party Scripts: Are chat widgets, pixels, and tracking scripts deferred?","Exit Intent: Is there a final engagement offer or incentive before the user leaves?","Page Speed: Does the site load in under 3 seconds on mobile?","LCP: Does the hero image or main headline load within 2.5 seconds?","Mobile Navigation: Does the hamburger menu and any mega-menu collapse cleanly on mobile?","Input Font Size: Are search and form inputs at least 16px to prevent iOS auto-zoom?","Thumb-Zone: Are primary CTAs (Add to Cart, Checkout) reachable within the thumb zone?"];
+    const secLong = ['GENERAL', 'COLLECTION', 'PRODUCT', 'CART', 'CHECKOUT', 'MOBILE/PERF'];
+    const stOf = bg => bg === P ? ['PASS', 'var(--gain)'] : bg === F ? ['FAIL', 'var(--loss)'] : bg === T ? ['TBD', 'var(--ink)'] : ['NOT REVIEWED', 'var(--mute)'];
+    const info = x => { const [title, ...rest] = NAMES[x.i].split(': '); const [st, stInk] = stOf(x.bg);
+      return { title, q: rest.join(': '), st, stInk, where: secLong[x.sec] + ' · ' + String(x.i % 10 + 1).padStart(2, '0') + '/10' }; };
+    const pk = this.state.pick != null ? flat[this.state.pick] : null;
+    const picked = pk ? { ...info(pk), open: () => this.setState({ pick: null }) } : null;
+    const sections = def.labels.map((label, gi) => {
+      const items = flat.filter(x => x[def.key] === gi);
+      const cols = Math.ceil(items.length / def.rows);
+      const hasCur = items.some(x => x.cur);
+      return { short: label, total: items.length, done: items.filter(x => x.bg !== N).length,
+        weight: hasCur ? 600 : 500, ink: hasCur ? 'var(--ink)' : 'var(--mute)', w: (cols * 21) + 'px',
+        cells: items.map(x => ({ bg: x.bg, ol: x.cur || this.state.hov === x.i ? '2px solid var(--ink)' : 'none',
+          mol: x.cur ? '2px solid var(--ink)' : this.state.pick === x.i ? '2px solid var(--mute)' : 'none',
+          
+          enter: e => { const s = this.stripRef.current; if (!s) return; const a = s.getBoundingClientRect(), b = e.currentTarget.getBoundingClientRect();
+            const px = Math.max(8, Math.min(b.left - a.left - 6, a.width - 308)); this.setState({ hov: x.i, tipPos: { x: px + 'px', y: (b.bottom - a.top + 8) + 'px' } }); },
+          leave: () => this.setState({ hov: null }),
+          tap: () => this.setState(s => ({ pick: s.pick === x.i ? null : x.i })) })) };
+    });
+    const opts = [['section', 'Section', 'SECTION', 'checklist order'], ['impact', 'Priority', 'PRIORITY', 'P0 first'], ['quick', 'Quick wins', 'QUICK WINS', 'fastest first'], ['cvr', 'CVR lift', 'CVR LIFT', 'biggest first']];
+    const sortOpts = opts.map(([k, t, , hint]) => ({ t, hint, mark: this.state.sort === k ? '✓' : '', w: this.state.sort === k ? 600 : 400,
+      bg: this.state.sort === k ? 'var(--surface)' : 'transparent', pick: () => this.setState({ sort: k, sortOpen: false }) }));
+    const sortLabel = opts.find(o => o[0] === this.state.sort)[2];
+    const variant = this.props.variant || 'a';
+    const iv = this.props.itemVp || 'both';
+    const dApp = iv !== 'mobile', mApp = iv !== 'desktop';
+    const st = this.state, isFail = st.status === 'FAIL';
+    const d0 = dApp && (iv !== 'both' || st.vpd), m0 = mApp && (iv !== 'both' || st.vpm);
+    const cycle = () => this.setState(s => {
+      if (iv !== 'both') return null;
+      if (s.vpd && s.vpm) return { vpd: false, vpm: true };
+      if (s.vpm) return { vpd: true, vpm: false };
+      return { vpd: true, vpm: true };
+    });
+    const pick = t => () => {
+      if (t === 'FAIL' && isFail) { if (variant === 'a') cycle(); return; }
+      this.setState({ status: t, vpd: true, vpm: true });
+      if (t === 'FAIL' && variant === 'a' && iv === 'both' && !st.tipSeen) this.flashTip();
+    };
+    const lit = (applies, on) => !applies ? 0.12 : isFail && on ? 1 : 0.3;
+    const label = !isFail ? 'NOT FAILING' : d0 && m0 ? 'DESKTOP + MOBILE' : d0 ? 'DESKTOP ONLY' : 'MOBILE ONLY';
+    const vpi = { dOp: lit(dApp, d0), mOp: lit(mApp, m0), plusOp: isFail && d0 && m0 ? 1 : 0, label,
+      rowOp: isFail ? 1 : 0.4, cycle: isFail ? cycle : undefined, cursor: isFail && iv === 'both' ? 'pointer' : 'default',
+      chipBorder: isFail ? 'var(--loss)' : 'var(--rule)', chipInk: isFail ? 'var(--loss)' : 'var(--ink)',
+      hint: isFail ? (iv === 'both' ? 'Turn one off if it only fails on one device.' : 'This check only applies to ' + (dApp ? 'desktop.' : 'mobile.')) : 'Set FAIL to choose devices.' };
+    const statuses = [['PASS', 'P'], ['FAIL', 'F'], ['TBD', 'T'], ['N/A', 'N']].map(([t, k]) => {
+      const on = st.status === t;
+      const bg = on ? (t === 'FAIL' ? 'var(--loss)' : t === 'PASS' ? 'var(--gain)' : 'var(--ink)') : 'transparent';
+      return { t, k, isFail: t === 'FAIL', tipOn: t === 'FAIL' && st.tip, pick: pick(t), title: t === 'FAIL' && iv === 'both' ? 'Click again to cycle: Desktop + Mobile → Mobile only → Desktop only' : '',
+        bg, color: on ? 'var(--bg)' : 'var(--ink)', border: on ? bg : 'var(--rule)' };
+    });
+    const h = React.createElement;
+    const tri = (this.props.iconStyle || 'triage') === 'triage';
+    const svg = (...kids) => h('svg', { width: '100%', height: '100%', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: tri ? 'square' : 'round', strokeLinejoin: tri ? 'miter' : 'round' }, ...kids);
+    const dIcon = tri
+      ? svg(h('rect', { x: 2, y: 4, width: 20, height: 13 }), h('line', { x1: 12, y1: 17, x2: 12, y2: 20 }), h('line', { x1: 8, y1: 21, x2: 16, y2: 21 }))
+      : svg(h('rect', { x: 2, y: 3, width: 20, height: 14, rx: 2 }), h('line', { x1: 12, y1: 17, x2: 12, y2: 21 }), h('line', { x1: 8, y1: 21, x2: 16, y2: 21 }));
+    const mIcon = tri
+      ? svg(h('rect', { x: 6, y: 2, width: 12, height: 20 }), h('rect', { x: 11, y: 16, width: 2, height: 2, fill: 'currentColor', stroke: 'none' }))
+      : svg(h('rect', { x: 5, y: 2, width: 14, height: 20, rx: 2, ry: 2 }), h('circle', { cx: 12, cy: 17, r: 1, fill: 'currentColor', stroke: 'none' }));
+    vpi.dIcon = dIcon; vpi.mIcon = mIcon;
+    const iconBox = icon => h('span', { style: { display: 'flex', width: 22, height: 22 } }, icon);
+    const tog = k => () => { if (!isFail || iv !== 'both') return; this.setState(s => { const n = { ...s, [k]: !s[k] }; return n.vpd || n.vpm ? { [k]: !s[k] } : null; }); };
+    const vpBtns = [['DESKTOP', iconBox(dIcon), dApp, d0, 'vpd'], ['MOBILE', iconBox(mIcon), mApp, m0, 'vpm']].map(([t, icon, app, on, k]) => ({ t, icon,
+      op: lit(app, on), toggle: tog(k), cursor: isFail && iv === 'both' ? 'pointer' : 'default',
+      border: isFail && on && app ? 'var(--loss)' : 'var(--rule)', ink: isFail && on && app ? 'var(--loss)' : 'var(--ink)' }));
+    const meta = [
+      { l: 'PRIORITY', v: 'Medium · P1', c: 'var(--ink)' }, { l: 'EFFORT', v: 'Low', c: 'var(--ink)' },
+      { l: 'EST. FIX TIME', v: '< 30 min', c: 'var(--ink)' }, { l: 'IMPACT AREA', v: 'Bounce rate', c: 'var(--ink)' },
+      { l: 'SHOPIFY FIX', v: 'Theme setting', c: 'var(--ink)' }, { l: 'CVR LIFT', v: '+0.05–0.12%', c: 'var(--gain)' }
+    ];
+    const collapsed = [
+      { t: 'RECOMMENDATION', tag: 'IN REPORT', bg: 'transparent', ink: 'var(--mute)', b: 'var(--rule)' },
+      { t: 'SCREENSHOT URL', tag: 'IN REPORT', bg: 'transparent', ink: 'var(--mute)', b: 'var(--rule)' },
+      { t: 'NOTES', tag: 'PRIVATE', bg: 'var(--ink)', ink: 'var(--bg)', b: 'var(--ink)' }
+    ];
+    return { theme: this.props.theme || 'dark', d: vp === 'desktop', m: vp !== 'desktop', steps, sections, picked, stripRef: this.stripRef,
+      tip: this.state.hov != null && this.state.tipPos ? { ...info(flat[this.state.hov]), ...this.state.tipPos } : null, sortOpts, sortLabel, sortOpen: this.state.sortOpen, sortBorder: this.state.sortOpen ? 'var(--ink)' : 'var(--rule)', toggleSort: () => this.setState(s => ({ sortOpen: !s.sortOpen })), sortNote: def.note, statuses, vpi, tipOp: st.tipVis ? 1 : 0, vpBtns, vA: variant === 'a', vNotA: variant !== 'a', vB: variant === 'b', vC: variant === 'c',
+      keyHint: variant === 'a' ? 'J/K move · / jump' : 'J/K move · P F T N status · / jump', meta, collapsed };
+  }
+}
+</script>
+</body>
+</html>

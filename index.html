@@ -666,7 +666,8 @@ body {
   overflow: hidden;
 }
 .checklist-left {
-  width: 360px;
+  min-width: 460px;
+  width: 33.33%;
   flex-shrink: 0;
   border-right: 1px solid var(--rule);
   overflow-y: auto;
@@ -677,10 +678,11 @@ body {
   overflow-y: auto;
   padding: 24px 24px 48px;
   min-width: 0;
+  background: var(--surface);
 }
 @media (max-width: 700px) {
   .checklist-body { display: block; overflow-y: auto; }
-  .checklist-left { width: 100%; border-right: none; padding: 16px 16px 0; overflow: visible; }
+  .checklist-left { min-width: 0;width: 100%; border-right: none; padding: 16px 16px 0; overflow: visible; }
   .checklist-right { padding: 0 16px 80px; overflow: visible; }
 }
 
@@ -735,22 +737,23 @@ body {
   .proposal-val { text-align: left !important; }
 }
 
-/* Findings table / card responsive */
-.findings-header { display: grid; grid-template-columns: 32px 1fr 80px 80px 80px 100px; background: var(--surface); border-bottom: 1px solid var(--rule); padding: 8px 16px; }
-.findings-row { display: grid; grid-template-columns: 32px 1fr 80px 80px 80px 100px; border-bottom: 1px solid var(--rule); padding: 10px 16px; align-items: start; cursor: pointer; transition: background 0.12s; }
-@media (min-width: 701px) {
-  .findings-row-top, .findings-row-btm { display: contents; }
-  .findings-lbl { display: none !important; }
-}
-@media (max-width: 700px) {
-  .findings-header { display: none !important; }
-  .findings-row { display: block !important; padding: 14px 16px; }
-  .findings-row-top { display: flex !important; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
-  .findings-row-btm { display: flex !important; align-items: center; gap: 14px; padding-left: 32px; flex-wrap: wrap; }
-  .findings-cb { width: 22px !important; height: 22px !important; min-width: 22px !important; }
-  .findings-cb-check { font-size: 13px !important; }
-  .findings-col-lift, .findings-col-rev { text-align: left !important; }
-  .findings-lbl { display: inline !important; }
+/* Revenue stage layout */
+.rev-stage { position: absolute; inset: 0; overflow: hidden; display: flex; flex-direction: column; }
+.rev-grid  { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) 440px; overflow: hidden; }
+.rev-main  { overflow-y: auto; padding: 32px 40px 60px; display: flex; flex-direction: column; gap: 20px; }
+.rev-rail  { border-left: 1px solid var(--rule); display: flex; flex-direction: column; background: var(--surface); overflow-y: auto; overflow-x: hidden; }
+.rev-mob-bar { display: none; flex: none; }
+.rev-mob-pricing-row { display: none; }
+.rev-row { display: grid; gap: 14px; align-items: center; padding: 13px 18px; border-bottom: 1px solid var(--rule); transition: background 0.1s; }
+.rev-head { display: grid; gap: 14px; align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--rule); background: var(--surface); }
+@media (max-width: 900px) {
+  .rev-grid { grid-template-columns: 1fr; overflow-y: auto; overflow-x: hidden; }
+  .rev-rail { display: none; }
+  .rev-main { padding: 0 0 80px; overflow: visible; }
+  .rev-mob-bar { display: grid; }
+  .rev-mob-pricing-row { display: flex; }
+  .rev-head { display: none !important; }
+  .rev-row { grid-template-columns: 44px minmax(0,1fr) auto !important; gap: 8px !important; padding: 8px 16px !important; }
 }
 @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
 @keyframes cardGlow {
@@ -908,6 +911,17 @@ function fmtDate(d) {
 function fmt(n) { return Math.round(n).toLocaleString(); }
 function fmtPct(n) { return n.toFixed(2) + '%'; }
 
+function generatePitch(audit, roi, ids) {
+  const ci = audit.client_info || {};
+  if (!roi.hasData) return '';
+  const client = ci.client_name || 'Your store';
+  const sessions = Math.round(roi.sessions).toLocaleString();
+  const revenue = fmt(parseFloat(ci.monthly_revenue) || 0);
+  const failCount = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail').length;
+  const selectedCount = ids instanceof Set ? ids.size : (ids || []).length;
+  return `${client} currently converts ${fmtPct(roi.cvrRaw)} of roughly ${sessions} monthly sessions into $${revenue} in revenue. This audit found ${failCount} conversion issue${failCount !== 1 ? 's' : ''}. Fixing the ${selectedCount} highest-impact one${selectedCount !== 1 ? 's' : ''} is projected to lift conversion to ${fmtPct(roi.projCVRRaw)} and recover about $${fmt(roi.monthlyRecovery)} a month, or $${fmt(roi.annualRecovery)} a year.`;
+}
+
 function newAudit(lastAuditorName) {
   const id = genId();
   const now = new Date().toISOString();
@@ -919,7 +933,8 @@ function newAudit(lastAuditorName) {
       monthly_revenue: 0, aov: 0, cvr: 0,
     },
     items: {},
-    pricing: { audit_fee: 0, impl_fee: 0, hourly_rate: 0, est_hours: 0 },
+    pitch_text: '',
+    pricing: { audit_fee: 0, impl_fee: 0, hourly_rate: 0, est_hours: 0, retainer_rate: 0, retainer_months: 3 },
     calculator_selections: null,
     created_at: now, updated_at: now,
   };
@@ -1229,18 +1244,13 @@ function LoginScreen() {
 
 // Defined outside screen components to prevent React remounting on every render (focus-loss fix)
 // Collapsible field block used in ChecklistStage right column
-function FieldBlock({ label, tag, tagStyle, hasReset, onReset, disabled, defaultOpen, children }) {
-  const [open, setOpen] = useState(defaultOpen !== false);
+function FieldBlock({ label, tag, tagStyle, hasReset, onReset, disabled, children }) {
   const isPrivate = tagStyle === 'private';
   return (
-    <div style={{ border: isPrivate ? '1px solid var(--ink)' : '1px solid var(--rule)',
-      marginBottom:8, opacity: disabled ? 0.35 : 1,
+    <div style={{ marginBottom:20, opacity: disabled ? 0.35 : 1,
       pointerEvents: disabled ? 'none' : 'auto', transition:'opacity 0.15s' }}>
-      <button onClick={() => setOpen(v => !v)}
-        style={{ width:'100%', background: isPrivate ? 'var(--ink)' : 'var(--surface)',
-          border:'none', borderBottom: open ? `1px solid ${isPrivate ? 'rgba(255,255,255,0.1)' : 'var(--rule)'}` : 'none',
-          padding:'10px 16px', display:'flex', alignItems:'center',
-          justifyContent:'space-between', cursor:'pointer', gap:8 }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
+          gap:8, marginBottom:8 }}>
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
             letterSpacing:'0.1em', textTransform:'uppercase',
@@ -1249,32 +1259,20 @@ function FieldBlock({ label, tag, tagStyle, hasReset, onReset, disabled, default
           </span>
           <span style={{ fontFamily:'var(--font-mono)', fontSize:9,
             letterSpacing:'0.06em', textTransform:'uppercase',
-            border: isPrivate ? '1px solid var(--mute)' : '1px solid var(--rule)',
-            padding:'1px 6px',
-            color: isPrivate ? 'var(--bg)' : 'var(--mute)',
-            opacity: isPrivate ? 0.7 : 1 }}>
+            border: '1px solid var(--rule)',
+            padding:'1px 6px', color:'var(--mute)' }}>
             {tag}
           </span>
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          {hasReset && open && (
-            <button onClick={e => { e.stopPropagation(); onReset?.(); }}
-              style={{ background:'none', border:'none', fontFamily:'var(--font-mono)', fontSize:9,
-                color:'var(--mute)', letterSpacing:'0.04em', cursor:'pointer', padding:0 }}>
-              Reset to default
-            </button>
-          )}
-          <span style={{ fontSize:9, color: isPrivate ? 'var(--bg)' : 'var(--mute)',
-            opacity: isPrivate ? 0.6 : 1, transform: open ? 'rotate(180deg)' : 'none',
-            display:'inline-block', transition:'transform 0.15s' }}>▼</span>
-        </div>
-      </button>
-      {open && (
-        <div style={{ padding:'12px 16px',
-          background: isPrivate ? 'var(--bg)' : 'transparent' }}>
-          {children}
-        </div>
-      )}
+        {hasReset && (
+          <button onClick={() => onReset?.()}
+            style={{ background:'none', border:'none', fontFamily:'var(--font-mono)', fontSize:9,
+              color:'var(--mute)', letterSpacing:'0.04em', cursor:'pointer', padding:0 }}>
+            Reset to default
+          </button>
+        )}
+      </div>
+      {children}
     </div>
   );
 }
@@ -1703,31 +1701,48 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
     );
   }
 
-  // ── 60-cell mini map ───────────────────────────────────────────────────────
+  // ── Mini map: 6 section rows with labels (no legend — legend is above the grid) ──
   function MiniMap({ audit }) {
-    const cellColor = s => s === 'pass' ? 'var(--gain)' : s === 'fail' ? 'var(--loss)' : 'var(--rule)';
+    const cellColor = s => {
+      if (s === 'pass' || s === 'na') return 'var(--gain)';
+      if (s === 'fail') return 'var(--loss)';
+      return 'var(--rule-2)';
+    };
+    const shortLabel = label =>
+      label.replace(' Page', '').replace('/Performance', '/Perf');
     return (
       <div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(10, 1fr)', gap:2, marginBottom:8 }}>
-          {AUDIT_ITEMS.map(item => {
-            const s = getItemState(audit, item.id).status;
-            return (
-              <div key={item.id} style={{ height:8, background:cellColor(s) }} title={item.name} />
-            );
-          })}
-        </div>
-        <div style={{ display:'flex', gap:12, fontFamily:'var(--font-mono)', fontSize:9,
-          letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--mute)' }}>
-          {[['Pass','var(--gain)'],['Fail','var(--loss)'],['Not reviewed','var(--rule)']].map(([l,c]) => (
-            <span key={l} style={{ display:'flex', alignItems:'center', gap:4 }}>
-              <span style={{ width:8, height:8, background:c, display:'inline-block', flexShrink:0 }} />
-              {l}
+        {SECTIONS.map(section => (
+          <div key={section.id} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:3 }}>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--mute)',
+              letterSpacing:'0.03em', width:66, flexShrink:0,
+              overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+              {shortLabel(section.label)}
             </span>
-          ))}
-        </div>
+            <div style={{ display:'flex', gap:2, flex:1 }}>
+              {section.items.map(item => {
+                const s = getItemState(audit, item.id).status;
+                return <div key={item.id} style={{ flex:1, height:10, background:cellColor(s) }} />;
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
+
+  // ── Grid legend (rendered once above the grid) ─────────────────────────────
+  const GridLegend = () => (
+    <div style={{ display:'flex', gap:14, marginBottom:12, fontFamily:'var(--font-mono)',
+      fontSize:9, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--mute)' }}>
+      {[['Pass','var(--gain)'],['Fail','var(--loss)'],['Not reviewed','var(--rule-2)']].map(([l,c]) => (
+        <span key={l} style={{ display:'flex', alignItems:'center', gap:4 }}>
+          <span style={{ width:10, height:10, background:c, display:'inline-block', flexShrink:0 }} />
+          {l}
+        </span>
+      ))}
+    </div>
+  );
 
   // ── Shared header ──────────────────────────────────────────────────────────
   const Header = () => (
@@ -1932,20 +1947,25 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
 
   // ── GRID VIEW ───────────────────────────────────────────────────────────────
   const GridView = () => (
-    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:12 }}>
+    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
       {audits.map(audit => {
-        const { done, pct } = auditProgress(audit);
+        const { done } = auditProgress(audit);
         const { total: failCount } = auditFails(audit);
         const recovery = auditRecovery(audit);
         const status = auditStatus(audit);
-        const ctaLabel = status === 'complete' ? 'Report →' : status === 'in-progress' ? 'Resume →' : 'Start →';
+        const statusLabel = status === 'complete' ? 'Report ready'
+          : status === 'in-progress' ? 'In progress' : 'Not started';
+        const ctaLabel = status === 'complete' ? 'Report →'
+          : status === 'in-progress' ? 'Resume →' : 'Start →';
         return (
           <div key={audit.id}
             style={{ border:'1px solid var(--rule)', background:'var(--surface)',
               display:'flex', flexDirection:'column', transition:'border-color 0.12s' }}
             onMouseEnter={e => e.currentTarget.style.borderColor='var(--ink)'}
             onMouseLeave={e => e.currentTarget.style.borderColor='var(--rule)'}>
-            <div style={{ padding:'16px 18px 12px', borderBottom:'1px solid var(--rule)' }}>
+
+            {/* Header: title + ⋯ */}
+            <div style={{ padding:'16px 18px 10px' }}>
               <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8 }}>
                 <div style={{ minWidth:0 }}>
                   <div style={{ fontFamily:'var(--font-sans)', fontSize:15, fontWeight:600,
@@ -1955,7 +1975,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                   </div>
                   <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
                     overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                    {audit.client_info?.store_url || '—'}
+                    {auditSubline(audit) || '—'}
                   </div>
                 </div>
                 <div onClick={e => e.stopPropagation()}>
@@ -1963,11 +1983,16 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                 </div>
               </div>
             </div>
-            <div style={{ padding:'16px 18px' }}>
+
+            {/* Mini map (legend inside at top) */}
+            <div style={{ padding:'0 18px 12px' }}>
               <MiniMap audit={audit} />
             </div>
-            <div style={{ padding:'0 18px 16px', display:'grid',
-              gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+
+            {/* Stats row */}
+            <div style={{ padding:'14px 18px 14px', display:'grid',
+              gridTemplateColumns:'1fr 1fr 1fr', gap:8,
+              borderTop:'1px solid var(--rule)' }}>
               {[
                 ['Reviewed', `${done}/60`],
                 ['Fails',    failCount > 0 ? String(failCount) : '—'],
@@ -1976,13 +2001,21 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
                 <div key={l}>
                   <div style={{ fontFamily:'var(--font-mono)', fontSize:9, letterSpacing:'0.1em',
                     textTransform:'uppercase', color:'var(--mute)', marginBottom:3 }}>{l}</div>
-                  <div style={{ fontFamily:'var(--font-mono)', fontSize:13, fontWeight:600,
+                  <div style={{ fontFamily:'var(--font-mono)', fontSize:14, fontWeight:600,
                     color: l === '/Mo' && recovery ? 'var(--gain)' : 'var(--ink)' }}>{v}</div>
                 </div>
               ))}
             </div>
-            <div style={{ padding:'0 18px 18px', marginTop:'auto' }}>
-              <button onClick={() => onOpen(audit.id)} className="btn btn-primary btn-full" style={{ height:40 }}>
+
+            {/* Bottom: status text + CTA */}
+            <div style={{ padding:'0 18px 16px', display:'flex',
+              alignItems:'center', justifyContent:'space-between', gap:8, marginTop:'auto' }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--mute)',
+                letterSpacing:'0.04em' }}>
+                {statusLabel} · {formatDate(audit.updated_at)}
+              </span>
+              <button onClick={() => onOpen(audit.id)}
+                className={`btn btn-sm ${status === 'not-started' ? 'btn-secondary' : 'btn-primary'}`}>
                 {ctaLabel}
               </button>
             </div>
@@ -2010,7 +2043,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
   return (
     <React.Fragment>
       <input ref={importRef} type="file" accept=".json" style={{ display:'none' }} onChange={handleImportFile} />
-      <main style={{ maxWidth:1100, margin:'0 auto', padding:'48px 32px 100px' }}>
+      <main style={{ maxWidth:1400, margin:'0 auto', padding:'48px 32px 100px' }}>
         {/* Error banner */}
         {dbError && (
           <div style={{ marginBottom:20, padding:'12px 18px', background:'var(--state-fail-bg)',
@@ -2315,7 +2348,7 @@ function NewAuditModal({ lastAuditorName, onSubmit, onClose }) {
 }
 // ─── END COMPONENTS A ───
 
-// ─── COMPONENTS B: ChecklistStage, FindingsStage ───
+// ─── COMPONENTS B: ChecklistStage, RevenueStage ───
 
 function SortControl({ value, onChange, options }) {
   return (
@@ -2481,8 +2514,8 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
     function handleKey(e) {
       const tag = e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      if (e.key === 'j' || e.key === 'J') { if (nextItem) goTo(nextItem); }
-      else if (e.key === 'k' || e.key === 'K') { if (prevItem) goTo(prevItem); }
+      if (e.key === 'j' || e.key === 'J' || e.key === 'ArrowRight') { if (nextItem) goTo(nextItem); }
+      else if (e.key === 'k' || e.key === 'K' || e.key === 'ArrowLeft') { if (prevItem) goTo(prevItem); }
       else if (e.key === 'p' || e.key === 'P') handleStatusClick('pass');
       else if (e.key === 'f' || e.key === 'F') handleStatusClick('fail');
       else if (e.key === 't' || e.key === 'T') handleStatusClick('tbd');
@@ -2716,7 +2749,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
               const active = itemState.status === opt.id;
               return (
                 <button key={opt.id} onClick={() => handleStatusClick(opt.id)}
-                  style={{ height:80, position:'relative', cursor:'pointer',
+                  style={{ height:70, position:'relative', aspectRatio: '1.75/1',cursor:'pointer',
                     background: active ? opt.activeBg : opt.idleBg,
                     border: `1px solid ${active ? opt.activeBorder : 'var(--rule)'}`,
                     color: active ? opt.activeColor : opt.idleColor,
@@ -2724,7 +2757,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                     display:'flex', flexDirection:'column', alignItems:'center',
                     justifyContent:'center', gap:4 }}>
                   {/* Keyboard shortcut — top right, desktop only */}
-                  <span className="desktop-only" style={{ position:'absolute', top:6, right:7,
+                  <span className="desktop-only" style={{ position:'absolute', bottom:6, right:7,
                     fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
                     opacity:0.55, lineHeight:1 }}>
                     {opt.shortcut}
@@ -2743,10 +2776,8 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
                         <rect x="4" y="9" width="6" height="1.5" fill="currentColor"/>
                         <rect x="2" y="10" width="10" height="0.5" fill="currentColor"/>
                       </svg>
-                      {failD && failM && isFail && (
-                        <span style={{ fontFamily:'var(--font-mono)', fontSize:9, fontWeight:900,
-                          lineHeight:1, color:'currentColor', opacity:0.9 }}>+</span>
-                      )}
+                      <span style={{ fontFamily:'var(--font-mono)', fontSize:9, fontWeight:900,
+                          lineHeight:1, color:'currentColor', opacity: failD && failM && isFail ? 0.9 : 0 }}>+</span>
                       <svg width="8" height="13" viewBox="0 0 8 13" fill="none"
                         style={{ opacity: mOpacity, transition:'opacity 0.15s' }}>
                         <rect x="0.5" y="0.5" width="7" height="12" stroke="currentColor" strokeWidth="1"/>
@@ -2862,7 +2893,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
           </div>
           <div className="desktop-only" style={{ marginTop:12, fontFamily:'var(--font-mono)',
             fontSize:10, color:'var(--mute)', letterSpacing:'0.06em' }}>
-            J/K move · / jump
+            J/K move
           </div>
 
         </div>{/* end checklist-left */}
@@ -2875,8 +2906,7 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
             label="Finding" tag="IN REPORT" tagColor="var(--loss)"
             hasReset={!!(audit.items?.[activeItemId]?.finding)}
             onReset={() => onUpdateItem(audit.id, activeItemId, { finding: undefined })}
-            disabled={!isFail}
-            defaultOpen={true}>
+            disabled={!isFail}>
             <AuditTextarea value={itemState.finding} placeholder={activeItem.default_finding}
               onChange={v => onUpdateItem(audit.id, activeItemId, { finding: v })} rows={4} />
           </FieldBlock>
@@ -2886,23 +2916,22 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
             label="Recommendation" tag="IN REPORT"
             hasReset={!!(audit.items?.[activeItemId]?.recommendation)}
             onReset={() => onUpdateItem(audit.id, activeItemId, { recommendation: undefined })}
-            disabled={!isFail}
-            defaultOpen={true}>
+            disabled={!isFail}>
             <AuditTextarea value={itemState.recommendation} placeholder={activeItem.default_recommendation}
               onChange={v => onUpdateItem(audit.id, activeItemId, { recommendation: v })} rows={4} />
           </FieldBlock>
 
           {/* SCREENSHOT URL */}
-          <FieldBlock label="Screenshot URL" tag="IN REPORT" disabled={!isFail} defaultOpen={false}>
+          <FieldBlock label="Screenshot URL" tag="IN REPORT" disabled={!isFail}>
             <AuditUrlInput value={itemState.screenshot_url}
               onChange={v => onUpdateItem(audit.id, activeItemId, { screenshot_url: v })} />
           </FieldBlock>
 
           {/* NOTES — private */}
-          <FieldBlock label="Notes" tag="PRIVATE" tagStyle="private" defaultOpen={false}>
+          <FieldBlock label="Notes" tag="PRIVATE" tagStyle="private">
             <AuditTextarea value={itemState.notes}
               placeholder="Private notes (not in report)…"
-              onChange={v => onUpdateItem(audit.id, activeItemId, { notes: v })} rows={4} />
+              onChange={v => onUpdateItem(audit.id, activeItemId, { notes: v })} rows={8} />
           </FieldBlock>
 
         </div>{/* end checklist-right */}
@@ -2940,503 +2969,500 @@ function ChecklistStage({ audit, onUpdateItem, onScrollToFindings, onContextChan
   );
 }
 
-function FindingsStage({ audit, checkedIds, setCheckedIds, onUpdateItem }) {
+function useIsMobile(bp) {
+  const [m, setM] = useState(window.innerWidth <= bp);
+  useEffect(() => {
+    const h = () => setM(window.innerWidth <= bp);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
+  }, [bp]);
+  return m;
+}
+
+function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdatePricing, onSavePitch }) {
+  const ci = audit.client_info || {};
+  const pr = audit.pricing || {};
   const failItems = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail');
-  const [findingsSort, setFindingsSort] = useState('impact');
+  const isMobile = useIsMobile(900);
+
+  const [cols, setCols] = useState({ sec: true, imp: true, time: true, lift: true });
+  const [sort, setSort] = useState('imp');
+  const [pitchEdit, setPitchEdit] = useState(false);
+  const [pitchDraft, setPitchDraft] = useState('');
+  const [pricingOpen, setPricingOpen] = useState(false);
+  const [sanityEdit, setSanityEdit] = useState(false);
+  const sanityRateRef = useRef(null);
+  useEffect(() => { if (sanityEdit && sanityRateRef.current) sanityRateRef.current.focus(); }, [sanityEdit]);
 
   useEffect(() => {
-    if (checkedIds === null && failItems.length > 0) {
-      setCheckedIds(preCheckItems(audit));
-    }
+    if (checkedIds === null && failItems.length > 0) setCheckedIds(preCheckItems(audit));
   }, []);
 
   const ids = checkedIds || new Set();
-  const toggle = (id) => setCheckedIds(prev => {
-    const next = new Set(prev);
-    next.has(id) ? next.delete(id) : next.add(id);
-    return next;
-  });
-
-  const IMPACT_COLOR = { High:'var(--impact-high)', Medium:'var(--impact-medium)', Low:'var(--ink-3)' };
-  const IMPACT_BG    = { High:'var(--impact-high-bg)', Medium:'var(--impact-medium-bg)', Low:'var(--paper-3)' };
-
   const roi = calcROI(audit, ids);
-  const sortedFailItems = sortItems(failItems, findingsSort);
 
-  // Phase grouping for 'phase' sort mode
-  const quickWins = sortedFailItems.filter(i => getItemState(audit, i.id).phase === 'quick-win');
-  const tests     = sortedFailItems.filter(i => getItemState(audit, i.id).phase !== 'quick-win');
-
+  const toggle = id => setCheckedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   function togglePhase(itemId) {
     if (!onUpdateItem) return;
-    const current = getItemState(audit, itemId).phase;
-    onUpdateItem(itemId, { phase: current === 'quick-win' ? 'test' : 'quick-win' });
+    const cur = getItemState(audit, itemId).phase;
+    onUpdateItem(itemId, { phase: cur === 'quick-win' ? 'test' : 'quick-win' });
+  }
+  function setPricing(k, v) { onUpdatePricing(audit.id, { ...pr, [k]: parseFloat(v) || 0 }); }
+
+  const sorters = {
+    imp:  (a, b) => IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact] || b.lift_max - a.lift_max,
+    sec:  (a, b) => a.section.localeCompare(b.section),
+    time: (a, b) => (FIX_TIME_RANK[a.estimated_fix_time] ?? 99) - (FIX_TIME_RANK[b.estimated_fix_time] ?? 99),
+    lift: (a, b) => b.lift_max - a.lift_max,
+  };
+  const sorted = [...failItems].sort(sorters[sort] || sorters.imp);
+  const quick  = sorted.filter(i => getItemState(audit, i.id).phase === 'quick-win');
+  const test   = sorted.filter(i => getItemState(audit, i.id).phase !== 'quick-win');
+
+  function rowMo(item) {
+    const rev = parseFloat(ci.monthly_revenue) || 0;
+    const aov = parseFloat(ci.aov) || 85;
+    const cvr = parseFloat(ci.cvr) || 1.8;
+    if (!rev) return 0;
+    return (rev / (aov * (cvr / 100))) * aov * ((item.lift_min + item.lift_max) / 2 / 100);
+  }
+  function groupSum(rows) { return rows.filter(i => ids.has(i.id)).reduce((s, i) => s + rowMo(i), 0); }
+
+  const groups = [
+    { key:'PHASE 1', title:'Quick wins',       desc:'Ship in week 1 · implementation fee',      rows:quick, sum:groupSum(quick) },
+    { key:'PHASE 2', title:'Testing roadmap',  desc:'A/B test over 12 weeks · monthly retainer', rows:test,  sum:groupSum(test), trailer:' if proven' },
+  ];
+
+  const gridCols = ['28px','minmax(0,1fr)',cols.sec&&'120px',cols.imp&&'96px',cols.time&&'80px',cols.lift&&'110px','74px','80px'].filter(Boolean).join(' ');
+
+  // Pitch
+  const autoPitch = generatePitch(audit, roi, ids);
+  const pitchText = audit.pitch_text || autoPitch;
+  const openEdit  = () => { setPitchDraft(pitchText); setPitchEdit(true); };
+  const savePitch = t  => { onSavePitch(audit.id, t); setPitchEdit(false); };
+  const resetPitch = () => { onSavePitch(audit.id, ''); setPitchEdit(false); };
+
+  // Pricing
+  const implFee       = parseFloat(pr.impl_fee) || 0;
+  const auditFee      = parseFloat(pr.audit_fee) || 0;
+  const retainerRate  = parseFloat(pr.retainer_rate) || 0;
+  const retainerMos   = parseFloat(pr.retainer_months) !== undefined ? parseFloat(pr.retainer_months) : 3;
+  const totalEng      = auditFee + implFee + retainerRate * retainerMos;
+  const testCount     = test.filter(i => ids.has(i.id)).length;
+  const canSanity     = roi.hourlyRate > 0 && roi.estHours > 0 && implFee > 0;
+  const feeBase       = totalEng || roi.totalInvestment;
+  const roiLine = roi.hasData && roi.monthlyRecovery > 0 && feeBase > 0
+    ? `${(roi.annualRecovery / feeBase).toFixed(1)}× return on $${fmt(feeBase)} · pays back in ${(feeBase / roi.monthlyRecovery).toFixed(1)} months`
+    : null;
+
+  const P_COLOR = { High:'var(--impact-high)', Medium:'var(--impact-medium)', Low:'var(--ink-5)' };
+  const P_BG    = { High:'var(--impact-high-bg)', Medium:'var(--impact-medium-bg)', Low:'var(--paper-3)' };
+
+  function PBadge({ impact, muted }) {
+    return (
+      <span style={{ fontFamily:'var(--font-mono)', fontSize:10, padding:'2px 6px',
+        background: muted ? 'transparent' : P_BG[impact],
+        color: muted ? 'var(--ink-5)' : P_COLOR[impact],
+        border:`1px solid ${muted ? 'var(--rule)' : P_COLOR[impact] + '44'}`,
+        letterSpacing:'0.04em', whiteSpace:'nowrap' }}>
+        {IMPACT_LABEL[impact] || impact}
+      </span>
+    );
   }
 
-  function PhaseToggle({ item }) {
-    const phase = getItemState(audit, item.id).phase;
-    const isQW = phase === 'quick-win';
+  function ColChip({ k, label }) {
+    const on = cols[k];
     return (
-      <button
-        onClick={e => { e.stopPropagation(); togglePhase(item.id); }}
-        style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.08em', textTransform:'uppercase',
-          padding:'2px 7px', border:'1px solid', cursor:'pointer', flexShrink:0,
-          background: isQW ? 'var(--accent-positive-bg)' : 'var(--paper-3)',
-          color:       isQW ? 'var(--accent-positive)' : 'var(--ink-5)',
-          borderColor: isQW ? 'var(--accent-positive)' : 'var(--rule-2)' }}>
-        {isQW ? 'Quick win' : 'Test'}
+      <button onClick={() => setCols(c => ({ ...c, [k]:!c[k] }))}
+        style={{ height:34, display:'flex', alignItems:'center', gap:6, padding:'0 10px',
+          background:'transparent', border:`1px solid ${on ? 'var(--rule)' : 'transparent'}`,
+          color: on ? 'var(--ink)' : 'var(--ink-5)', fontFamily:'var(--font-mono)',
+          fontSize:11, fontWeight:600, letterSpacing:'.06em', cursor:'pointer' }}>
+        <span style={{ width:12, height:12, boxSizing:'border-box', display:'grid', placeItems:'center',
+          background: on ? 'var(--btn-bg)' : 'transparent',
+          border:`1px solid ${on ? 'var(--btn-bg)' : 'var(--ink-5)'}`,
+          color:'var(--btn-ink)', fontSize:9 }}>{on ? '✓' : ''}</span>
+        {label}
       </button>
     );
   }
 
-  return (
-    <div data-stage="findings">
-      {/* Sticky stage header bar */}
-      <div style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
-        borderBottom:'1px solid var(--rule)', padding:'10px 20px',
-        display:'flex', alignItems:'center', gap:12, flexWrap:'wrap' }}>
-        <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-          color:'var(--btn-ink)', background:'var(--btn-bg)', padding:'2px 8px', flexShrink:0 }}>02 — Findings</span>
-        <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)', letterSpacing:'0.04em', flexShrink:0 }}>
-          {failItems.length} finding{failItems.length !== 1 ? 's' : ''} · {ids.size} selected for ROI
-        </span>
-        <div style={{ marginLeft:'auto' }}>
-          <SortControl
-            value={findingsSort}
-            onChange={setFindingsSort}
-            options={[
-              { value:'phase',     label:'Phase' },
-              { value:'impact',    label:'Impact' },
-              { value:'fix_time',  label:'Fix Time' },
-              { value:'quickwins', label:'Quick Wins' },
-              { value:'lift',      label:'CVR Lift' },
-            ]}
-          />
-        </div>
-      </div>
+  function HeadBtn({ label, sortKey, align='left' }) {
+    const active = sort === sortKey;
+    return (
+      <button onClick={() => sortKey && setSort(sortKey)}
+        style={{ padding:0, background:'transparent', border:0, textAlign:align,
+          fontFamily:'var(--font-mono)', fontSize:11, fontWeight: active ? 600 : 500,
+          letterSpacing:'.08em', color: active ? 'var(--ink)' : 'var(--ink-5)',
+          cursor: sortKey ? 'pointer' : 'default', whiteSpace:'nowrap' }}>
+        {label}{active && sortKey ? ' ↓' : ''}
+      </button>
+    );
+  }
 
-      <div style={{ maxWidth:840, margin:'0 auto', padding:'32px 24px 60px' }}>
-      <h2 style={{ fontFamily:"var(--font-sans)", fontSize:26, fontWeight:400, color:'var(--ink)',
-        letterSpacing:'-0.4px', marginBottom:6 }}>Findings</h2>
-      <p style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-4)', lineHeight:1.6,
-        marginBottom:28 }}>
-        Select which findings to include in the ROI calculation. High-impact items are checked by default.
-      </p>
+  function FindingRow({ item }) {
+    const checked = ids.has(item.id);
+    const phase   = getItemState(audit, item.id).phase;
+    const state   = getItemState(audit, item.id);
+    const isQW    = phase === 'quick-win';
+    const mo      = rowMo(item);
+    const ink     = checked ? 'var(--ink)' : 'var(--ink-5)';
+    const liftInk = checked ? 'var(--gain)' : 'var(--ink-5)';
+    const rowBg   = checked ? 'var(--bg)' : 'var(--surface)';
+    const title   = item.name.split(':')[0];
+    const finding = state.finding || '';
 
-      {failItems.length === 0 ? (
-        <div style={{ border:'1px solid var(--rule)', padding:'40px 24px', textAlign:'center', background:'var(--paper-2)',
-          fontFamily:"var(--font-sans)", fontSize:14, color:'var(--ink-4)' }}>
-          No failures marked yet — go back to the checklist and mark items as Fail.
-        </div>
-      ) : (
-        <div style={{ border:'1px solid var(--rule)', borderRadius:4, overflow:'hidden' }}>
-          {/* Table header — hidden on mobile via .findings-header CSS */}
-          <div className="findings-header">
-            {['', 'Finding', 'Priority', 'Fix Time', 'CVR Lift', 'Monthly +'].map((h, i) => (
-              <div key={i} style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em',
-                textTransform:'uppercase', color:'var(--ink-5)', textAlign: i >= 4 ? 'right' : 'left' }}>{h}</div>
-            ))}
+    if (isMobile) {
+      return (
+        <div className="rev-row" style={{ background:rowBg }}>
+          <button onClick={() => toggle(item.id)}
+            style={{ width:44, height:44, padding:0, display:'grid', placeItems:'center', background:'transparent', border:0, cursor:'pointer' }}>
+            <span style={{ width:24, height:24, boxSizing:'border-box', display:'grid', placeItems:'center',
+              background: checked ? 'var(--btn-bg)' : 'transparent',
+              border:`1px solid ${checked ? 'var(--btn-bg)' : 'var(--ink-5)'}`,
+              color:'var(--btn-ink)', fontSize:15, fontWeight:700 }}>{checked ? '✓' : ''}</span>
+          </button>
+          <div style={{ display:'flex', flexDirection:'column', gap:4, minWidth:0 }}>
+            <span style={{ fontSize:16, fontWeight:600, color:ink }}>{title}</span>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:12, color:'var(--ink-5)' }}>
+              {IMPACT_LABEL[item.impact]} · {state.estimated_fix_time}
+            </span>
           </div>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:14, fontWeight:600, color:liftInk }}>
+            {checked && roi.hasData ? `+$${fmt(mo)}` : '—'}
+          </span>
+        </div>
+      );
+    }
 
-          {findingsSort === 'phase' && quickWins.length > 0 && (
-            <div style={{ padding:'8px 16px', background:'var(--paper-3)', borderBottom:'1px solid var(--rule)',
-              fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em', textTransform:'uppercase',
-              color:'var(--accent-positive)' }}>
-              Phase 1 · Quick wins · ship this week · {quickWins.length} finding{quickWins.length !== 1 ? 's' : ''}
+    return (
+      <div className="rev-row" style={{ gridTemplateColumns:gridCols, background:rowBg }}>
+        <button onClick={() => toggle(item.id)}
+          style={{ width:22, height:22, padding:0, boxSizing:'border-box', display:'grid', placeItems:'center',
+            background: checked ? 'var(--btn-bg)' : 'transparent',
+            border:`1px solid ${checked ? 'var(--btn-bg)' : 'var(--ink-5)'}`,
+            color:'var(--btn-ink)', fontSize:14, fontWeight:700, cursor:'pointer' }}>
+          {checked ? '✓' : ''}
+        </button>
+        <div style={{ display:'flex', flexDirection:'column', gap:3, minWidth:0 }}>
+          <span style={{ fontSize:15, fontWeight:600, color:ink }}>{title}</span>
+          {finding && <span style={{ fontSize:14, color:'var(--ink-5)' }}>{finding}</span>}
+        </div>
+        {cols.sec  && <span style={{ fontSize:14, color:ink }}>{SECTION_SHORT[item.section] || item.section}</span>}
+        {cols.imp  && <PBadge impact={item.impact} muted={!checked} />}
+        {cols.time && <span style={{ fontFamily:'var(--font-mono)', fontSize:13, color:ink }}>{state.estimated_fix_time}</span>}
+        {cols.lift && <span style={{ fontFamily:'var(--font-mono)', fontSize:13, color:liftInk }}>+{item.lift_min}–{item.lift_max}%</span>}
+        <button onClick={e => { e.stopPropagation(); togglePhase(item.id); }}
+          style={{ height:28, padding:'0 8px', background:'transparent', border:'1px solid var(--rule)',
+            color:'var(--ink)', fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
+            letterSpacing:'.06em', cursor:'pointer' }}>
+          {isQW ? '→ TEST' : '→ SHIP'}
+        </button>
+        <span style={{ fontFamily:'var(--font-mono)', fontSize:15, fontWeight:600, textAlign:'right', color:liftInk }}>
+          {checked && roi.hasData ? `+$${fmt(mo)}` : '—'}
+        </span>
+      </div>
+    );
+  }
+
+  function GroupHeader({ g }) {
+    const sumInk = g.sum > 0 ? 'var(--gain)' : 'var(--ink-5)';
+    if (isMobile) {
+      return (
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline',
+          padding:'16px 16px 8px', borderBottom:`1px solid var(--ink)` }}>
+          <span style={{ fontSize:15, fontWeight:600 }}>{g.title}</span>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, fontWeight:600, color:sumInk }}>
+            {g.sum > 0 ? `+$${fmt(g.sum)}/mo${g.trailer || ''}` : '—'}
+          </span>
+        </div>
+      );
+    }
+    return (
+      <div style={{ display:'flex', alignItems:'baseline', gap:12, padding:'14px 18px 10px',
+        borderBottom:'1px solid var(--rule)', background:'var(--bg)' }}>
+        <span style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600, letterSpacing:'.1em', color:'var(--ink-5)' }}>{g.key}</span>
+        <span style={{ fontSize:16, fontWeight:600 }}>{g.title}</span>
+        <span style={{ fontSize:14, color:'var(--ink-5)' }}>{g.desc}</span>
+        <div style={{ flex:1 }} />
+        <span style={{ fontFamily:'var(--font-mono)', fontSize:13, fontWeight:600, color:sumInk }}>
+          {g.sum > 0 ? `+$${fmt(g.sum)}/mo${g.trailer || ''}` : '—'}
+        </span>
+      </div>
+    );
+  }
+
+  function PricingRail() {
+    const suggested = roi.hasData && roi.annualRecovery > 0
+      ? fmt(roi.suggestedFee || Math.round(roi.annualRecovery * 0.2)) : '—';
+    const floor  = roi.hourlyRate * roi.estHours;
+    const above  = implFee - floor;
+    const abovePct = floor > 0 ? Math.round(above / floor * 100) : 0;
+    const scColor = { pass:'var(--gain)', warn:'var(--amber)', fail:'var(--impact-high)' };
+    return (
+      <div style={{ display:'flex', flexDirection:'column', gap:14, padding:'18px 24px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, letterSpacing:'.06em', color:'var(--ink-5)' }}>PHASE 1 · SUGGESTED FEE</span>
+          <span style={{ fontSize:22, fontWeight:600, letterSpacing:'-0.03em' }}>${suggested}</span>
+        </div>
+        <label style={{ display:'flex', flexDirection:'column', gap:6 }}>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, fontWeight:500, letterSpacing:'.08em' }}>YOUR IMPLEMENTATION FEE</span>
+          <div style={{ display:'flex', height:46, border:'1px solid var(--ink)', background:'var(--bg)', alignItems:'center' }}>
+            <span style={{ paddingLeft:12, fontFamily:'var(--font-mono)', color:'var(--ink-5)' }}>$</span>
+            <input value={pr.impl_fee || ''} onChange={e => setPricing('impl_fee', e.target.value)}
+              placeholder={roi.suggestedFee ? fmt(roi.suggestedFee) : '3500'}
+              style={{ flex:1, minWidth:0, padding:'0 8px', background:'transparent', border:0, color:'var(--ink)',
+                fontFamily:'var(--font-mono)', fontSize:17, fontWeight:600, outline:'none' }} />
+            {auditFee > 0 && <span style={{ paddingRight:12, fontFamily:'var(--font-mono)', fontSize:12, color:'var(--ink-5)' }}>+ ${fmt(auditFee)} audit</span>}
+          </div>
+        </label>
+        <div style={{ border:`1px solid ${!sanityEdit && canSanity ? (scColor[roi.sanityCheck] || 'var(--rule)') : 'var(--rule)'}`,
+          fontFamily:'var(--font-mono)', fontSize:12 }}>
+          {sanityEdit ? (
+            <div style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 12px' }}>
+              <span style={{ color:'var(--ink-5)', fontSize:11, whiteSpace:'nowrap' }}>$/hr</span>
+              <input ref={sanityRateRef} value={pr.hourly_rate || ''} onChange={e => setPricing('hourly_rate', e.target.value)}
+                placeholder="100"
+                onKeyDown={e => { if (e.key === 'Enter') setSanityEdit(false); }}
+                style={{ width:52, padding:'2px 6px', background:'var(--bg)', border:'1px solid var(--ink)',
+                  color:'var(--ink)', fontFamily:'var(--font-mono)', fontSize:13, outline:'none', minWidth:0 }} />
+              <span style={{ color:'var(--ink-5)', fontSize:11 }}>×</span>
+              <input value={pr.est_hours || ''} onChange={e => setPricing('est_hours', e.target.value)}
+                placeholder="30"
+                onKeyDown={e => { if (e.key === 'Enter') setSanityEdit(false); }}
+                style={{ width:44, padding:'2px 6px', background:'var(--bg)', border:'1px solid var(--ink)',
+                  color:'var(--ink)', fontFamily:'var(--font-mono)', fontSize:13, outline:'none', minWidth:0 }} />
+              <span style={{ color:'var(--ink-5)', fontSize:11, flex:1 }}>hrs</span>
+              <button onClick={() => setSanityEdit(false)}
+                style={{ background:'var(--btn-bg)', color:'var(--btn-ink)', border:0, padding:'3px 10px',
+                  fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600, letterSpacing:'.08em', cursor:'pointer' }}>
+                DONE
+              </button>
+            </div>
+          ) : (
+            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 12px' }}>
+              {canSanity && (
+                <span style={{ background: scColor[roi.sanityCheck] || 'var(--ink-5)', color:'var(--bg)',
+                  fontWeight:600, padding:'2px 6px', fontSize:10, letterSpacing:'.08em', flexShrink:0 }}>
+                  {roi.sanityCheck.toUpperCase()}
+                </span>
+              )}
+              <span style={{ flex:1, color: canSanity ? 'var(--ink)' : 'var(--ink-5)' }}>
+                {canSanity ? (
+                  <>
+                    <span onClick={() => setSanityEdit(true)}
+                      style={{ textDecoration:'underline', textDecorationStyle:'dotted', cursor:'pointer' }}>
+                      ${roi.hourlyRate}/hr
+                    </span>
+                    {' × '}
+                    <span onClick={() => setSanityEdit(true)}
+                      style={{ textDecoration:'underline', textDecorationStyle:'dotted', cursor:'pointer' }}>
+                      {roi.estHours}h
+                    </span>
+                    {` floor · ${above >= 0 ? '+' : ''}${abovePct}%`}
+                  </>
+                ) : 'Set hourly rate + hours to check your fee'}
+              </span>
+              <button onClick={() => setSanityEdit(true)}
+                style={{ background:'transparent', border:0, color:'var(--ink-3)', cursor:'pointer',
+                  padding:'0 2px', fontSize:14, lineHeight:1, flexShrink:0 }}
+                title="Edit hourly rate and hours">
+                ✎
+              </button>
             </div>
           )}
-
-          {(findingsSort === 'phase' ? quickWins : sortedFailItems).map(item => {
-            const checked = ids.has(item.id);
-            const itemState = getItemState(audit, item.id);
-            const ci = audit.client_info || {};
-            const revenue = parseFloat(ci.monthly_revenue) || 0;
-            const aov = parseFloat(ci.aov) || 85;
-            const cvrRaw = parseFloat(ci.cvr) || 1.8;
-            const sessions = revenue > 0 ? revenue / (aov * (cvrRaw / 100)) : 0;
-            const midLift = (item.lift_min + item.lift_max) / 2 / 100;
-            const monthlyImpact = sessions * aov * midLift;
-            return (
-              <div key={item.id}
-                className="findings-row"
-                style={{ background: checked ? 'var(--row-checked-bg)' : 'var(--paper-2)' }}
-                onClick={() => toggle(item.id)}
-                onMouseEnter={e => { if (!checked) e.currentTarget.style.background='var(--paper-3)'; }}
-                onMouseLeave={e => { if (!checked) e.currentTarget.style.background='var(--paper-2)'; }}>
-                {/* Top section: checkbox + issue name. Desktop: display:contents (grid cols 1–2). Mobile: flex row. */}
-                <div className="findings-row-top">
-                  <div style={{ paddingTop:2, flexShrink:0 }}>
-                    <div className="findings-cb" style={{ width:16, height:16, border:`2px solid ${checked ? 'var(--btn-bg)' : 'var(--rule-2)'}`,
-                      background: checked ? 'var(--btn-bg)' : 'transparent', display:'flex',
-                      alignItems:'center', justifyContent:'center', transition:'all 0.12s' }}>
-                      {checked && <span className="findings-cb-check" style={{ color:'var(--btn-ink)', fontSize:10, lineHeight:1 }}>✓</span>}
-                    </div>
-                  </div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-2)',
-                      lineHeight:1.3, marginBottom:3 }}>
-                      {item.name.split(':')[0]}{itemState.finding ? `: ${itemState.finding}` : ''}
-                    </div>
-                    {itemState.recommendation && (
-                      <div style={{ fontFamily:"var(--font-sans)", fontSize:11, color:'var(--ink-4)',
-                        lineHeight:1.4 }}>{itemState.recommendation}</div>
-                    )}
-                    <div style={{ marginTop:4 }}>
-                      <ViewportIcons viewport={item.primary_viewport} status={itemState.status} failsDesktop={itemState.fails_on_desktop} failsMobile={itemState.fails_on_mobile} size="findings" />
-                    </div>
-                  </div>
-                </div>
-                {/* Bottom section: impact + lift + revenue. Desktop: display:contents (grid cols 3–5). Mobile: flex row indented. */}
-                <div className="findings-row-btm">
-                  <div style={{ display:'flex', gap:5, alignItems:'center' }}>
-                    <span style={{ fontFamily:"var(--font-mono)", fontSize:10, padding:'2px 7px',
-                      background:IMPACT_BG[item.impact], color:IMPACT_COLOR[item.impact],
-                      letterSpacing:'0.04em', textTransform:'uppercase' }}>{IMPACT_LABEL[item.impact] || item.impact}</span>
-                    <PhaseToggle item={item} />
-                  </div>
-                  <div style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)',
-                    letterSpacing:'0.04em' }}>
-                    <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9,
-                      color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Fix </span>
-                    {itemState.estimated_fix_time}
-                  </div>
-                  <div className="findings-col-lift" style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--accent-positive)',
-                    textAlign:'right', letterSpacing:'0.04em' }}>
-                    <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9,
-                      color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>CVR </span>
-                    +{item.lift_min}–{item.lift_max}%
-                  </div>
-                  <div className="findings-col-rev" style={{ fontFamily:"var(--font-mono)", fontSize:11,
-                    color: revenue > 0 ? 'var(--state-pass)' : 'var(--ink-5)',
-                    textAlign:'right', letterSpacing:'0.04em' }}>
-                    <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9,
-                      color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Mo. </span>
-                    {checked && revenue > 0 ? `+$${fmt(monthlyImpact)}` : '—'}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-
-          {findingsSort === 'phase' && tests.length > 0 && (
-            <>
-              <div style={{ padding:'8px 16px', background:'var(--paper-3)', borderBottom:'1px solid var(--rule)',
-                borderTop:'2px solid var(--rule-2)', fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em',
-                textTransform:'uppercase', color:'var(--ink-4)' }}>
-                Phase 2 · Testing roadmap · {tests.length} test{tests.length !== 1 ? 's' : ''}
-              </div>
-              {tests.map(item => {
-                const checked = ids.has(item.id);
-                const itemState = getItemState(audit, item.id);
-                const ci = audit.client_info || {};
-                const revenue = parseFloat(ci.monthly_revenue) || 0;
-                const aov = parseFloat(ci.aov) || 85;
-                const cvrRaw = parseFloat(ci.cvr) || 1.8;
-                const sessions = revenue > 0 ? revenue / (aov * (cvrRaw / 100)) : 0;
-                const midLift = (item.lift_min + item.lift_max) / 2 / 100;
-                const monthlyImpact = sessions * aov * midLift;
-                return (
-                  <div key={item.id}
-                    className="findings-row"
-                    style={{ background: checked ? 'var(--row-checked-bg)' : 'var(--paper-2)' }}
-                    onClick={() => toggle(item.id)}
-                    onMouseEnter={e => { if (!checked) e.currentTarget.style.background='var(--paper-3)'; }}
-                    onMouseLeave={e => { if (!checked) e.currentTarget.style.background='var(--paper-2)'; }}>
-                    <div className="findings-row-top">
-                      <div style={{ paddingTop:2, flexShrink:0 }}>
-                        <div className="findings-cb" style={{ width:16, height:16, border:`2px solid ${checked ? 'var(--accent)' : 'var(--rule-2)'}`,
-                          background: checked ? 'var(--btn-bg)' : 'transparent', display:'flex',
-                          alignItems:'center', justifyContent:'center', transition:'all 0.12s' }}>
-                          {checked && <span className="findings-cb-check" style={{ color:'var(--btn-ink)', fontSize:10, lineHeight:1 }}>✓</span>}
-                        </div>
-                      </div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontFamily:"var(--font-sans)", fontSize:13, color:'var(--ink-2)', lineHeight:1.3, marginBottom:3 }}>
-                          {item.name.split(':')[0]}{itemState.finding ? `: ${itemState.finding}` : ''}
-                        </div>
-                        {itemState.recommendation && (
-                          <div style={{ fontFamily:"var(--font-sans)", fontSize:11, color:'var(--ink-4)', lineHeight:1.4 }}>{itemState.recommendation}</div>
-                        )}
-                        <div style={{ marginTop:4 }}>
-                          <ViewportIcons viewport={item.primary_viewport} status={itemState.status} failsDesktop={itemState.fails_on_desktop} failsMobile={itemState.fails_on_mobile} size="findings" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="findings-row-btm">
-                      <div style={{ display:'flex', gap:5, alignItems:'center' }}>
-                        <span style={{ fontFamily:"var(--font-mono)", fontSize:10, padding:'2px 7px',
-                          background:IMPACT_BG[item.impact], color:IMPACT_COLOR[item.impact],
-                          letterSpacing:'0.04em', textTransform:'uppercase' }}>{IMPACT_LABEL[item.impact] || item.impact}</span>
-                        <PhaseToggle item={item} />
-                      </div>
-                      <div style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)', letterSpacing:'0.04em' }}>
-                        <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Fix </span>
-                        {itemState.estimated_fix_time}
-                      </div>
-                      <div className="findings-col-lift" style={{ fontFamily:"var(--font-mono)", fontSize:11, color:'var(--accent-positive)', textAlign:'right', letterSpacing:'0.04em' }}>
-                        <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>CVR </span>
-                        +{item.lift_min}–{item.lift_max}%
-                      </div>
-                      <div className="findings-col-rev" style={{ fontFamily:"var(--font-mono)", fontSize:11,
-                        color: revenue > 0 ? 'var(--state-pass)' : 'var(--ink-5)', textAlign:'right', letterSpacing:'0.04em' }}>
-                        <span className="findings-lbl" style={{ fontFamily:"var(--font-mono)", fontSize:9, color:'var(--ink-5)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:3 }}>Mo. </span>
-                        {checked && revenue > 0 ? `+$${fmt(monthlyImpact)}` : '—'}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </>
-          )}
-
         </div>
-      )}
-
-      {/* Quick summary */}
-      {failItems.length > 0 && ids.size > 0 && (
-        <div style={{ marginTop:24, fontFamily:"var(--font-mono)", fontSize:11, color:'var(--ink-4)',
-          letterSpacing:'0.04em' }}>
-          {roi.hasData
-            ? `${ids.size} findings · est. +$${fmt(roi.monthlyRecovery)}/mo · +${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% CVR lift (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp${roi.atCeiling ? ', ceiling' : ''})`
-            : `${ids.size} findings selected`}
-        </div>
-      )}
-      </div>
-    </div>
-  );
-}
-// ─── END COMPONENTS B ───
-
-// ─── COMPONENTS C: CalculatorStage, ReportStage, AuditWorkspace, App ───
-
-function CalculatorStage({ audit, checkedIds, onUpdatePricing }) {
-  const ids = checkedIds || new Set();
-  const roi = calcROI(audit, ids);
-  const pr = audit.pricing || {};
-  const failCount = AUDIT_ITEMS.filter(i => getItemState(audit, i.id).status === 'fail').length;
-  const completedCount = AUDIT_ITEMS.filter(i => { const s = getItemState(audit, i.id).status; return s === 'pass' || s === 'fail'; }).length;
-
-  const selectedItems = AUDIT_ITEMS.filter(i => ids.has(i.id));
-  const qwCount   = selectedItems.filter(i => getItemState(audit, i.id).phase === 'quick-win').length;
-  const testCount = selectedItems.filter(i => getItemState(audit, i.id).phase !== 'quick-win').length;
-
-  function setPricing(k, v) { onUpdatePricing(audit.id, { ...pr, [k]: parseFloat(v) || 0 }); }
-
-  const metricCell = (label, value, sub) => (
-    <div style={{ background:'var(--paper-3)', border:'1px solid var(--rule)', padding:'16px 20px' }}>
-      <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-        color:'var(--ink-5)', marginBottom:6 }}>{label}</div>
-      <div style={{ fontFamily:"var(--font-sans)", fontSize:26, color:'var(--ink)',
-        letterSpacing:'-0.5px', lineHeight:1 }}>{value}</div>
-      {sub && <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-4)', marginTop:4 }}>{sub}</div>}
-    </div>
-  );
-
-  const sanityColor = { pass:'var(--state-pass)', warn:'var(--amber)', fail:'var(--impact-high)', neutral:'var(--ink-4)' };
-
-  return (
-    <div data-stage="calculator">
-      {/* Sticky stage header bar */}
-      <div style={{ position:'sticky', top:0, zIndex:10, background:'var(--paper-2)',
-        borderBottom:'1px solid var(--rule)', padding:'10px 20px',
-        display:'flex', alignItems:'center', gap:12 }}>
-        <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em', textTransform:'uppercase',
-          color:'var(--btn-ink)', background:'var(--btn-bg)', padding:'2px 8px' }}>02 — Revenue</span>
-        {!roi.hasData && (
-          <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--amber)', letterSpacing:'0.04em' }}>
-            Add store metrics in Audit Info to unlock
+        <div style={{ display:'flex', flexDirection:'column', gap:10, paddingTop:14, borderTop:'1px solid var(--rule)' }}>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, letterSpacing:'.06em', color:'var(--ink-5)' }}>PHASE 2 · TESTING RETAINER</span>
+          <div style={{ display:'grid', gridTemplateColumns:'1.4fr 1fr', gap:10, minWidth:0 }}>
+            {[['retainer_rate','1500','/ month'],['retainer_months','3','months']].map(([k,ph,unit]) => (
+              <div key={k} style={{ display:'flex', height:44, border:'1px solid var(--rule)', background:'var(--bg)',
+                alignItems:'center', fontFamily:'var(--font-mono)', fontSize:14, padding:'0 12px', justifyContent:'space-between',
+                minWidth:0, overflow:'hidden' }}>
+                <input value={pr[k] !== undefined && pr[k] !== 0 ? pr[k] : ''} onChange={e => setPricing(k, e.target.value)}
+                  placeholder={ph}
+                  style={{ flex:1, minWidth:0, background:'transparent', border:0, color:'var(--ink)',
+                    fontFamily:'var(--font-mono)', fontSize:14, outline:'none' }} />
+                <span style={{ color:'var(--ink-5)', fontSize:12, flexShrink:0 }}>{unit}</span>
+              </div>
+            ))}
+          </div>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, color:'var(--ink-5)' }}>
+            {testCount} test{testCount !== 1 ? 's' : ''} · ~4 weeks each · renews monthly
           </span>
+        </div>
+        {totalEng > 0 && (
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline',
+            padding:'12px 0', borderTop:'1px solid var(--rule)' }}>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:12, letterSpacing:'.06em', color:'var(--ink-5)' }}>TOTAL ENGAGEMENT</span>
+            <span style={{ fontSize:22, fontWeight:600 }}>${fmt(totalEng)}</span>
+          </div>
         )}
       </div>
+    );
+  }
 
-      <div style={{ maxWidth:840, margin:'0 auto', padding:'32px 24px 60px' }}>
-      <h2 style={{ fontFamily:"var(--font-sans)", fontSize:26, fontWeight:600, color:'var(--ink)',
-        letterSpacing:'-0.045em', marginBottom:32 }}>Revenue at stake</h2>
+  if (failItems.length === 0) {
+    return (
+      <div className="rev-stage" style={{ alignItems:'center', justifyContent:'center' }}>
+        <div style={{ textAlign:'center', padding:40, fontFamily:'var(--font-sans)', fontSize:14, color:'var(--ink-5)' }}>
+          No failures marked yet — go back to the checklist and mark items as Fail.
+        </div>
+      </div>
+    );
+  }
 
-      {/* Revenue Impact Card */}
-      {(() => {
-        const ci2 = audit.client_info || {};
-        const revenue = parseFloat(ci2.monthly_revenue) || 0;
-        const storeLabel = revenue >= 1000000
-          ? `$${(revenue/1000000).toFixed(1).replace(/\.0$/,'')}M/MO STORE`
-          : revenue >= 1000
-            ? `$${Math.round(revenue/1000)}K/MO STORE`
-            : revenue > 0 ? `$${revenue}/MO STORE` : 'STORE';
-        const clientLabel = ci2.client_name || 'Client Store';
-        const metricRows = [
-          { label: 'Current conversion rate', value: roi.hasData ? fmtPct(roi.cvrRaw) : '—', accent: false },
-          { label: 'Selected findings', value: `${ids.size} of ${completedCount}`, accent: true },
-          { label: 'Avg. order value', value: roi.hasData ? `$${fmt(roi.aov)}` : '—', accent: false },
-          { label: 'Projected CVR lift', value: roi.hasData ? `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp${roi.atCeiling ? ', ceiling' : ''})` : '—', accent: false },
-        ];
-        return (
-          <div style={{ border:'1px solid var(--rule)', marginBottom:32, overflow:'hidden', borderRadius:4 }}>
-            {/* Card header */}
-            <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)',
-              padding:'10px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
-              <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em',
-                textTransform:'uppercase', color:'var(--ink-5)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                Audit · {clientLabel} · {storeLabel}
-              </span>
-              <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em',
-                textTransform:'uppercase', color:'var(--ink)', flexShrink:0,
-                border:'1px solid var(--rule)', padding:'3px 10px',
-                background:'var(--paper-3)' }}>
-                {ids.size} of {failCount} in ROI
-              </span>
-            </div>
-            {/* Metric rows */}
-            {metricRows.map(({ label, value, accent }, i) => (
-              <div key={label} style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
-                padding:'16px 20px', borderBottom: i < metricRows.length - 1 ? '1px solid var(--rule)' : 'none',
-                background:'var(--paper-2)', gap:16 }}>
-                <span style={{ fontFamily:"var(--font-sans)", fontSize:14, color:'var(--ink-3)' }}>{label}</span>
-                <span style={{ fontFamily:"var(--font-sans)", fontSize:22, fontWeight:400,
-                  color: accent ? 'var(--amber)' : 'var(--ink)', letterSpacing:'-0.3px' }}>{value}</span>
+  const annual = roi.hasData && roi.annualRecovery > 0 ? `$${fmt(roi.annualRecovery)}` : '—';
+
+  return (
+    <div className="rev-stage">
+      {/* Mobile summary bar */}
+      <div className="rev-mob-bar" style={{ gridTemplateColumns:'1fr auto', alignItems:'end', gap:8,
+        padding:'16px', background:'var(--surface)', borderBottom:'1px solid var(--rule)' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'.08em', color:'var(--ink-5)' }}>ANNUAL AT RISK · IN REPORT</span>
+          <span style={{ fontSize:40, fontWeight:600, letterSpacing:'-0.045em', lineHeight:1, color:'var(--gain)' }}>{annual}</span>
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:2, fontFamily:'var(--font-mono)', fontSize:12 }}>
+          <span style={{ fontWeight:600 }}>{roi.hasData ? `+$${fmt(roi.monthlyRecovery)}/mo` : '—'}</span>
+          <span>{roi.hasData ? `${fmtPct(roi.cvrRaw)} → ${fmtPct(roi.projCVRRaw)}` : ''}</span>
+          {roi.hasData && roi.roiMultiple > 0 && <span style={{ color:'var(--ink-5)' }}>{roi.roiMultiple.toFixed(1)}× ROI</span>}
+        </div>
+      </div>
+
+      <div className="rev-grid">
+        {/* ── Left: findings ── */}
+        <div className="rev-main">
+          {/* Desktop header */}
+          {!isMobile && (
+            <div style={{ display:'flex', alignItems:'flex-end', gap:16, flexWrap:'wrap' }}>
+              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                <h1 style={{ margin:0, fontSize:32, fontWeight:600, letterSpacing:'-0.04em', lineHeight:1.05 }}>Revenue</h1>
+                <p style={{ margin:0, fontSize:16, color:'var(--ink-5)' }}>Ship quick wins now. Move anything that needs proof into the testing roadmap.</p>
               </div>
+              <div style={{ flex:1 }} />
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:12, fontWeight:500, letterSpacing:'.08em', color:'var(--ink-5)' }}>COLUMNS</span>
+                <div style={{ display:'flex', gap:6 }}>
+                  {[['sec','SECTION'],['imp','PRIORITY'],['time','FIX TIME'],['lift','CVR LIFT']].map(([k,l]) => <ColChip key={k} k={k} label={l} />)}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Table */}
+          <div style={{ display:'flex', flexDirection:'column', border:'1px solid var(--rule)' }}>
+            <div className="rev-head" style={{ gridTemplateColumns:gridCols }}>
+              <HeadBtn label="" sortKey={null} />
+              <HeadBtn label="FINDING" sortKey={null} />
+              {cols.sec  && <HeadBtn label="SECTION"  sortKey="sec" />}
+              {cols.imp  && <HeadBtn label="PRIORITY" sortKey="imp" />}
+              {cols.time && <HeadBtn label="FIX TIME" sortKey="time" />}
+              {cols.lift && <HeadBtn label="CVR LIFT" sortKey="lift" />}
+              <HeadBtn label="PHASE" sortKey={null} />
+              <HeadBtn label="/MO" sortKey={null} align="right" />
+            </div>
+            {groups.map(g => g.rows.length > 0 && (
+              <React.Fragment key={g.key}>
+                <GroupHeader g={g} />
+                {g.rows.map(item => <FindingRow key={item.id} item={item} />)}
+              </React.Fragment>
             ))}
-            {/* Bottom split: Annual Recovery + ROI */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', borderTop:'1px solid var(--rule)' }}>
-              <div style={{ padding:'20px 24px', borderRight:'1px solid var(--rule)', background:'var(--paper-2)' }}>
-                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em',
-                  textTransform:'uppercase', color:'var(--ink-5)', marginBottom:10 }}>Annual revenue recovered</div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:40, color:'var(--accent)',
-                  letterSpacing:'-1px', lineHeight:1, marginBottom:roi.hasData && roi.totalInvestment > 0 ? 12 : 0 }}>
-                  {roi.hasData && roi.annualRecovery > 0 ? `$${fmt(roi.annualRecovery)}` : '—'}
-                </div>
-                {roi.hasData && roi.annualRecovery > 0 && roi.totalInvestment > 0 && (
-                  <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)', lineHeight:1.6, fontStyle:'italic' }}>
-                    Client pays ${fmt(roi.auditFee)} audit + ${fmt(roi.implFee)} to fix. Store recovers ${fmt(roi.annualRecovery)}+/yr.
-                  </div>
-                )}
-              </div>
-              <div style={{ padding:'20px 24px', background:'var(--paper-2)' }}>
-                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em',
-                  textTransform:'uppercase', color:'var(--ink-5)', marginBottom:10 }}>Return on audit</div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:40,
-                  color:'var(--ink)', letterSpacing:'-1px', lineHeight:1 }}>
-                  {roi.hasData && roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}×` : '—'}
-                </div>
-              </div>
-            </div>
           </div>
-        );
-      })()}
 
-      {/* Your Pricing — private, no-print */}
-      <div className="no-print" style={{ border:'1px solid var(--rule)', marginBottom:32, borderRadius:4, overflow:'hidden' }}>
-        <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)', padding:'10px 20px',
-          display:'flex', alignItems:'center', gap:8 }}>
-          <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.12em',
-            textTransform:'uppercase', color:'var(--ink-5)', background:'rgba(255,255,255,0.06)',
-            border:'1px solid var(--rule)', padding:'2px 7px' }}>Private</span>
-          <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.08em',
-            textTransform:'uppercase', color:'var(--ink-4)' }}>Your Pricing</span>
-        </div>
-        <div style={{ padding:'20px' }}>
-          {/* Suggested fee */}
-          {roi.hasData && roi.annualRecovery > 0 && (
-            <div style={{ marginBottom:20, padding:'14px 16px', background:'var(--paper-3)',
-              border:'1px solid var(--rule)', display:'flex', justifyContent:'space-between',
-              alignItems:'baseline', flexWrap:'wrap', gap:8 }}>
-              <div>
-                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:'0.1em',
-                  textTransform:'uppercase', color:'var(--ink-5)', marginBottom:4 }}>Suggested fee</div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:28, color:'var(--accent-positive)',
-                  letterSpacing:'-0.5px' }}>${fmt(roi.suggestedFee)}</div>
-                <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-4)', marginTop:3 }}>
-                  {roi.suggestedPct}% of annual recovery · based on {roi.highCount} high-impact finding{roi.highCount !== 1 ? 's' : ''}
+          {/* Mobile pricing disclosure */}
+          <div className="rev-mob-pricing-row"
+            style={{ alignItems:'center', justifyContent:'space-between', height:56,
+              padding:'0 16px', borderTop:`2px solid var(--ink)`, cursor:'pointer' }}
+            onClick={() => setPricingOpen(o => !o)}>
+            <span style={{ display:'flex', gap:8, alignItems:'center' }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600,
+                background:'var(--ink)', color:'var(--bg)', padding:'3px 6px' }}>PRIVATE</span>
+              <span style={{ fontSize:15, fontWeight:600 }}>Your pricing</span>
+            </span>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:13 }}>
+              {implFee > 0 ? `$${fmt(implFee)}` : '—'}{retainerRate > 0 ? ` + $${fmt(retainerRate)}/mo` : ''} {'▾'}
+            </span>
+          </div>
+          {pricingOpen && <div style={{ padding:'0 16px 16px' }}>{PricingRail()}</div>}
+
+          {/* Pitch paragraph (desktop only) */}
+          {!isMobile && (
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:12, fontWeight:600, letterSpacing:'.08em' }}>PITCH PARAGRAPH</span>
+                <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600, border:'1px solid var(--rule)', padding:'2px 5px', color:'var(--ink-5)' }}>IN REPORT</span>
+                <div style={{ flex:1 }} />
+                {!pitchEdit && <button onClick={openEdit} style={{ background:'none', border:0, fontFamily:'var(--font-mono)', fontSize:12, color:'var(--ink-5)', cursor:'pointer', padding:0 }}>Click to edit</button>}
+                {!pitchEdit && audit.pitch_text && <button onClick={resetPitch} style={{ background:'none', border:0, fontFamily:'var(--font-mono)', fontSize:12, color:'var(--ink-5)', cursor:'pointer', padding:0 }}>· Reset</button>}
+              </div>
+              {pitchEdit ? (
+                <div>
+                  <textarea value={pitchDraft} onChange={e => setPitchDraft(e.target.value)} autoFocus
+                    rows={4} onBlur={() => savePitch(pitchDraft)}
+                    style={{ width:'100%', boxSizing:'border-box', padding:'16px 18px', background:'var(--surface)',
+                      border:'1px solid var(--accent)', color:'var(--ink)', fontFamily:'var(--font-sans)',
+                      fontSize:16, lineHeight:1.6, resize:'vertical', outline:'none' }} />
+                  <button onClick={() => savePitch(pitchDraft)}
+                    style={{ marginTop:6, fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
+                      letterSpacing:'.08em', padding:'6px 14px', background:'var(--btn-bg)', color:'var(--btn-ink)', border:0, cursor:'pointer' }}>
+                    SAVE
+                  </button>
                 </div>
-              </div>
-              <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)',
-                textAlign:'right', lineHeight:1.6 }}>
-                Range: ${fmt(roi.annualRecovery * 0.10)} (10%) –<br />${fmt(roi.annualRecovery * 0.20)} (20%)
-              </div>
-            </div>
-          )}
-          {/* Fee inputs */}
-          <div className="fg2" style={{ marginBottom:12 }}>
-            <div className="field field-private">
-              <label>Audit Fee ($)</label>
-              <CIInput type="number" value={pr.audit_fee || ''} onChange={v => setPricing('audit_fee', v)}
-                placeholder={roi.suggestedFee ? String(Math.round(roi.suggestedFee * 0.3)) : '2500'} min="0" />
-            </div>
-            <div className="field field-private">
-              <label>Implementation Fee ($)</label>
-              <CIInput type="number" value={pr.impl_fee || (roi.suggestedFee ? String(roi.suggestedFee) : '')} onChange={v => setPricing('impl_fee', v)}
-                placeholder="0" min="0" />
-            </div>
-          </div>
-          {/* Hourly sanity check */}
-          <div className="fg2">
-            <div className="field field-private">
-              <label>Hourly Rate ($)</label>
-              <CIInput type="number" value={pr.hourly_rate || ''} onChange={v => setPricing('hourly_rate', v)}
-                placeholder="75" min="0" />
-            </div>
-            <div className="field field-private">
-              <label>Estimated Hours</label>
-              <CIInput type="number" value={pr.est_hours || ''} onChange={v => setPricing('est_hours', v)}
-                placeholder="20" min="0" />
-            </div>
-          </div>
-          {roi.hourlyRate > 0 && roi.estHours > 0 && (
-            <div style={{ marginTop:8, padding:'8px 12px', background:'var(--paper-3)',
-              border:`1px solid ${roi.sanityCheck === 'pass' ? 'var(--state-pass)' : roi.sanityCheck === 'warn' ? 'var(--amber)' : 'var(--state-fail)'}`,
-              fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.04em',
-              color: sanityColor[roi.sanityCheck] }}>
-              Hourly sanity: ${fmt(roi.implFee)} ÷ {roi.estHours}h = ${(roi.implFee / roi.estHours).toFixed(0)}/hr
-              {roi.sanityCheck === 'pass' ? ' · on target' : roi.sanityCheck === 'warn' ? ' · below rate' : ' · well below rate'}
+              ) : (
+                <p onClick={openEdit} style={{ margin:0, padding:'16px 18px', background:'var(--surface)', border:'1px solid var(--rule)',
+                  fontSize:16, lineHeight:1.6, cursor:'text',
+                  color: pitchText ? 'var(--ink)' : 'var(--ink-5)', fontStyle: pitchText ? 'normal' : 'italic' }}>
+                  {pitchText || (roi.hasData ? 'Click to add a pitch paragraph.' : 'Add revenue metrics in Setup to generate the pitch.')}
+                </p>
+              )}
             </div>
           )}
         </div>
-      </div>
 
-      {/* Proposal block — goes in report */}
-      <div style={{ border:'1px solid var(--rule)', marginBottom:32, borderRadius:4, overflow:'hidden' }}>
-        <div style={{ background:'var(--paper-3)', borderBottom:'1px solid var(--rule)', padding:'10px 20px' }}>
-          <span style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:'0.08em',
-            textTransform:'uppercase', color:'var(--ink-4)' }}>Proposal Summary</span>
-        </div>
-        {[
-          ['Scope',
-            `${ids.size} of ${failCount} finding${failCount !== 1 ? 's' : ''} in scope`,
-            ids.size > 0 ? `${qwCount} quick win${qwCount !== 1 ? 's' : ''} · ${testCount} test${testCount !== 1 ? 's' : ''}` : null],
-          ['Estimated CVR lift from scope',
-            roi.hasData ? `+${Math.round(roi.cappedMin)}–${Math.round(roi.cappedMax)}% (+${roi.cappedMinPP.toFixed(2)}–${roi.cappedMaxPP.toFixed(2)}pp${roi.atCeiling ? ', ceiling' : ''})` : '—',
-            roi.hasData ? `mid: +${Math.round(roi.cappedMid)}% (+${roi.cappedMidPP.toFixed(2)}pp)` : 'Add store metrics to calculate'],
-          ['Revenue at stake · per year',
-            roi.hasData ? `$${fmt(roi.annualRecovery)}` : '—',
-            roi.hasData ? `$${fmt(roi.monthlyRecovery)}/month` : null],
-          ['Suggested fee for the scope',
-            roi.totalInvestment > 0 ? `$${fmt(roi.totalInvestment)}` : '—',
-            roi.auditFee > 0 || roi.implFee > 0
-              ? `Audit $${fmt(roi.auditFee)} · Implementation $${fmt(roi.implFee)}`
-              : 'Set fees in Your Pricing above'],
-          ['Client ROI',
-            roi.hasData && roi.roiMultiple > 0 ? `${roi.roiMultiple.toFixed(1)}× return` : '—',
-            roi.hasData && roi.paybackMonths > 0 ? `payback in ${roi.paybackMonths.toFixed(1)} months` : null],
-        ].map(([label, value, sub], i, arr) => (
-          <div key={label}
-            className="proposal-row"
-            style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', padding:'14px 20px',
-              borderBottom: i < arr.length - 1 ? '1px solid var(--rule)' : 'none',
-              background:'var(--paper-2)', gap:16, flexWrap:'wrap' }}>
-            <span style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:'0.06em',
-              textTransform:'uppercase', color:'var(--ink-4)', flexShrink:0 }}>{label}</span>
-            <div className="proposal-val" style={{ textAlign:'right' }}>
-              <div style={{ fontFamily:"var(--font-sans)", fontSize:18, color:'var(--ink)',
-                letterSpacing:'-0.3px' }}>{value}</div>
-              {sub && <div style={{ fontFamily:"var(--font-mono)", fontSize:10, color:'var(--ink-5)', marginTop:2 }}>{sub}</div>}
+        {/* ── Right: ROI rail ── */}
+        <div className="rev-rail">
+          {/* CLIENT SEES */}
+          <div style={{ padding:'22px 24px', display:'flex', flexDirection:'column', gap:14, borderBottom:'1px solid var(--rule)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:12, fontWeight:600, letterSpacing:'.08em' }}>CLIENT SEES</span>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600, border:'1px solid var(--rule)', padding:'2px 5px', color:'var(--ink-5)' }}>IN REPORT</span>
             </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+              <span style={{ fontSize:56, fontWeight:600, letterSpacing:'-0.045em', lineHeight:1, color:'var(--gain)' }}>{annual}</span>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:13, color:'var(--ink-5)' }}>
+                annual revenue at risk · {ids.size} finding{ids.size !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', border:'1px solid var(--rule)', background:'var(--bg)' }}>
+              {[
+                { l:'CURRENT CVR',      v: roi.hasData ? fmtPct(roi.cvrRaw)     : '—', c:'var(--ink)' },
+                { l:'PROJECTED CVR',    v: roi.hasData ? fmtPct(roi.projCVRRaw) : '—', c: roi.hasData ? 'var(--gain)' : 'var(--ink)' },
+                { l:'MONTHLY RECOVERY', v: roi.hasData ? `+$${fmt(roi.monthlyRecovery)}` : '—', c: roi.hasData ? 'var(--gain)' : 'var(--ink)' },
+                { l:'TESTS PLANNED',    v: `${testCount} · 12 wks`, c:'var(--ink)' },
+              ].map(g => (
+                <div key={g.l} style={{ padding:'12px 14px', display:'flex', flexDirection:'column', gap:2,
+                  borderBottom:'1px solid var(--rule)', borderRight:'1px solid var(--rule)' }}>
+                  <span style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'.08em', color:'var(--ink-5)' }}>{g.l}</span>
+                  <span style={{ fontSize:20, fontWeight:600, color:g.c }}>{g.v}</span>
+                </div>
+              ))}
+            </div>
+            {roiLine && <span style={{ fontFamily:'var(--font-mono)', fontSize:13 }}>{roiLine}</span>}
           </div>
-        ))}
-      </div>
-
+          {/* PRIVATE divider */}
+          <div style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 24px', background:'var(--ink)', color:'var(--bg)', flexShrink:0 }}>
+            <span style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600, letterSpacing:'.1em' }}>PRIVATE</span>
+            <span style={{ fontSize:14, fontWeight:600 }}>Only you see below</span>
+          </div>
+          {PricingRail()}
+        </div>
       </div>
     </div>
   );
 }
+
+// ─── COMPONENTS C: ReportStage, AuditWorkspace, App ───
 
 function ReportStage({ audit, checkedIds, onGoToScripts }) {
   const ids = checkedIds || new Set();
@@ -3541,6 +3567,17 @@ function ReportStage({ audit, checkedIds, onGoToScripts }) {
             </div>
             <div style={{ height:3, background:r.accent }} />
           </div>
+
+          {/* ── PITCH PARAGRAPH ── */}
+          {(() => {
+            const pitch = audit.pitch_text || generatePitch(audit, roi, ids);
+            return pitch ? (
+              <p style={{ fontFamily:sans, fontSize:18, lineHeight:1.65, color:r.ink2,
+                marginBottom:40, paddingBottom:40, borderBottom:`1px solid ${r.rule}` }}>
+                {pitch}
+              </p>
+            ) : null;
+          })()}
 
           {/* ── REVENUE IMPACT SUMMARY ── */}
           <div style={{ marginBottom:40 }}>
@@ -4172,13 +4209,12 @@ function SetupStage({ audit, lastAuditorName, onSave, onBack }) {
 
 // ─── COMPONENTS C: AuditWorkspace, App ───────────────────────────────────────
 
-function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveClientInfo, onBack, theme, onToggleTheme, saveStatus }) {
+function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSavePitch, onSaveClientInfo, onBack, theme, onToggleTheme, saveStatus }) {
   const audit = store.audits[auditId];
   const [clientInfoOpen, setClientInfoOpen] = useState(false);
   const [clientInfoSkipTarget, setClientInfoSkipTarget] = useState(null);
 
-  // Stage layout:
-  // 0=Setup  1=Checklist  2=Findings(Revenue)  3=Calculator(Revenue)  4=Report  5=Scripts
+  // Stage layout: 0=Setup  1=Checklist  2=Revenue  3=Report  4=Scripts
   const isNewAudit = (() => {
     const ci2 = audit?.client_info || {};
     return !ci2.audit_title && !ci2.client_name && !ci2.monthly_revenue;
@@ -4209,23 +4245,20 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
   const metricsIncomplete = !ci.monthly_revenue || !ci.aov || !ci.cvr;
   const setupDone = !!(ci.audit_title || ci.client_name) && !!ci.auditor_name;
 
-  // Step strip config: each tab maps to a stage index (Revenue covers stages 2–3)
   const STEPS = [
-    { label: '01 Setup',     stage: 0,  activeOn: [0] },
-    { label: '02 Checklist', stage: 1,  activeOn: [1] },
-    { label: '03 Revenue',   stage: 2,  activeOn: [2, 3] },
-    { label: '04 Report',    stage: 4,  activeOn: [4] },
-    { label: '05 Scripts',   stage: 5,  activeOn: [5] },
+    { label: '01 Setup',     stage: 0, activeOn: [0] },
+    { label: '02 Checklist', stage: 1, activeOn: [1] },
+    { label: '03 Revenue',   stage: 2, activeOn: [2] },
+    { label: '04 Report',    stage: 3, activeOn: [3] },
+    { label: '05 Scripts',   stage: 4, activeOn: [4] },
   ];
 
-  // Next-step config per stage
   const NEXT_CONFIG = {
-    0: { label: 'Start checklist →', nextStage: 1 },
+    0: { label: 'Start checklist →',  nextStage: 1 },
     1: { label: 'Size the revenue →', nextStage: 2, guard: () => metricsIncomplete },
-    2: { label: 'See the numbers →', nextStage: 3 },
-    3: { label: 'View report →', nextStage: 4 },
-    4: { label: 'See scripts →', nextStage: 5 },
-    5: null,
+    2: { label: 'View report →',      nextStage: 3 },
+    3: { label: 'See scripts →',      nextStage: 4 },
+    4: null,
   };
 
   function goNext() {
@@ -4241,7 +4274,6 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
 
   function goPrev() {
     if (stageIndex === 0) { onBack(); return; }
-    // Revenue Calculator (3) goes back to Revenue Findings (2)
     setStageIndex(stageIndex - 1);
   }
 
@@ -4337,24 +4369,21 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
             cardGlowTrigger={cardGlowTrigger} />
         </div>
 
-        {/* Revenue — Findings */}
-        <div data-stage="findings" style={{ ...stageVisible(2), overflowY:'auto' }}>
-          <FindingsStage audit={audit} checkedIds={checkedIds} setCheckedIds={setCheckedIds}
-            onUpdateItem={(itemId, updates) => onUpdateItem(audit.id, itemId, updates)} />
-        </div>
-
-        {/* Revenue — Calculator */}
-        <div data-stage="calculator" style={{ ...stageVisible(3), overflowY:'auto' }}>
-          <CalculatorStage audit={audit} checkedIds={checkedIds} onUpdatePricing={onUpdatePricing} />
+        {/* Revenue */}
+        <div data-stage="revenue" style={{ ...stageVisible(2) }}>
+          <RevenueStage audit={audit} checkedIds={checkedIds} setCheckedIds={setCheckedIds}
+            onUpdateItem={(itemId, updates) => onUpdateItem(audit.id, itemId, updates)}
+            onUpdatePricing={onUpdatePricing}
+            onSavePitch={onSavePitch} />
         </div>
 
         {/* Report */}
-        <div data-stage="report" style={{ ...stageVisible(4), overflowY:'auto' }}>
-          <ReportStage audit={audit} checkedIds={checkedIds} onGoToScripts={() => setStageIndex(5)} />
+        <div data-stage="report" style={{ ...stageVisible(3), overflowY:'auto' }}>
+          <ReportStage audit={audit} checkedIds={checkedIds} onGoToScripts={() => setStageIndex(4)} />
         </div>
 
         {/* Scripts */}
-        <div data-stage="scripts" style={{ ...stageVisible(5), overflowY:'auto' }}>
+        <div data-stage="scripts" style={{ ...stageVisible(4), overflowY:'auto' }}>
           <ScriptsStage audit={audit} />
         </div>
 
@@ -4363,7 +4392,7 @@ function AuditWorkspace({ auditId, store, onUpdateItem, onUpdatePricing, onSaveC
       {/* ── Footer action bar ── */}
       <div className="footer-bar no-print">
         <button onClick={goPrev} className="btn btn-secondary">
-          ← {stageIndex === 0 ? 'Audits' : 'Previous step'}
+          ← {stageIndex === 0 ? 'Audits' : stageIndex === 1 ? 'Setup' : stageIndex === 2 ? 'Checklist' : 'Previous step'}
         </button>
         <div />
         {NEXT_CONFIG[stageIndex] && (
@@ -4655,6 +4684,15 @@ function App() {
     });
   }
 
+  function handleSavePitch(auditId, text) {
+    updateStore(prev => {
+      const audit = prev.audits[auditId];
+      return { ...prev, audits: { ...prev.audits, [auditId]: {
+        ...audit, pitch_text: text, updated_at: new Date().toISOString(),
+      }}};
+    });
+  }
+
   function handleSaveClientInfo(auditId, { client_info, pricing }) {
     updateStore(prev => {
       const audit = prev.audits[auditId];
@@ -4680,6 +4718,7 @@ function App() {
           store={store}
           onUpdateItem={handleUpdateItem}
           onUpdatePricing={handleUpdatePricing}
+          onSavePitch={handleSavePitch}
           onSaveClientInfo={handleSaveClientInfo}
           onBack={() => setAppScreen('list')}
           theme={theme}

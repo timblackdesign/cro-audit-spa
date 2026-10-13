@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/styles.css">
+<script src="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/_ds_bundle.js"></script>
+<script src="findings-data.js"></script>
+<style>body{margin:0}a{color:var(--ink)}a:hover{color:var(--accent-text)}</style>
+</helmet>
+<div data-theme="light" style="display:flex;gap:40px;padding:40px;background:var(--paper-300);font-family:var(--font-body);color:var(--ink);width:max-content">
+  <div data-screen-label="PDF 1 Summary" style="width:794px;height:1123px;box-sizing:border-box;background:#FFFFFF;padding:56px 64px 40px;display:flex;flex-direction:column;flex:none;gap:20px">
+    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em"><span style="font-weight:600">SHOPIFY CRO AUDIT</span><span style="color:var(--mute)">CONFIDENTIAL · FOR BETTER BREWER</span></div>
+    <div style="display:flex;flex-direction:column;gap:16px;padding-bottom:22px;border-bottom:2px solid var(--ink)">
+      <h1 style="margin:0;font-size:48px;font-weight:600;letter-spacing:-0.045em;line-height:1.02">Better Brewer storefront</h1>
+      <div style="display:flex;gap:32px;flex-wrap:wrap">
+        <sc-for list="{{ cover }}" as="c" hint-placeholder-count="5">
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">{{ c.l }}</span><span style="font-size:13px;font-weight:500">{{ c.v }}</span></div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;color:var(--mute)">THE SHORT VERSION</span>
+      <h2 style="margin:0;max-width:600px;font-size:44px;font-weight:600;letter-spacing:-0.045em;line-height:1.04;text-wrap:balance">$24,360 a year is at stake on betterbrewer.com.au.</h2>
+      <span style="font-size:14px;color:var(--mute)">Across 7 findings.<sc-if value="{{ pricing }}" hint-placeholder-val="{{ false }}"> Fixing them pays back in about 2.1 months.</sc-if></span>
+    </div>
+    <div style="display:grid;grid-template-rows:repeat(2,auto);grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);border-top:1px solid var(--rule);border-left:1px solid var(--rule)">
+      <sc-for list="{{ grid }}" as="g" hint-placeholder-count="6">
+        <div style="padding:12px 16px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">{{ g.l }}</span><span style="font-size:24px;font-weight:600;letter-spacing:-0.03em">{{ g.v }}</span></div>
+      </sc-for>
+    </div>
+    <sc-if value="{{ pricing }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding:12px 16px;border:1px solid var(--ink)"><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.1em">INVESTMENT</span><span style="font-size:16px;font-weight:600;letter-spacing:-0.02em">$4,250</span><span style="font-size:13px;color:var(--mute)">$750 audit + $3,500 implementation</span></div>
+    </sc-if>
+    <p style="margin:0;padding:18px 22px;border-left:3px solid var(--ink);background:var(--bg);font-size:14px;line-height:1.65">{{ pitch }}</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;color:var(--mute)">IN THIS REPORT</span>
+      <sc-for list="{{ toc }}" as="c" hint-placeholder-count="4">
+        <div style="display:flex;gap:14px;align-items:baseline;padding-bottom:8px;border-bottom:1px solid var(--rule);font-size:14px"><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute);width:20px">{{ c.n }}</span><span style="flex:1;font-weight:500">{{ c.t }}</span><span style="color:var(--mute)">{{ c.d }}</span></div>
+      </sc-for>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid var(--rule);font-family:var(--font-mono);font-size:10px;color:var(--mute)"><span>Better Brewer · Shopify CRO audit · Oct 9, 2026</span><span>1 / 5</span></div>
+  </div>
+  <div data-screen-label="PDF 2 Findings" style="width:794px;height:1123px;box-sizing:border-box;background:#FFFFFF;padding:56px 64px 40px;display:flex;flex-direction:column;flex:none;gap:20px">
+    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em"><span style="font-weight:600">SHOPIFY CRO AUDIT</span><span style="color:var(--mute)">CONFIDENTIAL · FOR BETTER BREWER</span></div>
+    <div style="display:flex;flex-direction:column;gap:10px;padding-bottom:14px;border-bottom:2px solid var(--ink)">
+      <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;color:var(--mute)">FINDINGS</span>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px"><h2 style="margin:0;font-size:34px;font-weight:600;letter-spacing:-0.04em;line-height:1.05">What we found</h2><span style="flex:none;white-space:nowrap;font-family:var(--font-mono);font-size:11px;color:var(--mute)">7 in scope · ranked by priority, then effort</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      <div style="display:grid;grid-template-columns:24px minmax(0,1fr) 84px 64px 64px 84px;gap:12px;padding-bottom:8px;border-bottom:1px solid var(--rule);font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--mute)"><span>#</span><span>FINDING</span><span>SECTION</span><span>PRIORITY</span><span>FIX</span><span>CVR LIFT</span></div>
+      <sc-for list="{{ inScope }}" as="f" hint-placeholder-count="7">
+        <div style="display:grid;grid-template-columns:24px minmax(0,1fr) 84px 64px 64px 84px;gap:12px;padding:14px 0;border-bottom:1px solid var(--rule);font-size:13px;line-height:1.5;align-items:baseline">
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">{{ f.n }}</span>
+          <div style="display:flex;flex-direction:column;gap:4px"><strong style="font-weight:600;font-size:14px">{{ f.title }}</strong><span style="color:var(--mute)">{{ f.finding }}</span></div>
+          <span>{{ f.section }}</span>
+          <span style="font-family:var(--font-mono);font-size:11px;font-weight:600">{{ f.p }}</span>
+          <span style="font-family:var(--font-mono);font-size:11px">{{ f.time }}</span>
+          <span style="font-family:var(--font-mono);font-size:11px">{{ f.lift }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <span style="font-size:12px;line-height:1.55;color:var(--mute)">P0 issues block purchases or cost the most revenue. P1 issues add friction. P2 issues are polish. Phase 1 covers the fixes that can ship right away; the rest are tested in Phase 2.</span>
+    <div style="flex:1"></div>
+    <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid var(--rule);font-family:var(--font-mono);font-size:10px;color:var(--mute)"><span>Better Brewer · Shopify CRO audit · Oct 9, 2026</span><span>2 / 5</span></div>
+  </div>
+  <div data-screen-label="PDF 3 Phase 1" style="width:794px;height:1123px;box-sizing:border-box;background:#FFFFFF;padding:56px 64px 40px;display:flex;flex-direction:column;flex:none;gap:20px">
+    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em"><span style="font-weight:600">SHOPIFY CRO AUDIT</span><span style="color:var(--mute)">CONFIDENTIAL · FOR BETTER BREWER</span></div>
+    <div style="display:flex;flex-direction:column;gap:10px;padding-bottom:14px;border-bottom:2px solid var(--ink)">
+      <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;color:var(--mute)">PHASE 1</span>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px"><h2 style="margin:0;font-size:34px;font-weight:600;letter-spacing:-0.04em;line-height:1.05">Quick wins</h2><span style="flex:none;white-space:nowrap;font-family:var(--font-mono);font-size:11px;color:var(--mute)">{{ quickCount }} findings · ship in week 1</span></div>
+    </div>
+    <sc-for list="{{ quick }}" as="f" hint-placeholder-count="6">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;padding-bottom:16px;border-bottom:1px solid var(--rule);font-size:13px;line-height:1.55">
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:15px;font-weight:600;letter-spacing:-0.01em">{{ f.title }}</span><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;color:var(--mute)">{{ f.p }} · {{ f.section }}</span><span>{{ f.finding }}</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px;padding-left:16px;border-left:1px solid var(--rule)"><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.1em">FIX</span><span>{{ f.rec }}</span></div>
+      </div>
+    </sc-for>
+    <div style="flex:1"></div>
+    <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid var(--rule);font-family:var(--font-mono);font-size:10px;color:var(--mute)"><span>Better Brewer · Shopify CRO audit · Oct 9, 2026</span><span>3 / 5</span></div>
+  </div>
+  <div data-screen-label="PDF 4 Phase 2" style="width:794px;height:1123px;box-sizing:border-box;background:#FFFFFF;padding:56px 64px 40px;display:flex;flex-direction:column;flex:none;gap:20px">
+    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em"><span style="font-weight:600">SHOPIFY CRO AUDIT</span><span style="color:var(--mute)">CONFIDENTIAL · FOR BETTER BREWER</span></div>
+    <div style="display:flex;flex-direction:column;gap:10px;padding-bottom:14px;border-bottom:2px solid var(--ink)">
+      <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;color:var(--mute)">PHASE 2</span>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px"><h2 style="margin:0;font-size:34px;font-weight:600;letter-spacing:-0.04em;line-height:1.05">Testing roadmap</h2><span style="flex:none;white-space:nowrap;font-family:var(--font-mono);font-size:11px;color:var(--mute)">3 A/B tests · 12 weeks</span></div>
+    </div>
+    <p style="margin:0;font-size:14px;line-height:1.65;color:var(--mute)">These changes are likely to help, but the size of the effect depends on Better Brewer's audience. Each one runs as an A/B test until it reaches significance. Winners ship to all traffic; results are reported monthly.</p>
+    <div style="display:flex;flex-direction:column">
+      <div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:2px;font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:var(--mute)">
+        <span style="grid-column:1 / span 4;padding-bottom:4px;border-bottom:1px solid var(--ink);color:var(--ink);font-weight:600">MONTH 1</span>
+        <span style="grid-column:5 / span 4;padding-bottom:4px;border-bottom:1px solid var(--ink);color:var(--ink);font-weight:600">MONTH 2</span>
+        <span style="grid-column:9 / span 4;padding-bottom:4px;border-bottom:1px solid var(--ink);color:var(--ink);font-weight:600">MONTH 3</span>
+        <sc-for list="{{ weeks }}" as="w" hint-placeholder-count="12"><span style="padding:6px 0;text-align:center">{{ w }}</span></sc-for>
+      </div>
+      <sc-for list="{{ tests }}" as="t" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:10px;padding:16px 0;border-bottom:1px solid var(--rule)">
+          <div style="display:flex;align-items:baseline;gap:10px"><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">{{ t.n }}</span><span style="flex:1;font-size:15px;font-weight:600">{{ t.title }}</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--mute)">{{ t.weeksLabel }}</span></div>
+          <span style="font-size:13px;line-height:1.55;color:var(--mute)">{{ t.hyp }}</span>
+          <div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:2px">
+            <div style="grid-column:{{ t.col12 }};background:var(--ink);color:#FFFFFF;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 10px;height:32px"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em">{{ t.metric }}</span><span style="font-family:var(--font-mono);font-size:11px;font-weight:600">{{ t.lift }}</span></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--rule)">
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--rule)"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">CADENCE</span><span style="font-size:13px;font-weight:500">One test live at a time, ~4 weeks each</span></div>
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--rule)"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">REPORTING</span><span style="font-size:13px;font-weight:500">Monthly results and next test</span></div>
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">UPSIDE IF ALL WIN</span><span style="font-size:13px;font-weight:500">+$470/mo on top of phase 1</span></div>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid var(--rule);font-family:var(--font-mono);font-size:10px;color:var(--mute)"><span>Better Brewer · Shopify CRO audit · Oct 9, 2026</span><span>4 / 5</span></div>
+  </div>
+  <div data-screen-label="PDF 5 Next steps" style="width:794px;height:1123px;box-sizing:border-box;background:#FFFFFF;padding:56px 64px 40px;display:flex;flex-direction:column;flex:none;gap:28px">
+    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em"><span style="font-weight:600">SHOPIFY CRO AUDIT</span><span style="color:var(--mute)">CONFIDENTIAL · FOR BETTER BREWER</span></div>
+    <div style="display:flex;flex-direction:column;gap:10px;padding-bottom:14px;border-bottom:2px solid var(--ink)">
+      <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;color:var(--mute)">NEXT STEPS</span>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px"><h2 style="margin:0;font-size:34px;font-weight:600;letter-spacing:-0.04em;line-height:1.05">Questions about this report?</h2><span style="flex:none;white-space:nowrap;font-family:var(--font-mono);font-size:11px;color:var(--mute)"></span></div>
+    </div>
+    <p style="margin:0;max-width:560px;font-size:16px;line-height:1.65">Happy to walk through any finding, the numbers behind it, or how the fixes would be shipped. Reply to the email this came with, or book a call below.</p>
+    <div style="display:flex;flex-direction:column">
+      <sc-for list="{{ next }}" as="c" hint-placeholder-count="3">
+        <div style="display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;padding:16px 0;border-bottom:1px solid var(--rule)"><span style="font-family:var(--font-mono);font-size:12px;font-weight:600">{{ c.n }}</span><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:15px;font-weight:600">{{ c.t }}</span><span style="font-size:13px;line-height:1.55;color:var(--mute)">{{ c.d }}</span></div></div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:32px;align-items:center;padding:24px;border:2px solid var(--ink)">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:24px;font-weight:600;letter-spacing:-0.03em">Tim Black</span>
+        <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-mono);font-size:12px"><span>tim@timblackdesign.com</span><span>timblackdesign.com</span><span>Book a call · timblackdesign.com/call</span></div>
+      </div>
+      <div style="width:140px;height:140px;box-sizing:border-box;border:1px dashed var(--mute);display:grid;place-items:center;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute)">QR CODE</div>
+    </div>
+    <span style="font-size:11px;line-height:1.55;color:var(--mute)">Figures are estimates built on benchmarked CVR lift ranges. Combined lift is capped at +3.0–6.0%. Traffic, season, offer and audience all move conversion rate.</span>
+    <div style="flex:1"></div>
+    <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid var(--rule);font-family:var(--font-mono);font-size:10px;color:var(--mute)"><span>Better Brewer · Shopify CRO audit · Oct 9, 2026</span><span>5 / 5</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:4250,&quot;height&quot;:1203},&quot;pricing&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  componentDidMount() { const t = () => window.TRIAGE_APP_FINDINGS ? this.forceUpdate() : setTimeout(t, 50); t(); }
+  renderVals() {
+    const inScope = (window.TRIAGE_APP_FINDINGS || []).filter(f => f.on);
+    const quick = inScope.filter(f => f.ph === 'quick');
+    return {
+      inScope, quick, quickCount: quick.length, pitch: window.TRIAGE_APP_PITCH || '',
+      weeks: Array.from({ length: 12 }, (_, i) => 'W' + (i + 1)),
+      tests: (window.TRIAGE_APP_TESTS || []).map(t => ({ ...t, col12: t.start + ' / span ' + t.len, weeksLabel: 'WK ' + t.start + '–' + (t.start + t.len - 1) })),
+      toc: [{ n: '02', t: 'Findings', d: '7 issues, ranked' }, { n: '03', t: 'Phase 1 · Quick wins', d: quick.length + ' fixes, week 1' }, { n: '04', t: 'Phase 2 · Testing roadmap', d: '3 A/B tests, 12 weeks' }, { n: '05', t: 'Next steps', d: 'Questions and contact' }],
+      next: [{ n: '01', t: 'Review the findings', d: 'Flag anything that needs more context or doesn’t match how the store works.' }, { n: '02', t: 'Ship Phase 1', d: 'Quick wins go live in the first week, with before and after screenshots.' }, { n: '03', t: 'Start testing', d: 'Phase 2 tests run one at a time, with results reported monthly.' }],
+      cover: [{ l: 'PREPARED FOR', v: 'Better Brewer' }, { l: 'PREPARED BY', v: 'Tim Black' }, { l: 'AUDIT DATE', v: 'Oct 9, 2026' }, { l: 'STORE', v: 'betterbrewer.com.au' }, { l: 'THEME', v: 'Cello' }],
+      pricing: !!this.props.pricing,
+      grid: [{ l: 'MONTHLY SESSIONS', v: '54,906' }, { l: 'CURRENT CVR', v: '0.93%' }, { l: 'PROJECTED CVR', v: '0.97%' }, { l: 'MONTHLY RECOVERY', v: '+$2,030' }].concat(this.props.pricing ? [{ l: 'RETURN', v: '5.7×' }, { l: 'PAYBACK', v: '2.1 mo' }] : [])
+    };
+  }
+}
+</script>
+</body>
+</html>

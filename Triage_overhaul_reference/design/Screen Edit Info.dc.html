@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/styles.css">
+<script src="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/_ds_bundle.js"></script>
+<style>body{margin:0}a{color:var(--ink)}a:hover{color:var(--accent-text)}</style>
+</helmet>
+<div data-theme="{{ theme }}" style="width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font-body);display:flex;flex-direction:column;position:relative">
+  <sc-if value="{{ d }}" hint-placeholder-val="{{ true }}">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Wordmark" size="{{ 20 }}" hint-size="64px,20px"></x-import>
+      <span style="color:var(--mute);font-size:18px">/</span>
+      <span style="font-size:15px;font-weight:600">Better Brewer storefront</span>
+    </div>
+    <div style="height:48px;flex:none;border-bottom:1px solid var(--rule)"></div>
+    <div style="position:absolute;inset:0;background:color-mix(in oklab, var(--bg) 82%, transparent);display:flex;justify-content:flex-end">
+      <div style="width:560px;height:100%;background:var(--bg);border-left:1px solid var(--ink);display:flex;flex-direction:column">
+        <div style="height:64px;flex:none;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid var(--rule)">
+          <span style="font-size:20px;font-weight:600;letter-spacing:-0.03em">Audit info</span>
+          <div style="flex:1"></div>
+          <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">ESC</span>
+          <button style="width:40px;height:40px;background:transparent;border:1px solid var(--rule);color:var(--ink);font-size:16px;border-radius:0">×</button>
+        </div>
+        <div style="flex:1;overflow:hidden;padding:24px;display:flex;flex-direction:column;gap:18px">
+          <sc-for list="{{ fields }}" as="f" hint-placeholder-count="5">
+            <label style="display:flex;flex-direction:column;gap:8px"><span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.08em">{{ f.l }}</span><input defaultValue="{{ f.v }}" style="height:44px;box-sizing:border-box;padding:0 12px;background:var(--surface);border:1px solid var(--rule);color:var(--ink);font-family:{{ f.font }};font-size:15px;outline:none;border-radius:0"></label>
+          </sc-for>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:18px;border-top:1px solid var(--rule)">
+            <sc-for list="{{ metrics }}" as="f" hint-placeholder-count="3">
+              <label style="display:flex;flex-direction:column;gap:8px"><span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.08em">{{ f.l }}</span><input defaultValue="{{ f.v }}" style="height:44px;box-sizing:border-box;width:100%;padding:0 12px;background:var(--surface);border:1px solid var(--rule);color:var(--ink);font-family:var(--font-mono);font-size:16px;outline:none;border-radius:0"></label>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--rule);background:var(--surface);font-family:var(--font-mono);font-size:12px">
+            <span style="font-weight:600">CVR 0.93 → 1.10</span><span style="color:var(--mute)">Revenue step recalculates: −$310/mo in scope</span>
+          </div>
+          <div style="border:1px solid var(--ink)">
+            <div style="padding:10px 14px;background:var(--ink);color:var(--bg);font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em">PRIVATE · NEVER PRINTED</div>
+            <label style="padding:14px;display:flex;flex-direction:column;gap:8px"><span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.08em">AUDIT FEE</span><input defaultValue="$750" style="height:44px;box-sizing:border-box;padding:0 12px;background:var(--surface);border:1px solid var(--rule);color:var(--ink);font-family:var(--font-mono);font-size:16px;outline:none;border-radius:0"></label>
+          </div>
+        </div>
+        <div style="height:76px;flex:none;display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:0 24px;border-top:1px solid var(--rule)">
+          <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" hint-size="110px,46px">Cancel</x-import>
+          <x-import component-from-global-scope="TriageDesignSystem_045851.Button" hint-size="160px,46px">Save changes</x-import>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ m }}" hint-placeholder-val="{{ false }}">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:1px solid var(--rule)">
+      <span style="flex:1;font-size:18px;font-weight:600">Audit info</span>
+      <button style="width:44px;height:44px;background:transparent;border:1px solid var(--rule);color:var(--ink);font-size:18px;border-radius:0">×</button>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:20px 16px 110px;display:flex;flex-direction:column;gap:16px">
+      <sc-for list="{{ fields }}" as="f" hint-placeholder-count="5">
+        <label style="display:flex;flex-direction:column;gap:8px"><span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.08em;color:var(--mute)">{{ f.l }}</span><input defaultValue="{{ f.v }}" style="height:48px;box-sizing:border-box;padding:0 12px;background:var(--surface);border:1px solid var(--rule);color:var(--ink);font-family:{{ f.font }};font-size:16px;outline:none;border-radius:0"></label>
+      </sc-for>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+        <sc-for list="{{ metrics }}" as="f" hint-placeholder-count="3">
+          <label style="display:flex;flex-direction:column;gap:8px;min-width:0"><span style="font-family:var(--font-mono);font-size:11px;font-weight:500;color:var(--mute)">{{ f.s }}</span><input defaultValue="{{ f.v }}" style="height:48px;box-sizing:border-box;width:100%;padding:0 10px;background:var(--surface);border:1px solid var(--rule);color:var(--ink);font-family:var(--font-mono);font-size:15px;outline:none;border-radius:0"></label>
+        </sc-for>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 28px;border-top:1px solid var(--rule);background:var(--bg)">
+      <button style="height:52px;width:100%;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;border-radius:0">SAVE CHANGES</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;vp&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const vp = this.props.vp || 'desktop';
+    const sans = 'var(--font-body)', mono = 'var(--font-mono)';
+    return {
+      theme: this.props.theme || 'dark', d: vp === 'desktop', m: vp !== 'desktop',
+      fields: [
+        { l: 'AUDIT TITLE', v: 'Better Brewer storefront', font: sans }, { l: 'CLIENT NAME', v: 'Better Brewer', font: sans },
+        { l: 'AUDITOR', v: 'Tim Black', font: sans }, { l: 'STORE URL', v: 'betterbrewer.com.au', font: mono }, { l: 'SHOPIFY THEME', v: 'Cello', font: sans }
+      ],
+      metrics: [{ l: 'REVENUE / MO', s: 'REVENUE', v: '$48,000' }, { l: 'AOV', s: 'AOV', v: '$94' }, { l: 'CVR', s: 'CVR', v: '1.10%' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

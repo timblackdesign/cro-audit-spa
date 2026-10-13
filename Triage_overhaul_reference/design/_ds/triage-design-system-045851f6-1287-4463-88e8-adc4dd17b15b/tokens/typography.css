@@ -1,0 +1,41 @@
+:root{
+--font-sans:'Geist',ui-sans-serif,system-ui,sans-serif;
+--font-mono:'Geist Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+--font-display:var(--font-sans);
+--font-body:var(--font-sans);
+--font-code:var(--font-mono);
+
+--weight-regular:400;--weight-medium:500;--weight-semibold:600;--weight-bold:700;
+
+/* Display */
+--text-display-xl:72px;
+--text-display:54px;
+--text-display-sm:40px;
+--text-heading:28px;
+--leading-display:1.02;
+--tracking-display:-0.045em;
+--tracking-wordmark:-0.05em;
+--tracking-heading:-0.04em;
+
+/* Figures */
+--text-figure:30px;
+--text-figure-lg:44px;
+
+/* Body */
+--text-body-lg:18px;
+--text-body:16px;
+--text-ui:15px;
+--text-sm:13px;
+--leading-body:1.55;
+
+/* Mono */
+--text-code:12.5px;
+--leading-code:1.8;
+--text-path:12px;
+--text-label:11px;
+--text-label-lg:12px;
+--tracking-label:0.12em;
+--tracking-label-wide:0.14em;
+--tracking-button:0.1em;
+--tracking-tag:0.06em;
+}

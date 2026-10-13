@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/styles.css">
+<script src="_ds/triage-design-system-045851f6-1287-4463-88e8-adc4dd17b15b/_ds_bundle.js"></script>
+<style>body{margin:0}a{color:var(--ink)}a:hover{color:var(--accent-text)}</style>
+</helmet>
+<div data-theme="{{ theme }}" style="width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font-body);display:flex;flex-direction:column;position:relative">
+  <sc-if value="{{ demo }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 24px;background:var(--ink);color:var(--bg)">
+      <span style="background:var(--accent);color:#0B0C0A;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em;padding:4px 8px">DEMO</span>
+      <span style="font-size:14px;font-weight:500">Nothing here is saved. Refreshing the page clears this audit.</span>
+      <div style="flex:1"></div>
+      <a href="#" style="color:var(--bg);font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase">Get the full kit →</a>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ d }}" hint-placeholder-val="{{ true }}">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--rule)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Wordmark" size="{{ 20 }}" hint-size="64px,20px"></x-import>
+      <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.1em;color:var(--mute)">FOR SHOPIFY</span>
+      <div style="flex:1"></div>
+      <span style="font-family:var(--font-mono);font-size:13px;color:var(--mute)">tim@timblackdesign.com</span>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="90px,36px">Sign out</x-import>
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="70px,36px">Theme</x-import>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:40px 48px">
+      <div style="max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:28px">
+        <div style="display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.1em;color:var(--mute)">WORKSPACE</span>
+            <h1 style="margin:0;font-size:36px;font-weight:600;letter-spacing:-0.04em;line-height:1">Audits</h1>
+          </div>
+          <div style="flex:1"></div>
+          <sc-if value="{{ notDemo }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+              <span style="font-family:var(--font-mono);font-size:13px;font-weight:500">{{ capLabel }}</span>
+              <div style="display:flex;gap:4px">
+                <sc-for list="{{ slots }}" as="s" hint-placeholder-count="5">
+                  <div style="width:28px;height:8px;background:{{ s.bg }};border:1px solid var(--rule)"></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <div style="display:flex;border:1px solid var(--rule);height:46px;box-sizing:border-box"><span style="display:flex;align-items:center;padding:0 14px;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;cursor:pointer;background:var(--ink);color:var(--bg)">TABLE</span><span style="display:flex;align-items:center;padding:0 14px;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;cursor:pointer;background:transparent;color:var(--mute)">GRID</span></div>
+          <x-import component-from-global-scope="TriageDesignSystem_045851.Button" hint-size="150px,46px">+ New audit</x-import>
+        </div>
+
+        <sc-if value="{{ hasAudits }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px solid var(--rule);background:var(--surface)">
+            <div style="display:grid;grid-template-columns:minmax(0,2.4fr) 110px minmax(0,1.3fr) 110px 150px 130px 150px;gap:16px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--rule);font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.08em;color:var(--mute)">
+              <span>AUDIT</span><span>THEME</span><span>PROGRESS</span><span>FAILS</span><span style="text-align:right">EST. RECOVERY</span><span>UPDATED</span><span></span>
+            </div>
+            <sc-for list="{{ audits }}" as="a" hint-placeholder-count="3">
+              <div style="position:relative;display:grid;grid-template-columns:minmax(0,2.4fr) 110px minmax(0,1.3fr) 110px 150px 130px 150px;gap:16px;align-items:center;padding:18px 20px;border-bottom:1px solid var(--rule);background:var(--bg)" style-hover="background:var(--surface)">
+                <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                  <span style="font-size:16px;font-weight:600;letter-spacing:-0.01em">{{ a.name }}</span>
+                  <span style="font-family:var(--font-mono);font-size:13px;color:var(--mute)">{{ a.url }} · {{ a.client }}</span>
+                </div>
+                <span style="font-size:14px">{{ a.theme }}</span>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <div style="height:6px;background:var(--rule)"><div style="height:6px;width:{{ a.pct }};background:var(--btn-bg)"></div></div>
+                  <span style="font-family:var(--font-mono);font-size:13px">{{ a.reviewed }}/60 <span style="color:var(--mute)">· {{ a.status }}</span></span>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:14px;font-weight:500;color:{{ a.failColor }}">{{ a.failLabel }}</span>
+                <span style="font-family:var(--font-mono);font-size:15px;font-weight:600;text-align:right;color:{{ a.recColor }}">{{ a.rec }}</span>
+                <span style="font-family:var(--font-mono);font-size:13px;color:var(--mute)">{{ a.updated }}</span>
+                <div style="display:flex;gap:8px;justify-content:flex-end">
+                  <x-import component-from-global-scope="TriageDesignSystem_045851.Button" size="sm" hint-size="70px,36px">Open</x-import>
+                  <button style="width:36px;height:36px;background:transparent;border:1px solid var(--rule);color:var(--ink);font-size:16px;cursor:pointer;border-radius:0">⋯</button>
+                </div>
+                <sc-if value="{{ a.menu }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;right:20px;top:60px;z-index:5;width:240px;background:var(--bg);border:1px solid var(--ink);display:flex;flex-direction:column">
+                    <div style="padding:12px 14px;font-size:14px;border-bottom:1px solid var(--rule)">Open</div>
+                    <div style="padding:12px 14px;font-size:14px;border-bottom:1px solid var(--rule)">Duplicate</div>
+                    <sc-if value="{{ notDemoMenu }}" hint-placeholder-val="{{ true }}">
+                      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid var(--rule)">
+                        <span style="font-size:14px">Archive</span>
+                        <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">Exports .json, frees a slot</span>
+                      </div>
+                    </sc-if>
+                    <div style="padding:12px 14px;font-size:14px;color:var(--loss);font-weight:500">Delete…</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ notDemo }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:16px;padding:16px 20px;font-size:14px;color:var(--mute)">
+                <span style="font-family:var(--font-mono);font-weight:500;color:var(--ink)">2 slots open</span>
+                <span>Archive a delivered audit to free its slot. Archiving downloads the audit as .json.</span>
+              </div>
+            </sc-if>
+          </div>
+          <sc-if value="{{ notDemo }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:16px">
+              <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" size="sm" hint-size="140px,36px">Import .json</x-import>
+              <span style="font-size:14px;color:var(--mute)">Restore an archived audit, or move one from another browser.</span>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid var(--rule);background:var(--surface);padding:56px 48px;display:flex;flex-direction:column;gap:36px">
+            <div style="display:flex;flex-direction:column;gap:12px;max-width:640px">
+              <h2 style="margin:0;font-size:40px;font-weight:600;letter-spacing:-0.045em;line-height:1.02">Run your first <em style="font-style:normal;background:var(--accent);color:#0B0C0A;padding:0 .08em">audit.</em></h2>
+              <p style="margin:0;font-size:17px;line-height:1.55;color:var(--mute)">60 checks across 6 sections of a Shopify store. Every failure gets a CVR lift range and a monthly dollar figure, then rolls into a report you hand the client.</p>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--rule);background:var(--bg)">
+              <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+                <div style="padding:20px;display:flex;flex-direction:column;gap:8px;border-right:1px solid var(--rule)">
+                  <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--accent-text)">{{ s.n }}</span>
+                  <span style="font-size:16px;font-weight:600">{{ s.t }}</span>
+                  <span style="font-size:14px;line-height:1.5;color:var(--mute)">{{ s.d }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center">
+              <x-import component-from-global-scope="TriageDesignSystem_045851.Button" hint-size="190px,46px">+ Start first audit</x-import>
+              <x-import component-from-global-scope="TriageDesignSystem_045851.Button" variant="secondary" hint-size="150px,46px">Import .json</x-import>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ m }}" hint-placeholder-val="{{ false }}">
+    <div style="height:52px;flex:none;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--rule)">
+      <x-import component-from-global-scope="TriageDesignSystem_045851.Wordmark" size="{{ 20 }}" hint-size="64px,20px"></x-import>
+      <div style="flex:1"></div>
+      <button style="width:44px;height:44px;background:transparent;border:1px solid var(--rule);color:var(--ink);font-size:18px;border-radius:0">⋯</button>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:24px 16px 120px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+        <h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-0.04em;line-height:1">Audits</h1>
+        <sc-if value="{{ notDemo }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:500">{{ capLabel }}</span>
+            <div style="display:flex;gap:3px">
+              <sc-for list="{{ slots }}" as="s" hint-placeholder-count="5">
+                <div style="width:18px;height:6px;background:{{ s.bg }};border:1px solid var(--rule)"></div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ hasAudits }}" hint-placeholder-val="{{ true }}">
+        <sc-for list="{{ audits }}" as="a" hint-placeholder-count="3">
+          <div style="border:1px solid var(--rule);background:var(--surface);padding:16px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0">
+                <span style="font-size:17px;font-weight:600">{{ a.name }}</span>
+                <span style="font-family:var(--font-mono);font-size:13px;color:var(--mute)">{{ a.url }}</span>
+              </div>
+              <button style="width:44px;height:44px;flex:none;background:transparent;border:1px solid var(--rule);color:var(--ink);font-size:16px;border-radius:0">⋯</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="height:6px;background:var(--rule)"><div style="height:6px;width:{{ a.pct }};background:var(--btn-bg)"></div></div>
+              <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:13px">
+                <span>{{ a.reviewed }}/60 · <span style="color:{{ a.failColor }}">{{ a.failLabel }}</span></span>
+                <span style="font-weight:600;color:{{ a.recColor }}">{{ a.rec }}</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--mute)">Updated {{ a.updated }}</span>
+              <button style="height:44px;padding:0 20px;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-weight:600;font-size:12px;letter-spacing:.1em;border-radius:0">OPEN →</button>
+            </div>
+          </div>
+        </sc-for>
+      </sc-if>
+      <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid var(--rule);background:var(--surface);padding:24px 20px;display:flex;flex-direction:column;gap:20px">
+          <h2 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-0.045em;line-height:1.05">Run your first <em style="font-style:normal;background:var(--accent);color:#0B0C0A;padding:0 .08em">audit.</em></h2>
+          <p style="margin:0;font-size:16px;line-height:1.55;color:var(--mute)">60 checks, 6 sections. Every failure gets a monthly dollar figure.</p>
+          <div style="display:flex;flex-direction:column;border-top:1px solid var(--rule)">
+            <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+              <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule)">
+                <span style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--accent-text);padding-top:2px">{{ s.n }}</span>
+                <span style="font-size:15px;font-weight:500">{{ s.t }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 28px;border-top:1px solid var(--rule);background:var(--bg)">
+      <button style="height:52px;width:100%;background:var(--btn-bg);color:var(--btn-ink);border:0;font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.1em;border-radius:0">+ NEW AUDIT</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;vp&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;demo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;empty&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const vp = this.props.vp || 'desktop';
+    const demo = !!this.props.demo, empty = !!this.props.empty;
+    const all = [
+      { name: 'Better Brewer storefront', client: 'Better Brewer', url: 'betterbrewer.com.au', theme: 'Cello', reviewed: 38, pct: '63%', status: 'In progress', fails: 9, p0: 4, rec: '+$2,030/mo', updated: 'Oct 8, 2026', menu: true },
+      { name: 'Kinfolk Coffee Co.', client: 'Mara Ellis', url: 'kinfolkcoffee.com', theme: 'Prestige', reviewed: 60, pct: '100%', status: 'Report ready', fails: 12, p0: 5, rec: '+$3,480/mo', updated: 'Oct 2, 2026' },
+      { name: 'SHLVS Beauty', client: 'Jason Black', url: 'shlvsbeauty.com', theme: 'Dawn', reviewed: 0, pct: '0%', status: 'Not started', fails: 0, p0: 0, rec: '—', updated: 'Jul 19, 2026' }
+    ].map(a => ({ ...a, menu: a.menu && vp === 'desktop', failLabel: a.fails ? `${a.fails} · ${a.p0} P0` : '—', failColor: a.fails ? 'var(--loss)' : 'var(--mute)', recColor: a.fails ? 'var(--gain)' : 'var(--mute)' }));
+    const audits = empty ? [] : demo ? all.slice(0, 1).map(a => ({ ...a, menu: false })) : all;
+    const used = audits.length;
+    return {
+      theme: this.props.theme || 'dark', d: vp === 'desktop', m: vp !== 'desktop',
+      demo, notDemo: !demo, notDemoMenu: !demo, empty, hasAudits: !empty, audits,
+      capLabel: `${used} of 5 active`,
+      slots: [0, 1, 2, 3, 4].map(i => ({ bg: i < used ? 'var(--btn-bg)' : 'transparent' })),
+      steps: [
+        { n: '01', t: 'Setup', d: 'Client, store URL, revenue, AOV, CVR.' },
+        { n: '02', t: 'Checklist', d: '60 items. Pass, Fail, TBD or N/A.' },
+        { n: '03', t: 'Revenue', d: 'Fails become monthly recovery. Set your fee.' },
+        { n: '04', t: 'Report', d: 'Client-facing. Print to PDF.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
