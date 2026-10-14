@@ -22,7 +22,7 @@ async function resolveUserId(email) {
 async function inviteOrFindUser(email) {
   const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
     email,
-    { redirectTo: 'https://cro-audit-system-shopify.netlify.app/' }
+    { redirectTo: 'https://app.trytriage.dev/' }
   );
   const alreadyExists = inviteError?.status === 422;
   if (inviteError && !alreadyExists) throw new Error(inviteError.message);
