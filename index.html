@@ -1062,10 +1062,6 @@ function newAudit(lastAuditorName) {
   };
 }
 
-function defaultPhase(item) {
-  return item?.estimated_fix_time === '< 30 min' || item?.estimated_fix_time === '1-2 hrs' ? 'quick-win' : 'test';
-}
-
 function getItemState(audit, itemId) {
   const item = AUDIT_ITEMS.find(i => i.id === itemId);
   const saved = audit?.items?.[itemId] || {};
@@ -1078,7 +1074,7 @@ function getItemState(audit, itemId) {
     estimated_fix_time: saved.estimated_fix_time ?? item?.estimated_fix_time ?? '< 30 min',
     fails_on_desktop:   saved.fails_on_desktop   ?? null,
     fails_on_mobile:    saved.fails_on_mobile    ?? null,
-    phase:              saved.phase              ?? defaultPhase(item),
+    delivery:           saved.delivery           ?? 'open',
   };
 }
 
@@ -2192,7 +2188,7 @@ function AuditList({ store, onNew, onOpen, onArchive, onDuplicate, onDelete, onI
           ['01','Setup',     'Client name, store URL, theme and revenue metrics.'],
           ['02','Checklist', '60 checks. Mark pass or fail. Capture evidence.'],
           ['03','Findings',  'Every failure gets a CVR lift and a dollar figure.'],
-          ['04','Report',    'Phase 1 quick wins + Phase 2 testing roadmap, print-ready.'],
+          ['04','Report',    'Findings ranked by impact and revenue, print-ready.'],
         ].map(([n, label, body]) => (
           <div key={n}>
             <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.12em',
@@ -3433,10 +3429,11 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
   const roi = calcROI(audit, ids);
 
   const toggle = id => setCheckedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
-  function togglePhase(itemId) {
+  function cycleDelivery(itemId) {
     if (!onUpdateItem) return;
-    const cur = getItemState(audit, itemId).phase;
-    onUpdateItem(itemId, { phase: cur === 'quick-win' ? 'test' : 'quick-win' });
+    const cur = getItemState(audit, itemId).delivery;
+    const next = cur === 'open' ? 'sent' : cur === 'sent' ? 'done' : 'open';
+    onUpdateItem(itemId, { delivery: next });
   }
   function setPricing(k, v) { onUpdatePricing(audit.id, { ...pr, [k]: parseFloat(v) || 0 }); }
 
@@ -3445,10 +3442,10 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
     sec:  (a, b) => a.section.localeCompare(b.section),
     time: (a, b) => (FIX_TIME_RANK[a.estimated_fix_time] ?? 99) - (FIX_TIME_RANK[b.estimated_fix_time] ?? 99),
     lift: (a, b) => b.lift_max - a.lift_max,
+    status: (a, b) => { const r = {'open':0,'sent':1,'done':2}; return (r[getItemState(audit, a.id).delivery] ?? 0) - (r[getItemState(audit, b.id).delivery] ?? 0); },
   };
-  const sorted = [...failItems].sort(sorters[sort] || sorters.imp);
-  const quick  = sorted.filter(i => getItemState(audit, i.id).phase === 'quick-win');
-  const test   = sorted.filter(i => getItemState(audit, i.id).phase !== 'quick-win');
+  const sorted   = [...failItems].sort(sorters[sort] || sorters.imp);
+  const doneCount = sorted.filter(i => getItemState(audit, i.id).delivery !== 'open').length;
 
   function rowMo(item) {
     const rev = parseFloat(ci.monthly_revenue) || 0;
@@ -3457,12 +3454,7 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
     if (!rev) return 0;
     return (rev / (aov * (cvr / 100))) * aov * ((item.lift_min + item.lift_max) / 2 / 100);
   }
-  function groupSum(rows) { return rows.filter(i => ids.has(i.id)).reduce((s, i) => s + rowMo(i), 0); }
-
-  const groups = [
-    { key:'PHASE 1', title:'Quick wins',       desc:'Ship in week 1 · implementation fee',      rows:quick, sum:groupSum(quick) },
-    { key:'PHASE 2', title:'Testing roadmap',  desc:'A/B test over 12 weeks · monthly retainer', rows:test,  sum:groupSum(test), trailer:' if proven' },
-  ];
+  const totalSum = sorted.filter(i => ids.has(i.id)).reduce((s, i) => s + rowMo(i), 0);
 
   const gridCols = ['28px','minmax(0,1fr)',cols.sec&&'120px',cols.imp&&'96px',cols.time&&'80px',cols.lift&&'110px','74px','80px'].filter(Boolean).join(' ');
 
@@ -3479,7 +3471,6 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
   const retainerRate  = parseFloat(pr.retainer_rate) || 0;
   const retainerMos   = parseFloat(pr.retainer_months) !== undefined ? parseFloat(pr.retainer_months) : 3;
   const totalEng      = auditFee + implFee + retainerRate * retainerMos;
-  const testCount     = test.filter(i => ids.has(i.id)).length;
   const canSanity     = roi.hourlyRate > 0 && roi.estHours > 0 && implFee > 0;
   const feeBase       = totalEng || roi.totalInvestment;
   const roiLine = roi.hasData && roi.monthlyRecovery > 0 && feeBase > 0
@@ -3532,16 +3523,33 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
   }
 
   function FindingRow({ item }) {
-    const checked = ids.has(item.id);
-    const phase   = getItemState(audit, item.id).phase;
-    const state   = getItemState(audit, item.id);
-    const isQW    = phase === 'quick-win';
-    const mo      = rowMo(item);
-    const ink     = checked ? 'var(--ink)' : 'var(--ink-5)';
-    const liftInk = checked ? 'var(--gain)' : 'var(--ink-5)';
-    const rowBg   = checked ? 'var(--bg)' : 'var(--surface)';
-    const title   = item.name.split(':')[0];
-    const finding = state.finding || '';
+    const checked   = ids.has(item.id);
+    const state     = getItemState(audit, item.id);
+    const delivery  = state.delivery;
+    const isSent    = delivery === 'sent';
+    const isDone    = delivery === 'done';
+    const mo        = rowMo(item);
+    const ink       = isDone ? 'var(--ink-5)' : (checked ? 'var(--ink)' : 'var(--ink-5)');
+    const liftInk   = isDone ? 'var(--ink-5)' : (checked ? 'var(--gain)' : 'var(--ink-5)');
+    const rowBg     = checked ? 'var(--bg)' : 'var(--surface)';
+    const title     = item.name.split(':')[0];
+    const finding   = state.finding || '';
+
+    const statusBtnStyle = {
+      height:22, padding:'0 8px', border:0, cursor:'pointer',
+      fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600, letterSpacing:'.06em',
+      background: isDone ? 'var(--gain)' : isSent ? 'var(--amber)' : 'transparent',
+      color:      isDone ? 'var(--btn-ink)' : isSent ? '#000' : 'var(--ink-5)',
+      outline:    delivery === 'open' ? '1px solid var(--rule)' : 'none',
+    };
+
+    const tag = isSent
+      ? <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600, padding:'1px 5px',
+          background:'var(--amber)', color:'#000', letterSpacing:'.06em', flexShrink:0 }}>SENT</span>
+      : isDone
+      ? <span style={{ fontFamily:'var(--font-mono)', fontSize:10, fontWeight:600, padding:'1px 5px',
+          background:'var(--gain)', color:'var(--btn-ink)', letterSpacing:'.06em', flexShrink:0 }}>DONE</span>
+      : null;
 
     if (isMobile) {
       return (
@@ -3554,7 +3562,7 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
               color:'var(--btn-ink)', fontSize:15, fontWeight:700 }}>{checked ? '✓' : ''}</span>
           </button>
           <div style={{ display:'flex', flexDirection:'column', gap:4, minWidth:0 }}>
-            <span style={{ fontSize:16, fontWeight:600, color:ink }}>{title}</span>
+            <span style={{ fontSize:16, fontWeight:600, color:ink, textDecoration: isDone ? 'line-through' : 'none' }}>{title}</span>
             <span style={{ fontFamily:'var(--font-mono)', fontSize:12, color:'var(--ink-5)' }}>
               {IMPACT_LABEL[item.impact]} · {state.estimated_fix_time}
             </span>
@@ -3570,54 +3578,33 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
       <div className="rev-row" style={{ gridTemplateColumns:gridCols, background:rowBg }}>
         <button onClick={() => toggle(item.id)}
           style={{ width:22, height:22, padding:0, boxSizing:'border-box', display:'grid', placeItems:'center',
-            background: checked ? 'var(--btn-bg)' : 'transparent',
-            border:`1px solid ${checked ? 'var(--btn-bg)' : 'var(--ink-5)'}`,
-            color:'var(--btn-ink)', fontSize:14, fontWeight:700, cursor:'pointer' }}>
+            background: checked ? (isSent ? 'var(--amber)' : 'var(--btn-bg)') : 'transparent',
+            border:`1px solid ${checked ? (isSent ? 'var(--amber)' : 'var(--btn-bg)') : 'var(--ink-5)'}`,
+            color: isSent ? '#000' : 'var(--btn-ink)', fontSize:14, fontWeight:700, cursor:'pointer' }}>
           {checked ? '✓' : ''}
         </button>
         <div style={{ display:'flex', flexDirection:'column', gap:3, minWidth:0 }}>
-          <span style={{ fontSize:15, fontWeight:600, color:ink }}>{title}</span>
-          {finding && <span style={{ fontSize:14, color:'var(--ink-5)' }}>{finding}</span>}
+          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+            <span style={{ fontSize:15, fontWeight:600, color:ink, textDecoration: isDone ? 'line-through' : 'none' }}>{title}</span>
+            {tag}
+          </div>
+          {finding && (
+            <span style={{ fontSize:14, color:'var(--ink-5)', textDecoration: isDone ? 'line-through' : 'none' }}>
+              {finding}
+            </span>
+          )}
         </div>
         {cols.sec  && <span style={{ fontSize:14, color:ink }}>{SECTION_SHORT[item.section] || item.section}</span>}
-        {cols.imp  && <PBadge impact={item.impact} muted={!checked} />}
+        {cols.imp  && <PBadge impact={item.impact} muted={!checked || isDone} />}
         {cols.time && <span style={{ fontFamily:'var(--font-mono)', fontSize:13, color:ink }}>{state.estimated_fix_time}</span>}
         {cols.lift && <span style={{ fontFamily:'var(--font-mono)', fontSize:13, color:liftInk }}>+{item.lift_min}–{item.lift_max}%</span>}
-        <button onClick={e => { e.stopPropagation(); togglePhase(item.id); }}
-          style={{ height:28, padding:'0 8px', background:'transparent', border:'1px solid var(--rule)',
-            color:'var(--ink)', fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600,
-            letterSpacing:'.06em', cursor:'pointer' }}>
-          {isQW ? '→ TEST' : '→ SHIP'}
+        <button onClick={e => { e.stopPropagation(); cycleDelivery(item.id); }}
+          title="Cycle status: Open → Sent → Done"
+          style={statusBtnStyle}>
+          {delivery === 'open' ? 'OPEN' : delivery === 'sent' ? 'SENT' : 'DONE'}
         </button>
         <span style={{ fontFamily:'var(--font-mono)', fontSize:15, fontWeight:600, textAlign:'right', color:liftInk }}>
           {checked && roi.hasData ? `+$${fmt(mo)}` : '—'}
-        </span>
-      </div>
-    );
-  }
-
-  function GroupHeader({ g }) {
-    const sumInk = g.sum > 0 ? 'var(--gain)' : 'var(--ink-5)';
-    if (isMobile) {
-      return (
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline',
-          padding:'16px 16px 8px', borderBottom:`1px solid var(--ink)` }}>
-          <span style={{ fontSize:15, fontWeight:600 }}>{g.title}</span>
-          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, fontWeight:600, color:sumInk }}>
-            {g.sum > 0 ? `+$${fmt(g.sum)}/mo${g.trailer || ''}` : '—'}
-          </span>
-        </div>
-      );
-    }
-    return (
-      <div style={{ display:'flex', alignItems:'baseline', gap:12, padding:'14px 18px 10px',
-        borderBottom:'1px solid var(--rule)', background:'var(--bg)' }}>
-        <span style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600, letterSpacing:'.1em', color:'var(--ink-5)' }}>{g.key}</span>
-        <span style={{ fontSize:16, fontWeight:600 }}>{g.title}</span>
-        <span style={{ fontSize:14, color:'var(--ink-5)' }}>{g.desc}</span>
-        <div style={{ flex:1 }} />
-        <span style={{ fontFamily:'var(--font-mono)', fontSize:13, fontWeight:600, color:sumInk }}>
-          {g.sum > 0 ? `+$${fmt(g.sum)}/mo${g.trailer || ''}` : '—'}
         </span>
       </div>
     );
@@ -3633,7 +3620,7 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
     return (
       <div style={{ display:'flex', flexDirection:'column', gap:14, padding:'18px 24px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
-          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, letterSpacing:'.06em', color:'var(--ink-5)' }}>PHASE 1 · SUGGESTED FEE</span>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, letterSpacing:'.06em', color:'var(--ink-5)' }}>SUGGESTED FEE</span>
           <span style={{ fontSize:22, fontWeight:600, letterSpacing:'-0.03em' }}>${suggested}</span>
         </div>
         <label style={{ display:'flex', flexDirection:'column', gap:6 }}>
@@ -3704,7 +3691,7 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
           )}
         </div>
         <div style={{ display:'flex', flexDirection:'column', gap:10, paddingTop:14, borderTop:'1px solid var(--rule)' }}>
-          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, letterSpacing:'.06em', color:'var(--ink-5)' }}>PHASE 2 · TESTING RETAINER</span>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:12, letterSpacing:'.06em', color:'var(--ink-5)' }}>TESTING RETAINER</span>
           <div style={{ display:'grid', gridTemplateColumns:'1.4fr 1fr', gap:10, minWidth:0 }}>
             {[['retainer_rate','1500','/ month'],['retainer_months','3','months']].map(([k,ph,unit]) => (
               <div key={k} style={{ display:'flex', height:44, border:'1px solid var(--rule)', background:'var(--bg)',
@@ -3719,7 +3706,7 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
             ))}
           </div>
           <span style={{ fontFamily:'var(--font-mono)', fontSize:12, color:'var(--ink-5)' }}>
-            {testCount} test{testCount !== 1 ? 's' : ''} · ~4 weeks each · renews monthly
+            ~4 weeks per test · renews monthly
           </span>
         </div>
         {totalEng > 0 && (
@@ -3769,7 +3756,7 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
             <div style={{ display:'flex', alignItems:'flex-end', gap:16, flexWrap:'wrap' }}>
               <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                 <h1 style={{ margin:0, fontSize:32, fontWeight:600, letterSpacing:'-0.04em', lineHeight:1.05 }}>Findings</h1>
-                <p style={{ margin:0, fontSize:16, color:'var(--ink-5)' }}>Select what items to include in the report. Decide what is a quick win and what is a testing candidate.</p>
+                <p style={{ margin:0, fontSize:16, color:'var(--ink-5)' }}>Mark a finding Done once it has been sent to the client. Done items stay in the list and in the report.</p>
               </div>
               <div style={{ flex:1 }} />
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -3790,15 +3777,24 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
               {cols.imp  && <HeadBtn label="PRIORITY" sortKey="imp" />}
               {cols.time && <HeadBtn label="FIX TIME" sortKey="time" />}
               {cols.lift && <HeadBtn label="CVR LIFT" sortKey="lift" />}
-              <HeadBtn label="PHASE" sortKey={null} />
+              <HeadBtn label="STATUS" sortKey="status" />
               <HeadBtn label="/MO" sortKey={null} align="right" />
             </div>
-            {groups.map(g => g.rows.length > 0 && (
-              <React.Fragment key={g.key}>
-                <GroupHeader g={g} />
-                {g.rows.map(item => <FindingRow key={item.id} item={item} />)}
-              </React.Fragment>
-            ))}
+            <div style={{ display:'flex', alignItems:'baseline', gap:12, padding:'14px 18px 10px',
+              borderBottom:'1px solid var(--rule)', background:'var(--bg)' }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:600, letterSpacing:'.1em', color:'var(--ink-5)' }}>ALL</span>
+              <span style={{ fontSize:16, fontWeight:600 }}>All findings</span>
+              {doneCount > 0 && (
+                <span style={{ fontSize:14, color:'var(--ink-5)' }}>
+                  {doneCount} of {sorted.length} sent to client
+                </span>
+              )}
+              <div style={{ flex:1 }} />
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:13, fontWeight:600, color: totalSum > 0 ? 'var(--gain)' : 'var(--ink-5)' }}>
+                {totalSum > 0 ? `+$${fmt(totalSum)}/mo` : '—'}
+              </span>
+            </div>
+            {sorted.map(item => <FindingRow key={item.id} item={item} />)}
           </div>
 
           {/* Mobile pricing disclosure */}
@@ -3870,7 +3866,7 @@ function RevenueStage({ audit, checkedIds, setCheckedIds, onUpdateItem, onUpdate
                 { l:'CURRENT CVR',      v: roi.hasData ? fmtPct(roi.cvrRaw)     : '—', c:'var(--ink)' },
                 { l:'PROJECTED CVR',    v: roi.hasData ? fmtPct(roi.projCVRRaw) : '—', c: roi.hasData ? 'var(--gain)' : 'var(--ink)' },
                 { l:'MONTHLY RECOVERY', v: roi.hasData ? `+$${fmt(roi.monthlyRecovery)}` : '—', c: roi.hasData ? 'var(--gain)' : 'var(--ink)' },
-                { l:'TESTS PLANNED',    v: `${testCount} · 12 wks`, c:'var(--ink)' },
+                { l:'SENT TO CLIENT',   v: `${doneCount} of ${sorted.length}`, c:'var(--ink)' },
               ].map(g => (
                 <div key={g.l} style={{ padding:'12px 14px', display:'flex', flexDirection:'column', gap:2,
                   borderBottom:'1px solid var(--rule)', borderRight:'1px solid var(--rule)' }}>
@@ -3916,15 +3912,9 @@ function ReportStage({ audit, checkedIds, onGoToScripts }) {
     const r = IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact];
     return r !== 0 ? r : (FIX_TIME_RANK[a.estimated_fix_time] ?? 99) - (FIX_TIME_RANK[b.estimated_fix_time] ?? 99);
   });
-  const phase1Items = sorted.filter(i => getItemState(audit, i.id).phase === 'quick-win');
-  const phase2Items = sorted.filter(i => getItemState(audit, i.id).phase !== 'quick-win');
-
-  const phase1ROI    = calcROI(audit, new Set(phase1Items.map(i => i.id)));
-  const phase2Upside = Math.round(Math.max(0, roi.monthlyRecovery - phase1ROI.monthlyRecovery));
   const pitch        = audit.pitch_text || generatePitch(audit, roi, ids);
-  const totalWeeks   = Math.max(12, phase2Items.length * 4);
-  const numMonths    = Math.ceil(totalWeeks / 4);
-  const TOTAL_PAGES  = 5;
+  const TOTAL_PAGES  = 3;
+  const EFFORT_LABEL = { '< 30 min':'Minimal', '1-2 hrs':'Minimal', '1 day':'Medium', '3 days':'Medium', '1 week':'Heavy', '2 weeks':'Heavy', '1 month+':'Heavy' };
 
   // ── design tokens ──────────────────────────────────────────────────────────
   const mono = 'var(--font-mono)';
@@ -3933,15 +3923,6 @@ function ReportStage({ audit, checkedIds, onGoToScripts }) {
   const mute = '#5A5D56';
   const rule = '#CBCEC4';
   const bg   = '#EEEFEA';
-
-  const SECTION_METRIC = {
-    'General':            'Sitewide CVR',
-    'Collection Page':    'Collection CVR',
-    'Product Page':       'Add-to-Cart Rate',
-    'Cart':               'Cart Conversion',
-    'Checkout':           'Checkout Rate',
-    'Mobile/Performance': 'Mobile CVR',
-  };
 
   // ── print handler ──────────────────────────────────────────────────────────
   function handlePrint() {
@@ -3975,7 +3956,7 @@ function ReportStage({ audit, checkedIds, onGoToScripts }) {
   function SectionHdr({ label, title, meta }) {
     return (
       <div style={{ display:'flex', flexDirection:'column', gap:10, paddingBottom:14, borderBottom:`2px solid ${ink}` }}>
-        <span style={{ fontFamily:mono, fontSize:11, letterSpacing:'.12em', color:mute }}>{label}</span>
+        {label && <span style={{ fontFamily:mono, fontSize:11, letterSpacing:'.12em', color:mute }}>{label}</span>}
         <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', gap:16 }}>
           <h2 style={{ margin:0, fontSize:34, fontWeight:600, letterSpacing:'-0.04em', lineHeight:1.05, fontFamily:sans }}>{title}</h2>
           {meta && <span style={{ flexShrink:0, whiteSpace:'nowrap', fontFamily:mono, fontSize:11, color:mute }}>{meta}</span>}
@@ -4014,17 +3995,15 @@ function ReportStage({ audit, checkedIds, onGoToScripts }) {
 
   // table-of-contents rows for Page 1
   const toc = [
-    { n:'02', t:'Findings',                  d:`${sorted.length} issue${sorted.length !== 1 ? 's' : ''}, ranked` },
-    { n:'03', t:'Phase 1 · Quick wins',      d:`${phase1Items.length} fix${phase1Items.length !== 1 ? 'es' : ''}, week 1` },
-    { n:'04', t:'Phase 2 · Testing roadmap', d:`${phase2Items.length} A/B test${phase2Items.length !== 1 ? 's' : ''}, ${totalWeeks} weeks` },
-    { n:'05', t:'Next steps',                d:'Questions and contact' },
+    { n:'02', t:'Findings',   d:`${sorted.length} issue${sorted.length !== 1 ? 's' : ''}, ranked` },
+    { n:'03', t:'Next steps', d:'Questions and contact' },
   ];
 
-  // next-steps for Page 5
+  // next-steps for Page 3
   const nextSteps = [
-    { n:'01', t:'Review the findings',   d:"Flag anything that needs more context or doesn't match how the store works." },
-    { n:'02', t:'Ship Phase 1',          d:'Quick wins go live in the first week, with before and after screenshots.' },
-    { n:'03', t:'Start testing',         d:'Phase 2 tests run one at a time, with results reported monthly.' },
+    { n:'01', t:'Review the findings',     d:"Flag anything that needs more context or doesn't match how the store works." },
+    { n:'02', t:'Prioritise and schedule', d:'Start with the highest-impact fixes. I can help sequence the work.' },
+    { n:'03', t:'Track results',           d:'Before-and-after screenshots and CVR data confirm what each fix is worth.' },
   ];
 
   // ── CLIENT VIEW toggle helper ───────────────────────────────────────────────
@@ -4132,11 +4111,11 @@ function ReportStage({ audit, checkedIds, onGoToScripts }) {
   const page2 = (
     <div className="rpt-page" style={pageStyle}>
       <PageHdr />
-      <SectionHdr label="FINDINGS" title="What we found"
+      <SectionHdr title="What we found"
         meta={`${sorted.length} in scope · ranked by priority, then effort`} />
       <div style={{ display:'flex', flexDirection:'column' }}>
-        <div style={{ display:'grid', gridTemplateColumns:'24px minmax(0,1fr) 84px 64px 64px 84px', gap:12, paddingBottom:8, borderBottom:`1px solid ${rule}`, fontFamily:mono, fontSize:9, letterSpacing:'.1em', color:mute }}>
-          <span>#</span><span>FINDING</span><span>SECTION</span><span>PRIORITY</span><span>FIX</span><span>CVR LIFT</span>
+        <div style={{ display:'grid', gridTemplateColumns:`24px minmax(0,1fr) 84px 64px${showFindings ? ' 64px' : ''} 84px`, gap:12, paddingBottom:8, borderBottom:`1px solid ${rule}`, fontFamily:mono, fontSize:9, letterSpacing:'.1em', color:mute }}>
+          <span>#</span><span>FINDING</span><span>SECTION</span><span>PRIORITY</span>{showFindings && <span>EFFORT</span>}<span>CVR LIFT</span>
         </div>
         {sorted.length === 0 ? (
           <div style={{ padding:'32px', textAlign:'center', fontFamily:mono, fontSize:12, color:mute }}>
@@ -4144,139 +4123,58 @@ function ReportStage({ audit, checkedIds, onGoToScripts }) {
           </div>
         ) : sorted.map((item, i) => {
           const state   = getItemState(audit, item.id);
-          const finding = state.finding || item.default_finding || '';
+          const finding   = state.finding || item.default_finding || '';
+          const title     = item.name.split(':')[0];
+          const delivery  = state.delivery;
+          const isSent    = delivery === 'sent';
+          const isDone    = delivery === 'done';
+          const textCol   = isDone ? rule : isSent ? mute : null;
+          const strikethrough = isDone ? 'line-through' : 'none';
+          const rptTag    = isSent
+            ? <span style={{ fontFamily:mono, fontSize:9, fontWeight:600, letterSpacing:'.08em',
+                padding:'1px 5px', background:'#B85C00', color:'#FFFFFF', flexShrink:0 }}>SENT</span>
+            : isDone
+            ? <span style={{ fontFamily:mono, fontSize:9, fontWeight:600, letterSpacing:'.08em',
+                padding:'1px 5px', background:'#3E7A00', color:'#FFFFFF', flexShrink:0 }}>DONE</span>
+            : null;
           return (
-            <div key={item.id} style={{ display:'grid', gridTemplateColumns:'24px minmax(0,1fr) 84px 64px 64px 84px', gap:12, padding:'14px 0', borderBottom:`1px solid ${rule}`, fontSize:13, lineHeight:1.5, alignItems:'baseline' }}>
-              <span style={{ fontFamily:mono, fontSize:11, color:mute }}>{String(i + 1).padStart(2, '0')}</span>
+            <div key={item.id} style={{ display:'grid', gridTemplateColumns:`24px minmax(0,1fr) 84px 64px${showFindings ? ' 64px' : ''} 84px`, gap:12, padding:'14px 0', borderBottom:`1px solid ${rule}`, fontSize:13, lineHeight:1.5, alignItems:'baseline' }}>
+              <span style={{ fontFamily:mono, fontSize:11, color:textCol || mute }}>{String(i + 1).padStart(2, '0')}</span>
               <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
-                <strong style={{ fontWeight:600, fontSize:14, fontFamily:sans }}>{item.name}</strong>
-                {finding && <span style={{ color:mute, fontFamily:sans }}>{finding}</span>}
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <strong style={{ fontWeight:600, fontSize:14, fontFamily:sans, color:textCol || ink, textDecoration:strikethrough }}>{title}</strong>
+                  {rptTag}
+                </div>
+                {finding && <span style={{ color:textCol || mute, fontFamily:sans, textDecoration:strikethrough }}>{finding}</span>}
+                {showScreenshots && state.screenshot_url && (
+                  <a href={state.screenshot_url} target="_blank" rel="noopener noreferrer"
+                    style={{ fontFamily:mono, fontSize:10, color:textCol || mute, wordBreak:'break-all', textDecoration:'underline', textUnderlineOffset:2 }}>
+                    {state.screenshot_url}
+                  </a>
+                )}
               </div>
-              <span style={{ fontFamily:sans }}>{SECTION_SHORT[item.section] || item.section}</span>
-              <span style={{ fontFamily:mono, fontSize:11, fontWeight:600 }}>{IMPACT_LABEL[item.impact]}</span>
-              <span style={{ fontFamily:mono, fontSize:11 }}>{item.estimated_fix_time}</span>
-              <span style={{ fontFamily:mono, fontSize:11 }}>+{item.lift_min}–{item.lift_max}%</span>
+              <span style={{ fontFamily:sans, color:textCol || null }}>{SECTION_SHORT[item.section] || item.section}</span>
+              <span style={{
+                fontFamily:mono, fontSize:11, fontWeight:600, letterSpacing:'.04em',
+                display:'inline-block', padding:'3px 8px', opacity: isDone ? 0.4 : isSent ? 0.7 : 1,
+                background: item.impact === 'High' ? ink : item.impact === 'Medium' ? mute : rule,
+                color:       item.impact === 'Low'  ? ink : '#FFFFFF',
+              }}>{IMPACT_LABEL[item.impact]}</span>
+              {showFindings && <span style={{ fontFamily:mono, fontSize:11, color:textCol || null }}>{EFFORT_LABEL[state.estimated_fix_time] || state.estimated_fix_time}</span>}
+              <span style={{ fontFamily:mono, fontSize:11, color:textCol || null }}>+{item.lift_min}–{item.lift_max}%</span>
             </div>
           );
         })}
       </div>
       <span style={{ fontSize:12, lineHeight:1.55, color:mute, fontFamily:sans }}>
-        P0 issues block purchases or cost the most revenue. P1 add friction. P2 are polish. Phase 1 covers fixes that ship right away; the rest are tested in Phase 2.
+        P0 issues block purchases or cost the most revenue. P1 add friction. P2 are polish.
       </span>
       <PageFtr n={2} />
     </div>
   );
 
-  // ── Page 3: Quick wins ─────────────────────────────────────────────────────
+  // ── Page 3: Next steps ─────────────────────────────────────────────────────
   const page3 = (
-    <div className="rpt-page" style={pageStyle}>
-      <PageHdr />
-      <SectionHdr label="PHASE 1" title="Quick wins"
-        meta={`${phase1Items.length} finding${phase1Items.length !== 1 ? 's' : ''} · ship in week 1`} />
-      {phase1Items.length === 0 ? (
-        <div style={{ padding:'32px', textAlign:'center', border:`1px solid ${rule}`, fontFamily:mono, fontSize:12, color:mute }}>
-          No quick-win findings. Assign flagged items to Phase 1 in the revenue step.
-        </div>
-      ) : phase1Items.map(item => {
-        const state = getItemState(audit, item.id);
-        return (
-          <div key={item.id} style={{ display:'grid', gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)', gap:24, paddingBottom:16, borderBottom:`1px solid ${rule}`, fontSize:13, lineHeight:1.55 }}>
-            <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-              <span style={{ fontSize:15, fontWeight:600, letterSpacing:'-0.01em', fontFamily:sans }}>{item.name}</span>
-              <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'.06em', color:mute }}>
-                {IMPACT_LABEL[item.impact]} · {SECTION_SHORT[item.section] || item.section}
-              </span>
-              <span style={{ fontFamily:sans }}>{showFindings ? (state.finding || item.default_finding) : '—'}</span>
-            </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:6, paddingLeft:16, borderLeft:`1px solid ${rule}` }}>
-              <span style={{ fontFamily:mono, fontSize:10, fontWeight:600, letterSpacing:'.1em' }}>FIX</span>
-              <span style={{ fontFamily:sans }}>{showFindings ? (state.recommendation || item.default_recommendation) : '—'}</span>
-              {showScreenshots && state.screenshot_url && (
-                <a href={state.screenshot_url} target="_blank" rel="noopener noreferrer"
-                  style={{ fontFamily:mono, fontSize:10, color:mute, wordBreak:'break-all', textDecoration:'underline', textUnderlineOffset:2 }}>
-                  {state.screenshot_url}
-                </a>
-              )}
-            </div>
-          </div>
-        );
-      })}
-      <PageFtr n={3} />
-    </div>
-  );
-
-  // ── Page 4: Testing roadmap ────────────────────────────────────────────────
-  const page4 = (
-    <div className="rpt-page" style={pageStyle}>
-      <PageHdr />
-      <SectionHdr label="PHASE 2" title="Testing roadmap"
-        meta={`${phase2Items.length} A/B test${phase2Items.length !== 1 ? 's' : ''} · ${totalWeeks} weeks`} />
-      <p style={{ margin:0, fontSize:14, lineHeight:1.65, color:mute, fontFamily:sans }}>
-        These changes are likely to help, but the size of the effect depends on {ci.client_name || 'the client'}'s audience. Each one runs as an A/B test until it reaches significance. Winners ship to all traffic; results are reported monthly.
-      </p>
-      {phase2Items.length > 0 && (
-        <div style={{ display:'flex', flexDirection:'column' }}>
-          {/* Month + week header */}
-          <div style={{ display:'grid', gridTemplateColumns:`repeat(${totalWeeks}, minmax(0,1fr))`, columnGap:2, fontFamily:mono, fontSize:9, letterSpacing:'.08em', color:mute }}>
-            {Array.from({ length:numMonths }, (_, mi) => (
-              <span key={mi} style={{ gridColumn:`${mi*4+1} / span 4`, paddingBottom:4, borderBottom:`1px solid ${ink}`, color:ink, fontWeight:600 }}>
-                MONTH {mi + 1}
-              </span>
-            ))}
-            {Array.from({ length:totalWeeks }, (_, wi) => (
-              <span key={wi} style={{ padding:'6px 0', textAlign:'center' }}>W{wi + 1}</span>
-            ))}
-          </div>
-          {/* Test rows */}
-          {phase2Items.map((item, i) => {
-            const state    = getItemState(audit, item.id);
-            const metric   = SECTION_METRIC[item.section] || 'CVR';
-            const wkLabel  = `WK ${i * 4 + 1}–${(i + 1) * 4}`;
-            return (
-              <div key={item.id} style={{ display:'flex', flexDirection:'column', gap:10, padding:'16px 0', borderBottom:`1px solid ${rule}` }}>
-                <div style={{ display:'flex', alignItems:'baseline', gap:10 }}>
-                  <span style={{ fontFamily:mono, fontSize:11, color:mute }}>{String(i + 1).padStart(2, '0')}</span>
-                  <span style={{ flex:1, fontSize:15, fontWeight:600, fontFamily:sans }}>{item.name}</span>
-                  <span style={{ fontFamily:mono, fontSize:11, color:mute }}>{wkLabel}</span>
-                </div>
-                <span style={{ fontSize:13, lineHeight:1.55, color:mute, fontFamily:sans }}>
-                  {state.finding || item.default_finding}
-                </span>
-                <div style={{ display:'grid', gridTemplateColumns:`repeat(${totalWeeks}, minmax(0,1fr))`, columnGap:2 }}>
-                  <div style={{ gridColumn:`${i * 4 + 1} / span 4`, background:ink, color:'#FFFFFF', display:'flex', justifyContent:'space-between', alignItems:'center', gap:8, padding:'0 10px', height:32 }}>
-                    <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'.08em' }}>{metric}</span>
-                    <span style={{ fontFamily:mono, fontSize:11, fontWeight:600 }}>+{item.lift_min}–{item.lift_max}%</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-      {phase2Items.length === 0 && (
-        <div style={{ padding:'32px', textAlign:'center', border:`1px solid ${rule}`, fontFamily:mono, fontSize:12, color:mute }}>
-          No testing candidates. Assign flagged items to Phase 2 in the revenue step.
-        </div>
-      )}
-      {/* Footer summary grid */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(3, minmax(0,1fr))', border:`1px solid ${rule}` }}>
-        {[
-          { l:'CADENCE',           v:'One test live at a time, ~4 weeks each', c:'' },
-          { l:'REPORTING',         v:'Monthly results and next test',           c:'' },
-          { l:'UPSIDE IF ALL WIN', v: roi.hasData && phase2Upside > 0 ? `+$${fmt(phase2Upside)}/mo on top of phase 1` : '—', c: roi.hasData && phase2Upside > 0 ? '#3E7A00' : mute },
-        ].map(({ l, v, c }, i, arr) => (
-          <div key={l} style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:4, borderRight: i < arr.length - 1 ? `1px solid ${rule}` : 'none' }}>
-            <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'.1em', color:mute }}>{l}</span>
-            <span style={{ fontSize:13, fontWeight:500, color: c || ink, fontFamily:sans }}>{v}</span>
-          </div>
-        ))}
-      </div>
-      <PageFtr n={4} />
-    </div>
-  );
-
-  // ── Page 5: Next steps ─────────────────────────────────────────────────────
-  const page5 = (
     <div className="rpt-page" style={pageStyle}>
       <PageHdr />
       <SectionHdr label="NEXT STEPS" title="Questions about this report?" />
@@ -4311,12 +4209,12 @@ function ReportStage({ audit, checkedIds, onGoToScripts }) {
       <span style={{ fontSize:11, lineHeight:1.55, color:mute, fontFamily:sans }}>
         Figures are estimates built on benchmarked CVR lift ranges. Combined lift is capped at +3.0–6.0%. Traffic, season, offer and audience all move conversion rate.
       </span>
-      <PageFtr n={5} />
+      <PageFtr n={3} />
     </div>
   );
 
-  const pages = [page1, page2, page3, page4, page5];
-  const PAGE_LABELS = ['Summary', 'Findings', 'Quick wins', 'Testing roadmap', 'Next steps'];
+  const pages = [page1, page2, page3];
+  const PAGE_LABELS = ['Summary', 'Findings', 'Next steps'];
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
@@ -4332,7 +4230,7 @@ function ReportStage({ audit, checkedIds, onGoToScripts }) {
         <span style={{ fontFamily:mono, fontSize:12, fontWeight:600, letterSpacing:'.08em' }}>CLIENT VIEW</span>
         <span style={{ fontSize:13, color:'var(--mute)' }}>Notes are hidden. This is what prints.</span>
         <div style={{ flex:1 }} />
-        <Toggle checked={showFindings}    label="Findings"    onClick={() => setShowFindings(f => !f)} />
+        <Toggle checked={showFindings}    label="Effort"      onClick={() => setShowFindings(f => !f)} />
         <Toggle checked={showScreenshots} label="Screenshots" onClick={() => setShowScreenshots(f => !f)} />
         <Toggle checked={showPricing}     label="Pricing"     onClick={() => setShowPricing(f => !f)} />
         <span style={{ fontFamily:mono, fontSize:12, color:'var(--mute)' }}>
